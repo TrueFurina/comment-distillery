@@ -1,0 +1,23 @@
+# 统一换行符为 LF，避免 Windows 提交造成全文件 diff
+* text=auto eol=lf
+
+# 二进制文件不做换行转换
+*.png binary
+*.jpg binary
+*.gif binary
+*.pdf binary
+*.zip binary
+
+# CSV 保持原样（含 BOM 的场景靠 utf-8-sig 兼容）
+*.csv text eol=crlf
+
+# 文档与脚本
+*.md text eol=lf
+*.py text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# 语言统计：把 examples 的样例语料按文档计，避免污染代码占比
+examples/*.csv linguist-documentation
+examples/*.md linguist-documentation
+docs/*.md linguist-documentation

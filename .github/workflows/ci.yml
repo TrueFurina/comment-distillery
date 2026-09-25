@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: tests (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: 语法检查（stdlib compileall）
+        run: python -m compileall -q scripts/ tests/
+
+      - name: 守卫「零依赖」承诺
+        run: |
+          if grep -rEn '^[[:space:]]*(import|from)[[:space:]]+(requests|urllib3|pandas|numpy|bs4|lxml|aiohttp|httpx)\b' scripts/ tests/; then
+            echo "::error::核心脚本引入了第三方依赖，违反零依赖承诺"
+            exit 1
+          fi
+          echo "✅ scripts/ 与 tests/ 均未引入第三方依赖"
+
+      - name: 回归测试（纯标准库 unittest）
+        run: python -m unittest discover -s tests -v
+
+      - name: 端到端冒烟 —— 预处理合成样例
+        run: python scripts/prep.py examples/sample_corpus.csv /tmp/cd-ci
+
+      - name: 端到端冒烟 —— 引用真实性机验（必须通过）
+        run: python scripts/verify_citations.py examples/sample_guide.md examples/sample_corpus.csv
+
+      - name: 冒烟产出展示
+        if: always()
+        run: |
+          echo "--- stats.json ---"
+          cat /tmp/cd-ci/stats.json || true
+          echo "--- low_score_long.txt (前 20 行) ---"
+          head -20 /tmp/cd-ci/low_score_long.txt || true
