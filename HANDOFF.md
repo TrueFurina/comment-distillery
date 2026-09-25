@@ -26,16 +26,20 @@
 ```
 E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 ├── .git/                                （HEAD: 0f95ee9，remote: SSH）
-├── .github/workflows/ci.yml            （3 个 Python 版本，5 步：compileall/零依赖守卫/unittest/prep 冒烟/引用机验冒烟）
+├── .github/workflows/ci.yml            （3 个 Python 版本，7 步：compileall/零依赖守卫/unittest/无裸铁律×2/golden×2/端到端冒烟）
 ├── scripts/prep.py                      （预处理：编码容错 → 去重 → 去噪 → 按赞降序 → 导出）
 ├── scripts/verify_citations.py          （引用幻觉机验，强制质量门）
+├── scripts/check_rule_tags.py           （机验 SKILL.md 无「裸铁律」，含变异自验）
 ├── contrib/fetch_bilibili_comments.py   （纯标准库 WBI 签名抓取，含去重与退避）
 ├── golden/                              （评估集：8 场景 / 4 类，判分器 + 跑分器 + 变异验证）
 ├── ROADMAP.md                           （长期规划 P0–P5，含验收门槛与停止条件）
 ├── tests/test_prep.py                   （27 个用例）
 ├── tests/test_golden.py                 （12 个用例）
+├── tests/test_rule_tags.py              （6 个用例）
 ├── docs/collecting.md                   （各社区采集工具 + 许可证 + 风险对照）
 ├── docs/retrospective.md                （七战沉淀：五次修正 / 7 条判据 / 质量门 G1–G7）
+├── docs/rule-provenance.md              （规则溯源：9 铁律 / 5 待复现 / 7 环境事实，附复现判据）
+├── docs/overturned.md                   （被推翻结论台账 OT-1…OT-5，含"再次推翻的条件"）
 ├── SKILL.md / README.md / README.en.md / CHANGELOG.md
 │
 └── cases/                               ← 实战档案（已在 .gitignore，仅本地留存）
@@ -136,16 +140,31 @@ CI       .github/workflows/ci.yml  5 步全绿（0f95ee9 / cef6a6b / d52c3e5 三
 
 ## 七、下一步（Open Items）
 
-**长期规划已单独成文 → [`ROADMAP.md`](ROADMAP.md)**（P0 收尾 ✅ / P1 golden 评估集 / P2 去过拟合 / P3 分发 / P4 场景升维 / P5 研究问题）。以下为状态更新：
+**长期规划已单独成文 → [`ROADMAP.md`](ROADMAP.md)**（P0 收尾 ✅ / P1 golden ✅ / P2 去过拟合 ✅ / P3 分发 / P4 场景升维 / P5 研究问题）。以下为状态更新：
 
 1. ✅ **正卷交叉引用**已回填（2026-09-26）：正卷卷首新增"本卷 3 处结论/引用在增补卷中被修正"提示块，指向第五章 / 7.2 节 / 第十四章。
 2. ⏸ **跨平台对照**：本视频在 YouTube 有大量评论，楼中楼里已见观众搬运英文解析。**已列入 P5 长线，且当前停止新增抓取**（语料已足够）。
-3. ⏸ **`docs/collecting.md` 扩充**：可补"输出 → CCF 字段映射"的完整示例。优先级低于 P1。
+3. ⏸ **`docs/collecting.md` 扩充**：可补"输出 → CCF 字段映射"的完整示例。优先级低于 P3。
 4. ⏸ **真·人工校验 loop**：列入 P5。现状澄清——现有 7 道门（见 `docs/retrospective.md` §4）**只卡形式与引用真实性，不检验推断质量**。
-5. ✅ **反例开采 vs 深度解析开采**：SKILL.md 已拆开（"楼中楼的两个用途要分开开采"）。
-6. 🆕 **七战沉淀件**：`docs/retrospective.md` —— 五次方法论修正 + 7 条量化判据 + 交付质量门 G1–G7 + 与 AGI-Distiller 对照 + 已知局限。
+5. ✅ **反例开采 vs 深度解析开采**：已拆开，且**已标为 `[战7·待复现]`**——单战证据，移入 SKILL.md「待复现观察」章节，不再是铁律。
+6. ✅ **七战沉淀件**：`docs/retrospective.md` —— 五次方法论修正 + 7 条量化判据 + 交付质量门 G1–G7 + 与 AGI-Distiller 对照 + 已知局限。
+7. ✅ **P1 golden 评估集**（2026-09-26）：8 场景 / 4 类，baseline 100.0，变异 31/31 拦截。
+8. 🆕 **P2 方法论去过拟合**（2026-09-26）：`docs/rule-provenance.md` + `docs/overturned.md` + `scripts/check_rule_tags.py`（CI 强制）。**读规则时注意：带 `[战N·待复现]` 的是假设，不是规律。**
 
-**当前第一优先级（P1）**：建立 golden 评估集。理由——现在能证明"引用是真的"，**证明不了"指南变好了"**；换模型/改 SKILL 后是否变强全靠感觉。设计见 `docs/retrospective.md` §6。
+**当前第一优先级（P3 分发）**：P1/P2 已闭环——现在既能证明"引用是真的"，也能证明"改规则后是否变强"，且单战证据不再冒充铁律。下一步是让更多人知道，见 `ROADMAP.md` P3。
+
+---
+
+## 七·补、改规则时的强制动作（P2 引入）
+
+改 `SKILL.md` 后**必须**：
+
+```bash
+"$PY" "$REPO/scripts/check_rule_tags.py"            # 无裸铁律（新规则必须带 [战N]/[环境]/[设计]）
+"$PY" "$REPO/scripts/check_rule_tags.py" --self-test # 判据自身有效（3/3 变异必须被拦截）
+```
+
+新增规则时先问：**这条被几战验证过？** 1 战 → 必须写进「待复现观察」章节并标 `[战N·待复现]`，同时在 `docs/rule-provenance.md` §2 补上"复现判据"（第二次遇到什么证据才算成立）。
 
 ---
 

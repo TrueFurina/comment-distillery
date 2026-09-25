@@ -26,7 +26,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: 语法检查（stdlib compileall）
-        run: python -m compileall -q scripts/ tests/
+        run: python -m compileall -q scripts/ tests/ golden/
 
       - name: 守卫「零依赖」承诺
         run: |
@@ -38,6 +38,12 @@ jobs:
 
       - name: 回归测试（纯标准库 unittest）
         run: python -m unittest discover -s tests -v
+
+      - name: 机验「无裸铁律」—— SKILL.md 每条规则必须带溯源标记
+        run: python scripts/check_rule_tags.py
+
+      - name: 机验「无裸铁律」—— 判据自身的变异验证
+        run: python scripts/check_rule_tags.py --self-test
 
       - name: golden 评估集 —— 变异验证（判分器必须真的能扣分）
         run: python golden/run_golden.py --self-test

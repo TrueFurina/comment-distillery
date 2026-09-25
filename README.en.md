@@ -230,10 +230,13 @@ comment-distillery/
 │   ├── domains.md           # adaptation guide per domain
 │   ├── pipeline.md          # pipeline in detail
 │   ├── retrospective.md     # ★ 7-run retrospective: 5 corrections, quantified heuristics, gates
+│   ├── rule-provenance.md   # ★ provenance: which run validated which rule; 1-run evidence = "pending"
+│   ├── overturned.md        # ★ overturned claims log (incl. what would overturn them again)
 │   └── compliance.md        # compliance & ethics
 ├── scripts/
 │   ├── prep.py              # preprocessing (zero deps)
-│   └── verify_citations.py  # citation verification (hard gate)
+│   ├── verify_citations.py  # citation verification (hard gate)
+│   └── check_rule_tags.py   # no "bare rules" gate for SKILL.md (with mutation self-test)
 ├── golden/                  # test set: 8 cases / 4 categories — did it actually get better?
 │   ├── README.md
 │   ├── cases/               # scenarios (pure data, JSON)

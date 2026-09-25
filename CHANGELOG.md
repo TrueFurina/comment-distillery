@@ -11,6 +11,12 @@
   - 新增 2 个回归测试（`test_duplicate_ids_are_dropped` / `test_dup_dropped_zero_on_clean_corpus`），并做**变异验证**：人为取消去重后测试必须 FAIL。
 
 ### Added
+- **P2 方法论去过拟合** — SKILL.md 里多数规则只被 1 战验证过，个案被写成铁律会误导后续使用者。现在每条规则带溯源标记，且**机验强制**：
+  - `docs/rule-provenance.md` — 规则溯源台账：**9 条铁律**（≥2 战独立验证）/ **5 条待复现**（仅 1 战）/ 7 条环境事实。每条待复现项附**复现判据**（第二次遇到什么证据才算成立）。
+  - `docs/overturned.md` — 被推翻结论台账 OT-1…OT-5，每条写明「曾经相信 / 被什么打穿 / 现在怎么做 / **再次推翻的条件**」。附元观察：五次失效的共同点是**用代理指标代替真值**（点赞数↔认可度、文本长度↔思考深度、楼层深度↔观点完整性、ID 格式↔引用真实、行数↔语料规模）。
+  - `scripts/check_rule_tags.py` — 机验 SKILL.md 无裸铁律，含 `--self-test` 变异验证。实测：**24/24 条目带标记、裸铁律 0；变异 3/3 拦截**。已接入 CI（新增两步）。
+  - SKILL.md 新增「待复现观察」章节，单战证据（meta 噪音 / 多语料合并 / 楼中楼两用途 / 粘贴板污染 / 注意力漂移 2.5×）**降级为假设**，不再混在铁律里。
+  - `tests/test_rule_tags.py`（6 个用例，全量 39 → **45**）。
 - **golden 评估集** — 让「换模型 / 改 SKILL.md / 调参数后是否变强」从感觉变成数据。8 个场景分 4 类（`citation` / `coverage` / `counterevidence` / `layering`），每类都有真实出处：
   - `golden/cases/*.json` — 场景集（纯数据）。**用 JSON 不用 YAML**：本项目零依赖是硬约束，PyYAML 会破承诺。
   - `golden/graders.py` — 判分器，8 种规则类型；`citation_real` **复用** `scripts/verify_citations.py`，不重写。

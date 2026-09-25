@@ -232,10 +232,13 @@ comment-distillery/
 │   ├── domains.md           # 各语料域的适配指南
 │   ├── pipeline.md          # 6 步流水线详解
 │   ├── retrospective.md     # ★ 七战沉淀：五次方法论修正 + 量化判据 + 交付质量门
+│   ├── rule-provenance.md   # ★ 规则溯源：每条规则的验证战次，单战证据标「待复现」
+│   ├── overturned.md        # ★ 被推翻结论台账（含"什么证据会再次推翻它"）
 │   └── compliance.md        # 合规与伦理边界
 ├── scripts/
 │   ├── prep.py              # 预处理（零依赖）
-│   └── verify_citations.py  # 引用真实性机验（强制质量门）
+│   ├── verify_citations.py  # 引用真实性机验（强制质量门）
+│   └── check_rule_tags.py   # 机验 SKILL.md 无「裸铁律」（带变异验证）
 ├── golden/                  # 评估集：8 场景 / 4 类，判「改规则后是否变强」
 │   ├── README.md
 │   ├── cases/               # 场景集（纯数据 JSON）
