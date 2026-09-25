@@ -87,9 +87,10 @@ id,text,parent_id,is_reply,score,reply_count,created_at,author_id,source
 
 1. **接入 Ingest**：拿到 CCF CSV。确认字段、规模、语料域。
 2. **预处理 Prep**：运行 `scripts/prep.py <corpus.csv> <outdir>`。产出：
-   - `all_comments.txt`——按 `score` 降序、每条带 `[ID | 权重 | 层级 | 复N]`、已去噪；
-   - `stats.json`——规模/互动/时间样本/信号词；
+   - `all_comments.txt`——按 `score` 降序、每条带 `[ID | 权重 | 层级 | 复N]`、已 **ID 去重** + 去噪；
+   - `stats.json`——规模/互动/时间样本/信号词（含 **`dup_dropped`**）；
    - `id_map.json`——`[{id, like, floor, reply}]`，**溯源的前提，务必保留**。
+   - ⚠️ **先看 `dup_dropped`，再信任何规模数字**：热度排序下分页游标会重叠，抓取结果常含大批「同 ID、同内容、同赞数」的重复行（实测某次 20,399 行里 **22% 是纯重复**）。不去重不只是规模虚高——**它会把同一条观点重复计入共识度**，直接污染"高赞即共识"的判断。`dup_dropped` 不为 0 就说明上游有重叠，全文数字口径一律以去重后为准。
 3. **通读与聚类 Read & Cluster**：**逐条通读** `all_comments.txt`（不是只看统计），按主题聚类，标注 共识 / 争议 / 独立观点。
 4. **框架抽取 Synthesize**：抽认知框架、实操手册、护城河、路径选择、心态与组织政治等可落手结构。强制：
    - **反例对冲**：每条共识配反方论据；
@@ -102,7 +103,7 @@ id,text,parent_id,is_reply,score,reply_count,created_at,author_id,source
      python scripts/verify_citations.py <guide.md> <corpus.csv> [more.csv ...] --field 评论ID
      ```
      规则：指南中所有 ID 引用与语料 ID 全集做差集，**差集必须为空才允许交付**（退出码 0）。
-     实测战绩：某次 96 条引用中揪出 **1 条幻觉 ID**，替换为真实条目后复验通过。**没有这一步，指南的可信度就是不可验证的。**
+     实测战绩：第五战 96 条引用中揪出 **1 条幻觉 ID**；第六战 103 条引用中揪出 **1 条**（附录索引里写错一位数字）——两次都是"格式看起来完全合理"的 ID。替换为真实条目后复验通过。**没有这一步，指南的可信度就是不可验证的。**
    - 检查覆盖度（头部是否读到、长尾是否抽样）；文末附"请人工核对关键结论"提示（轻量人工校验钩子）。
 
 ## 输出档位

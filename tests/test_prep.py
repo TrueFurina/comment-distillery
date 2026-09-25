@@ -161,6 +161,34 @@ class FieldAliasAndRobustness(unittest.TestCase):
         prep.main([str(EXAMPLE), str(out)])
         self.assertTrue((out / "stats.json").exists())
 
+    def test_duplicate_ids_are_dropped(self):
+        """同一 ID 的完全重复行必须被去重，并计入 stats.dup_dropped。
+
+        背景：热度排序下分页游标重叠，抓取端会产出「同 ID 同内容同赞数」的重复行
+        （实测某 2 万条语料里约 22% 是纯重复）。不去重会让评论总数虚高、并让同一条
+        观点被重复计入共识度。
+        """
+        out = self._run(
+            "id,text,score\n"
+            "d1,这是一条会被重复抓取的评论内容,10\n"
+            "d1,这是一条会被重复抓取的评论内容,10\n"      # 与上一行完全相同的重复行
+            "d2,另一条正常的评论内容,5\n"
+        )
+        stats = json.loads((out / "stats.json").read_text(encoding="utf-8"))
+        self.assertEqual(stats["total_raw"], 3)
+        self.assertEqual(stats["dup_dropped"], 1)
+        self.assertEqual(stats["total_after_denoise"], 2)
+        txt = (out / "all_comments.txt").read_text(encoding="utf-8")
+        self.assertEqual(txt.count("[d1 |"), 1, "重复 ID 只应保留一条")
+
+    def test_dup_dropped_zero_on_clean_corpus(self):
+        """无重复语料时 dup_dropped 必须为 0（守卫：去重不能误伤正常条目的赞数统计）。"""
+        out = self._run("id,text,score\nz1,第一条正常评论内容,3\nz2,第二条正常评论内容,2\n")
+        stats = json.loads((out / "stats.json").read_text(encoding="utf-8"))
+        self.assertEqual(stats["dup_dropped"], 0)
+        self.assertEqual(stats["total_after_denoise"], 2)
+        self.assertEqual(stats["score_sum"], 5)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

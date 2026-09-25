@@ -158,6 +158,22 @@ def main(argv=None):
         })
 
     raw = len(recs)
+
+    # ---- 去重 ----
+    # 抓取端分页游标重叠会产出「同 ID、同内容、同赞数」的完全重复行（实测某 2 万条
+    # 语料中约 22% 的行是纯重复）。不去重会让「评论总数」「总赞数」虚高，并让同一条
+    # 观点被重复计入共识度——后者对「高赞即共识」的判断是致命的。
+    seen_ids = set()
+    deduped = []
+    dup_dropped = 0
+    for x in recs:
+        if x["id"] in seen_ids:
+            dup_dropped += 1
+            continue
+        seen_ids.add(x["id"])
+        deduped.append(x)
+    recs = deduped
+
     recs = [x for x in recs if not is_noise(x["content"])]
     recs.sort(key=lambda x: -x["score"])
 
@@ -187,6 +203,7 @@ def main(argv=None):
     n_sub = sum(1 for x in recs if x["floor"] == "回复")
     stats = {
         "total_raw": raw,
+        "dup_dropped": dup_dropped,
         "total_after_denoise": n,
         "n_top_level": n - n_sub,
         "n_reply": n_sub,

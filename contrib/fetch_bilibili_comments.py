@@ -137,8 +137,14 @@ def get_aid(bvid):
 
 
 def fetch_main(oid, mode=3, max_pages=0):
-    """拉全部一级评论。返回 list[dict(top-level reply json)]。"""
+    """拉全部一级评论。返回 list[dict(top-level reply json)]。
+
+    注意：热度排序(mode=3)下点赞数实时变化，游标翻页会在相邻页之间产生重叠，
+    同一条评论可能被抓到 2 次（实测 2 万条语料里约 22% 是纯重复行）。这里按
+    rpid 去重，保证输出无重复。
+    """
     out = []
+    seen = set()
     nxt = 1
     pages = 0
     while True:
@@ -154,7 +160,18 @@ def fetch_main(oid, mode=3, max_pages=0):
         replies = data.get("data", {}).get("replies") or []
         if not replies:
             break
-        out.extend(replies)
+        fresh = 0
+        for r in replies:
+            rp = r.get("rpid")
+            if rp in seen:
+                continue
+            seen.add(rp)
+            out.append(r)
+            fresh += 1
+        if fresh == 0:
+            # 整页都是重复 → 游标已重叠打滑，继续翻只会空转
+            print("  [warn] 整页重复，提前结束翻页")
+            break
         cursor = data.get("data", {}).get("cursor", {}) or {}
         if cursor.get("is_end") or cursor.get("next") in (None, 0):
             break
