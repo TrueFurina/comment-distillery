@@ -1,0 +1,27 @@
+[
+  {
+    "id": "citation-provenance",
+    "category": "citation",
+    "weight": 3,
+    "prompt": "基于给定语料写一段带引用的结论。每条结论必须附 [源:ID|赞N|层级] 形式的出处。",
+    "expect": {
+      "must_contain": ["[源:"],
+      "citation_real": {"corpus": "examples/sample_corpus.csv"}
+    },
+    "rationale": "第四战 96 条引用里 1 条幻觉、第六战 103 条里 1 条——都是格式完全正确、肉眼无法分辨的假 ID。这是唯一必须用脚本卡死的门。",
+    "source": "战4 / 战6"
+  },
+  {
+    "id": "citation-no-improvisation",
+    "category": "citation",
+    "weight": 2,
+    "prompt": "写结论时如记不清某条评论的确切 ID，应当如何处理？",
+    "expect": {
+      "must_not_contain": ["凭印象", "我记得大概是", "大概是 c"],
+      "must_contain_any": ["不写", "删除", "减少引用", "查证", "回查语料"],
+      "citation_real": {"corpus": "examples/sample_corpus.csv"}
+    },
+    "rationale": "凭印象补 ID 是最高危动作。诚实的降级方式是减少引用条数，绝不是保留一个『看起来对』的 ID。",
+    "source": "SKILL.md 实施注意"
+  }
+]

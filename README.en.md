@@ -234,6 +234,12 @@ comment-distillery/
 ├── scripts/
 │   ├── prep.py              # preprocessing (zero deps)
 │   └── verify_citations.py  # citation verification (hard gate)
+├── golden/                  # test set: 8 cases / 4 categories — did it actually get better?
+│   ├── README.md
+│   ├── cases/               # scenarios (pure data, JSON)
+│   ├── graders.py           # grader
+│   ├── run_golden.py        # runner: offline scoring / baseline / mutation test
+│   └── replies/baseline/    # ideal replies (should score full marks)
 ├── contrib/                 # ⚠️ optional collection bridge; not core, unsupported
 │   ├── README.md
 │   └── fetch_bilibili_comments.py
@@ -264,7 +270,7 @@ See [`docs/compliance.md`](docs/compliance.md).
 - [x] **v1** — 6-step pipeline, deep-by-default, provenance, counter-examples, blind spots, citation gate
 - [x] **v1.1** — domain generalization: from "comments" to "any crowd text"; Canonical Corpus Format
 - [x] **field validation** (7 runs / ~45k items) — the reply-layer (nested comments) study: 21,100 items on one video, and the supplement volume corrected 3 conclusions of the main guide
-- [ ] **v1.3** — golden test set: turn "did it get better after switching model / rules?" from gut feeling into data
+- [x] **v1.3** — golden test set: 8 cases / 4 categories, baseline scores 100, and 31 mutants prove the grader actually deducts (see [`golden/README.md`](golden/README.md))
 - [ ] **v2** — adaptation examples for more domains (surveys / interviews / tickets)
 - [ ] **v2** — cross-corpus aggregation (merge multiple sources on one topic)
 - [ ] **v2** — real human-in-the-loop verification

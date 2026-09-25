@@ -11,7 +11,15 @@
   - 新增 2 个回归测试（`test_duplicate_ids_are_dropped` / `test_dup_dropped_zero_on_clean_corpus`），并做**变异验证**：人为取消去重后测试必须 FAIL。
 
 ### Added
+- **golden 评估集** — 让「换模型 / 改 SKILL.md / 调参数后是否变强」从感觉变成数据。8 个场景分 4 类（`citation` / `coverage` / `counterevidence` / `layering`），每类都有真实出处：
+  - `golden/cases/*.json` — 场景集（纯数据）。**用 JSON 不用 YAML**：本项目零依赖是硬约束，PyYAML 会破承诺。
+  - `golden/graders.py` — 判分器，8 种规则类型；`citation_real` **复用** `scripts/verify_citations.py`，不重写。
+  - `golden/run_golden.py` — 跑分器：`--replies <dir>` **离线判分**（不绑定任何 CLI 或模型）/ `--baseline` / `--self-test` / `--compare`。
+  - **`--self-test` 变异验证**：从 baseline 派生"故意违反"的回复，验证分数必须下降、红线类必须归 0。实测 **31 个变异体全部被正确扣分**。一个永远给满分的判分器能让所有测试通过，却什么都没测出来——这一步就是防它。
+  - 实测：baseline 跑分 **100.0 / 100**；已接入 CI（新增 `--self-test` + `--baseline` 两步）与 `tests/test_golden.py`（12 个用例，全量 39）。
 - `docs/collecting.md` — **语料从哪来**：按平台汇总当下可用的现成采集工具（B站 / YouTube / Reddit / 小红书·抖音·快手·微博·贴吧·知乎 / agent-native 多平台），标注许可证差异与法律风险，并给出"任意工具输出 → CCF"的字段映射方法与选型决策流程。
+- `docs/retrospective.md` — **七战沉淀**：五次被打穿的方法论、7 条可复用量化判据、交付质量门 G1–G7、与 AGI-Distiller 的对照学习、已知局限。
+- `ROADMAP.md` — 长期规划 P0–P5，每阶段含**验收门槛与停止条件**。
 
 ### Validated
 - **第六战**：B站「入站必刷」级视频（3,640 万播放 / 31,145 条评论），一级评论 14,526 条（去重去噪后口径），产出 15 章深度指南。本次为迄今最大规模，并首次在**近乎全正向情绪的语料**上验证"反例对冲"仍需主动开采（详见指南第十四章）。回归用例增至 **27 个**。

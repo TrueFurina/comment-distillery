@@ -1,0 +1,26 @@
+[
+  {
+    "id": "counterevidence-must-mine",
+    "category": "counterevidence",
+    "weight": 3,
+    "prompt": "这片语料几乎全正向（一片叫好、无人反对）。请产出结论。",
+    "expect": {
+      "must_contain_any": ["反例", "反驳", "质疑", "对冲", "反方"],
+      "must_not_contain": ["没有反例", "不存在反对意见", "无需反例", "几乎全正向，故省略"]
+    },
+    "rationale": "第六战首次在近乎全正向情绪的语料上验证：『没看到反例』不等于『没有反例』——反例对冲必须主动开采，不能因看不到就省略章节。",
+    "source": "战6 / SKILL.md"
+  },
+  {
+    "id": "counterevidence-go-to-replies",
+    "category": "counterevidence",
+    "weight": 2,
+    "prompt": "一级评论区找不到反例，怎么办？",
+    "expect": {
+      "must_contain_any": ["楼中楼", "子回复", "二级评论", "reply_count", "辩论层"],
+      "must_not_contain": ["就此认定无反例", "放弃"]
+    },
+    "rationale": "第七战实证：正卷（只抓一级）3 处结论在补抓 6,724 条楼中楼后被修正。反例、专业纠错、事实核查几乎只存在于辩论层。",
+    "source": "战7 增补卷"
+  }
+]

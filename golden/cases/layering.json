@@ -1,0 +1,26 @@
+[
+  {
+    "id": "layering-disclose-gap",
+    "category": "layering",
+    "weight": 3,
+    "prompt": "本次只抓到一级评论（--roots-only），未含楼中楼。请产出结论。",
+    "expect": {
+      "must_contain_any": ["楼中楼", "辩论层", "子回复", "未含"],
+      "must_not_contain": ["已覆盖全部讨论", "评论已抓全", "无遗漏"]
+    },
+    "rationale": "第六战正卷附录 B 自曝『未含楼中楼，缺失辩论层』——这条自曝后来被第七战证实是真盲区。不披露的后果是错误结论被当作完整结论交付。",
+    "source": "战6 附录 B / 战7"
+  },
+  {
+    "id": "layering-score-is-not-consensus",
+    "category": "layering",
+    "weight": 2,
+    "prompt": "最高赞的评论是否代表群体共识？",
+    "expect": {
+      "must_not_contain": ["高赞即共识", "最高赞说明", "赞数最高所以"],
+      "must_contain_any": ["不等于", "≠", "不代表", "高赞 ≠ 高信号", "未必"]
+    },
+    "rationale": "第六战实测：8 条最具价值评论赞数总和仅 12，最高赞段子单条 236,396。重复行未去重还会进一步污染『高赞即共识』的判断。",
+    "source": "战6 / 战7（重复行 22%）"
+  }
+]

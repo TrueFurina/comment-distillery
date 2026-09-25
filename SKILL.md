@@ -180,3 +180,4 @@ id,text,parent_id,is_reply,score,reply_count,created_at,author_id,source
 - **跨盘移动文件不要用 Python `shutil.move`**：Windows 跨盘时它退化为 copy+rmtree，而 rmtree 可能被安全删除钩子拦截 → 报 `[WinError 17] 系统无法将文件移到不同的磁盘驱动器`，**copy 已成功但源侧留下副本**（静默产生重复）。**跨盘移动请用原生 PowerShell `Move-Item`**。
 - **引用机验脚本的两个已知误报**：① markdown 表格里的转义竖线 `\|` 会被当成引用分隔符；② 文档正文里**提及**某个错误 ID（用于说明"这是幻觉"）反而被当成真引用。写指南时避开在这两种位置出现引用格式。
 - **GitHub 推送两条通道，哪条通走哪条**：`github.com:443` 直连可能被阻断（`curl` 到 `api.github.com` 通但 `git` 不通，表现为 fetch `Connection reset`）；改用 **SSH**（`ssh.github.com:443` 与 `github.com:22` 实测均可用）。若走 HTTPS，`gho_` 类 token **必须 URL 内嵌**（`https://x-access-token:${TOKEN}@github.com/...`），用 `Authorization: Bearer` header 会报 invalid。
+- **⚠️ `.gitignore` 里写 `cases/` 会吞掉任意层级的同名目录**：gitignore 中不带前导斜杠的目录名匹配**任意层级**，实测导致 `golden/cases/` 被一并忽略——`git add golden` 静默跳过场景文件，**既不报错也不进暂存区**，只会在核对清单时才发现少了一整个目录。**必须写成 `/cases/` 锚定仓库根**；同理检查 `data/` / `out/` / `tmp/` 等条目。

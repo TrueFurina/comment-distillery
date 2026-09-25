@@ -39,6 +39,12 @@ jobs:
       - name: 回归测试（纯标准库 unittest）
         run: python -m unittest discover -s tests -v
 
+      - name: golden 评估集 —— 变异验证（判分器必须真的能扣分）
+        run: python golden/run_golden.py --self-test
+
+      - name: golden 评估集 —— 基线跑分（场景集与 baseline 自洽）
+        run: python golden/run_golden.py --baseline
+
       - name: 端到端冒烟 —— 预处理合成样例
         run: python scripts/prep.py examples/sample_corpus.csv /tmp/cd-ci
 

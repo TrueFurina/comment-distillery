@@ -30,8 +30,12 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 ├── scripts/prep.py                      （预处理：编码容错 → 去重 → 去噪 → 按赞降序 → 导出）
 ├── scripts/verify_citations.py          （引用幻觉机验，强制质量门）
 ├── contrib/fetch_bilibili_comments.py   （纯标准库 WBI 签名抓取，含去重与退避）
+├── golden/                              （评估集：8 场景 / 4 类，判分器 + 跑分器 + 变异验证）
+├── ROADMAP.md                           （长期规划 P0–P5，含验收门槛与停止条件）
 ├── tests/test_prep.py                   （27 个用例）
+├── tests/test_golden.py                 （12 个用例）
 ├── docs/collecting.md                   （各社区采集工具 + 许可证 + 风险对照）
+├── docs/retrospective.md                （七战沉淀：五次修正 / 7 条判据 / 质量门 G1–G7）
 ├── SKILL.md / README.md / README.en.md / CHANGELOG.md
 │
 └── cases/                               ← 实战档案（已在 .gitignore，仅本地留存）
@@ -159,6 +163,12 @@ REPO="E:/Program/comment-distillery"
 
 # 本地复现 CI
 cd "$REPO" && "$PY" -m compileall -q scripts/ tests/ && "$PY" -m unittest discover -s tests
+
+# golden 评估集（改 SKILL.md / 换模型后是否变强，用它测）
+"$PY" "$REPO/golden/run_golden.py" --self-test          # 变异验证：判分器是否真能扣分（CI 强制）
+"$PY" "$REPO/golden/run_golden.py" --baseline           # 基线跑分：应 100.0
+"$PY" "$REPO/golden/run_golden.py" --replies <dir>      # 离线判分（<case_id>.txt，不绑任何 CLI）
+"$PY" "$REPO/golden/run_golden.py" --compare a.json b.json
 
 # 抓取（纯标准库，无需安装依赖）
 "$PY" "$REPO/contrib/fetch_bilibili_comments.py" BV1xxxxxxxxx out.csv            # 含楼中楼

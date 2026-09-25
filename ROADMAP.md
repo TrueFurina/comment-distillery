@@ -37,23 +37,29 @@
 
 ---
 
-### P1 · 质量可信化（**最高优先级**）
+### P1 · 质量可信化 ✅ 已完成（2026-09-26）
 
-**为什么排第一**：我们现在能证明"引用是真的"，**证明不了"指南变好了"**。换模型 / 改 SKILL.md / 调参数后有没有变强，全靠感觉——七战攒的经验没有可回归的载体，会随会话蒸发。
+**为什么排第一**：只能证明"引用是真的"，**证明不了"指南变好了"**。换模型 / 改 SKILL.md / 调参数后有没有变强，全靠感觉——七战攒的经验没有可回归的载体，会随会话蒸发。
 
-| 交付物 | 说明 |
+| 交付物 | 状态 |
 |---|---|
-| `golden/cases/*.yaml` | 4 类场景：`citation` / `coverage` / `counterevidence` / `layering`，每类 3–5 个 |
-| `golden/graders.py` | 判分器：正则命中 / 产物存在 / 禁区不出现 |
-| `golden/run_golden.py` | 跑分器，**支持 `--replies <dir>` 离线判分**（不绑定任何 CLI 或模型） |
-| `golden/results/*.json` | 报告落盘，支持跨版本对比 |
+| `golden/cases/*.json` | ✅ 8 个场景，4 类（`citation` / `coverage` / `counterevidence` / `layering`） |
+| `golden/graders.py` | ✅ 8 种规则类型；`citation_real` 复用 `scripts/verify_citations.py`，不重写 |
+| `golden/run_golden.py` | ✅ `--replies` 离线判分（不绑任何 CLI/模型）/ `--baseline` / `--self-test` / `--compare` |
+| `golden/replies/baseline/` | ✅ 8 份理想回复 |
+| `tests/test_golden.py` | ✅ 12 个用例，CI 自动跑（全量 39 → 27 + 12） |
+| CI 接入 | ✅ 新增两步：`--self-test` + `--baseline` |
 
-**验收门槛（可机验）**：
-1. 首次跑分报告落盘，四类均有非零样本；
-2. 人为破坏一份回复（删掉覆盖率声明 / 塞一个假 ID）后**分数必须下降**——变异验证，否则判分器无效；
-3. 能在两个不同模型/版本的回复上跑出可比分数。
+**验收结果（实测）**：
+1. baseline 跑分 **100.0 / 100**（8/8 满分），报告落盘 `golden/results/`；
+2. **变异验证 31 个变异体全部被正确扣分**——删关键词必须扣分、插禁词与假引用 ID 必须归 0；
+3. CI 三步 Python（3.10 / 3.12 / 3.13）均可跑（纯标准库）。
 
-**停止条件**：若某类场景的判据无法自动化（例如"结论质量"），**降级为人工 checklist，不硬做自动化**。宁可少一类，不要假分数。
+**踩到并记录的坑**：禁词是朴素字符串匹配，**否定语境会误伤**——baseline 写"绝不能**凭印象**补一个 ID"被判红线（语义完全正确）。已写进 `golden/README.md` 已知局限第 1 条。
+
+**格式偏离**：场景集用 **JSON 而非 YAML**。AGI-Distiller 用 YAML，但本项目零依赖是硬约束，PyYAML 会破承诺——这个偏离必须保留。
+
+**剩余**（P1 未覆盖的，已并入 P5）：判分器**不判推断质量**，见 `docs/retrospective.md` §7-3。
 
 ---
 

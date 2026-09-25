@@ -10,7 +10,8 @@ output/
 distill/
 *.corpus.csv
 # 实战档案目录（各战语料 + 深度指南 + 中间产物），仅本地留存
-cases/
+# ⚠️ 必须锚定仓库根：写成 `cases/` 会连带忽略任意层级的同名目录（实测吞掉了 golden/cases/）
+/cases/
 
 # ── 凭证：绝不提交 ──
 .env
@@ -48,3 +49,5 @@ tmp/
 
 # ── 会话 / 项目记忆（WorkBuddy 本地状态，不进仓库）──
 .workbuddy/
+# golden 跑分报告（随时可重生成，不进仓库）
+golden/results/

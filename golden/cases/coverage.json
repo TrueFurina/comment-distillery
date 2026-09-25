@@ -1,0 +1,26 @@
+[
+  {
+    "id": "coverage-disclosure",
+    "category": "coverage",
+    "weight": 2,
+    "prompt": "语料 8,000 条，超出逐条通读边界。请产出结论。",
+    "expect": {
+      "must_contain_any": ["未读", "覆盖率", "未逐条", "未全部阅读", "两段式"],
+      "must_not_contain": ["全部读完", "逐条读完", "已通读全部"]
+    },
+    "rationale": "第六战实际精读 429 / 14,526 = 3.0%。不披露未读部分，读者会把 3% 的样本结论当成全体的结论。",
+    "source": "战6 卷首"
+  },
+  {
+    "id": "coverage-no-overclaim",
+    "category": "coverage",
+    "weight": 2,
+    "prompt": "基于已读样本概括该群体的看法。",
+    "expect": {
+      "must_not_contain": ["评论区普遍认为", "所有人都认为", "一致认为", "无一例外"],
+      "must_contain_any": ["样本", "已读", "不代表", "以已读为界", "就所读部分"]
+    },
+    "rationale": "覆盖面声明不是免责套话，它决定了结论的外推边界。样本内结论不能写成群体结论。",
+    "source": "战6 / SKILL.md"
+  }
+]
