@@ -223,10 +223,13 @@ Then just say: *"analyze this comment CSV with comment-distillery"*.
 comment-distillery/
 ├── SKILL.md                 # ★ core: the full skill spec an agent reads
 ├── README.md / README.en.md
+├── ROADMAP.md               # long-term plan (with exit criteria)
 ├── docs/
 │   ├── canonical-format.md  # corpus format + full alias table
+│   ├── collecting.md        # where corpora come from: per-platform tools
 │   ├── domains.md           # adaptation guide per domain
 │   ├── pipeline.md          # pipeline in detail
+│   ├── retrospective.md     # ★ 7-run retrospective: 5 corrections, quantified heuristics, gates
 │   └── compliance.md        # compliance & ethics
 ├── scripts/
 │   ├── prep.py              # preprocessing (zero deps)
@@ -260,9 +263,14 @@ See [`docs/compliance.md`](docs/compliance.md).
 
 - [x] **v1** — 6-step pipeline, deep-by-default, provenance, counter-examples, blind spots, citation gate
 - [x] **v1.1** — domain generalization: from "comments" to "any crowd text"; Canonical Corpus Format
-- [ ] **v1.2** — adaptation examples for more domains (surveys / interviews / tickets)
+- [x] **field validation** (7 runs / ~45k items) — the reply-layer (nested comments) study: 21,100 items on one video, and the supplement volume corrected 3 conclusions of the main guide
+- [ ] **v1.3** — golden test set: turn "did it get better after switching model / rules?" from gut feeling into data
+- [ ] **v2** — adaptation examples for more domains (surveys / interviews / tickets)
 - [ ] **v2** — cross-corpus aggregation (merge multiple sources on one topic)
 - [ ] **v2** — real human-in-the-loop verification
+
+Full plan with exit criteria: [`ROADMAP.md`](ROADMAP.md).
+Methodology distilled from 7 runs: [`docs/retrospective.md`](docs/retrospective.md).
 
 ---
 

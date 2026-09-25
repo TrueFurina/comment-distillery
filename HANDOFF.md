@@ -15,7 +15,9 @@
 - 做 **L3 建设性综合**
 
 **仓库**：https://github.com/TrueFurina/comment-distillery （public / MIT）
-**状态**：六战实战验证完毕，CI 全绿。
+**状态**：七战实战验证完毕，CI 全绿（`0f95ee9` success，3 个 Python 版本）。
+
+**冷启动读这三份**：`HANDOFF.md`（本文，接手）→ [`ROADMAP.md`](ROADMAP.md)（下一步做什么）→ [`docs/retrospective.md`](docs/retrospective.md)（七战方法论沉淀与量化判据）。
 
 ---
 
@@ -23,7 +25,7 @@
 
 ```
 E:\Program\comment-distillery\           ← 项目根 = git 仓库根
-├── .git/                                （HEAD: cef6a6b，remote: SSH）
+├── .git/                                （HEAD: 0f95ee9，remote: SSH）
 ├── .github/workflows/ci.yml            （3 个 Python 版本，5 步：compileall/零依赖守卫/unittest/prep 冒烟/引用机验冒烟）
 ├── scripts/prep.py                      （预处理：编码容错 → 去重 → 去噪 → 按赞降序 → 导出）
 ├── scripts/verify_citations.py          （引用幻觉机验，强制质量门）
@@ -42,15 +44,14 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
         ├── 评论指南Skill方案论述.md
         ├── comment-distillery开源冲刺路线图.md
         ├── memory-snapshot/            （上一会话工作记忆快照）
-        ├── migrate_to_E.py             （本次迁移脚本）
-        └── _source-git-leftover/       （迁移时的 .git 副本，保留未删）
+        └── migrate_to_E.py             （迁移脚本，已完成；源侧 .git 副本已于 2026-09-26 清理，比对确认独有提交 0）
 ```
 
 **Skill 副本仍在 `C:\Users\Lenovo\.workbuddy\skills\comment-distillery\`**（WorkBuddy 从这里加载，**不要移动**）。仓库是 source of truth，改完用脚本同步过去。
 
 ---
 
-## 三、六战档案索引
+## 三、七战档案索引
 
 | # | 规模 | 语料 | 产出 | 关键验证 |
 |---|---|---|---|---|
@@ -59,7 +60,8 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 | 3 | 5,052 | "清北 discouraged" | 13 章 | **楼中楼捞出一级缺失的 7 个议题，4 条直接对冲前文结论** |
 | 4 | 8,941 | 薪资 903 + 43 岁被裁 8038 | 23 章 | **多语料合并产出单语料看不到的洞察**；**引用机验首次抓到幻觉引用** |
 | 5 | — | examples/ 合成样例 | 端到端回归 | CI 自动跑 |
-| 6 | 21,100 | 《火柴人 VS 数学》 | **正卷 15 章** + **增补卷 10 章（辩论层）** | **抓到并修复 22% 重复行缺陷**；**补抓楼中楼后修正了正卷 3 条结论** |
+| 6 | 21,100（一级去重后 14,526） | 《火柴人 VS 数学》 | **正卷 15 章** | **抓到并修复 22% 重复行缺陷**；首次在近乎全正向情绪语料上验证"反例对冲"仍需主动开采 |
+| 7 | **+6,724（楼中楼）** | 同上视频 · 补抓辩论层 | **增补卷 10 章 / 31.0 KB** | **修正正卷 3 条结论**；量化注意力漂移（语法争论楼 2,867 赞 ＝ 实质教育辩论 1,142 赞的 **2.5 倍**）；引用机验 **54 条 / 0 幻觉** |
 
 ---
 
@@ -118,22 +120,28 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 ## 六、仓库状态
 
 ```
-HEAD     cef6a6b  docs(skill): 首测数据集补第六战记录
+HEAD     0f95ee9  docs: 补第七战（楼中楼辩论层）+ 坑清单固化 + 项目交接手册
 origin   git@github.com:TrueFurina/comment-distillery.git   (SSH)
-CI       .github/workflows/ci.yml  5 步全绿
+CI       .github/workflows/ci.yml  5 步全绿（0f95ee9 / cef6a6b / d52c3e5 三次均 success）
+迁移     E:\Program\comment-distillery，cases/ 已 gitignore，仅本地留存
 ```
 
-**待办**：第六战增补卷（辩论层）尚未提交进仓库的 `cases/`（该目录已 gitignore，不需要提交）。**本次迁移后需重新跑一次 CI 确认**。
+**已确认（2026-09-26 核验）**：迁移后 CI 重跑通过；源侧 `.git` 副本已清理（比对确认独有提交 0）；`git fsck --full` 干净。
 
 ---
 
 ## 七、下一步（Open Items）
 
-1. **第六战增补卷**：已完成并机验（54 引用 / 0 幻觉）。它修正了正卷 3 条结论，建议回填正卷的交叉引用（正卷目前未指向增补卷）。
-2. **跨平台对照**：本视频在 YouTube 有大量评论，楼中楼里已见观众搬运英文解析。做跨平台对照是首要待补项。
-3. **`docs/collecting.md` 扩充**：目前以工具清单为主，可补"输出 → CCF 字段映射"的完整示例。
-4. **真·人工校验 loop**：路线图里的 planned 项，尚未实现。
-5. **反例开采** vs **深度解析开采**：建议在 SKILL.md 里把楼中楼的两个用途显式拆开（第六战增补卷第八章的发现）。
+**长期规划已单独成文 → [`ROADMAP.md`](ROADMAP.md)**（P0 收尾 ✅ / P1 golden 评估集 / P2 去过拟合 / P3 分发 / P4 场景升维 / P5 研究问题）。以下为状态更新：
+
+1. ✅ **正卷交叉引用**已回填（2026-09-26）：正卷卷首新增"本卷 3 处结论/引用在增补卷中被修正"提示块，指向第五章 / 7.2 节 / 第十四章。
+2. ⏸ **跨平台对照**：本视频在 YouTube 有大量评论，楼中楼里已见观众搬运英文解析。**已列入 P5 长线，且当前停止新增抓取**（语料已足够）。
+3. ⏸ **`docs/collecting.md` 扩充**：可补"输出 → CCF 字段映射"的完整示例。优先级低于 P1。
+4. ⏸ **真·人工校验 loop**：列入 P5。现状澄清——现有 7 道门（见 `docs/retrospective.md` §4）**只卡形式与引用真实性，不检验推断质量**。
+5. ✅ **反例开采 vs 深度解析开采**：SKILL.md 已拆开（"楼中楼的两个用途要分开开采"）。
+6. 🆕 **七战沉淀件**：`docs/retrospective.md` —— 五次方法论修正 + 7 条量化判据 + 交付质量门 G1–G7 + 与 AGI-Distiller 对照 + 已知局限。
+
+**当前第一优先级（P1）**：建立 golden 评估集。理由——现在能证明"引用是真的"，**证明不了"指南变好了"**；换模型/改 SKILL 后是否变强全靠感觉。设计见 `docs/retrospective.md` §6。
 
 ---
 

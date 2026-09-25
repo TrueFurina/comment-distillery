@@ -225,11 +225,13 @@ cp -r comment-distillery ~/.claude/skills/     # 路径按你的 agent 调整
 comment-distillery/
 ├── SKILL.md                 # ★ 核心：给 agent 读的完整技能说明
 ├── README.md / README.en.md # 人读的说明
+├── ROADMAP.md               # 长期规划（含验收门槛与停止条件）
 ├── docs/
 │   ├── canonical-format.md  # 统一语料格式 + 字段别名全表
 │   ├── collecting.md        # 语料从哪来：各平台现成采集工具对照
 │   ├── domains.md           # 各语料域的适配指南
 │   ├── pipeline.md          # 6 步流水线详解
+│   ├── retrospective.md     # ★ 七战沉淀：五次方法论修正 + 量化判据 + 交付质量门
 │   └── compliance.md        # 合规与伦理边界
 ├── scripts/
 │   ├── prep.py              # 预处理（零依赖）
@@ -263,9 +265,14 @@ comment-distillery/
 
 - [x] **v1** — 6 步流水线、深度版默认、引用溯源、反例对冲、盲区说明、引用机验
 - [x] **v1.1** — 场景升维：从"评论"扩为"任何群体文本"，统一语料格式 CCF
-- [ ] **v1.2** — 更多语料域的适配示例（问卷 / 访谈 / 工单）
+- [x] **实战**（七战 / 约 4.5 万条）— 辩论层（楼中楼）补抓实证：单视频 21,100 条，增补卷修正正卷 3 处结论
+- [ ] **v1.3** — golden 评估集：让"换模型 / 改规则后是否变强"从感觉变成数据
+- [ ] **v2** — 更多语料域的适配示例（问卷 / 访谈 / 工单）
 - [ ] **v2** — 跨语料聚合（同一议题的多来源合并分析）
 - [ ] **v2** — 真·人工校验 loop（关键结论的交互式确认）
+
+完整规划（含每阶段验收门槛与停止条件）见 [`ROADMAP.md`](ROADMAP.md)；
+七战方法论沉淀（五次修正、7 条量化判据、交付质量门 G1–G7）见 [`docs/retrospective.md`](docs/retrospective.md)。
 
 ---
 

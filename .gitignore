@@ -45,3 +45,6 @@ Thumbs.db
 tmp/
 *.tmp
 *.log
+
+# ── 会话 / 项目记忆（WorkBuddy 本地状态，不进仓库）──
+.workbuddy/
