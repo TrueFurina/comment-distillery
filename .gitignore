@@ -9,6 +9,8 @@ out/
 output/
 distill/
 *.corpus.csv
+# 实战档案目录（各战语料 + 深度指南 + 中间产物），仅本地留存
+cases/
 
 # ── 凭证：绝不提交 ──
 .env
