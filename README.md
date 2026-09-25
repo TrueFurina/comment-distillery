@@ -153,6 +153,21 @@ id,text,parent_id,is_reply,score,reply_count,created_at,author_id,source
 
 > 平台中立不等于"写一堆平台适配器"，而是**把差异关在输入层**，让核心流水线保持单一。
 
+### 语料从哪来？——本项目不做采集
+
+采集是一个独立且成熟的生态，本项目**刻意不重复造**。按语料域选现成工具，导出后对齐上面的格式即可：
+
+| 平台 | 现成工具（截至 2026-09） |
+|---|---|
+| B站 | BilibiliCrawler（桌面 GUI）、MediaCrawler、本仓库 `contrib/` |
+| YouTube | youtube-comment-downloader（MIT，免 API Key）、youtube-comment-suite（GUI） |
+| Reddit | PRAW / URS（走官方 API；Pushshift 与 `.json` 端点已不可用） |
+| 小红书·抖音·快手·微博·贴吧·知乎 | MediaCrawler（⚠️ **非商用许可**） |
+| 多平台（agent-native） | Agent-Reach |
+
+**选型前务必看两张表**：许可证差异（MediaCrawler 是明确非商用）与法律风险（Reddit 已在 2025 年就未授权抓取提起诉讼）。
+完整的工具对比、风险提示与"任意工具 → 本项目格式"的映射方法，见 [`docs/collecting.md`](docs/collecting.md)。
+
 ---
 
 ## 6 步流水线
@@ -212,6 +227,7 @@ comment-distillery/
 ├── README.md / README.en.md # 人读的说明
 ├── docs/
 │   ├── canonical-format.md  # 统一语料格式 + 字段别名全表
+│   ├── collecting.md        # 语料从哪来：各平台现成采集工具对照
 │   ├── domains.md           # 各语料域的适配指南
 │   ├── pipeline.md          # 6 步流水线详解
 │   └── compliance.md        # 合规与伦理边界

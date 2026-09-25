@@ -154,6 +154,21 @@ id,text,parent_id,is_reply,score,reply_count,created_at,author_id,source
 
 > Platform neutrality isn't "writing a pile of adapters" — it's **confining the differences to the input layer** and keeping the core pipeline singular.
 
+### Where does the corpus come from? — we don't collect it
+
+Collection is its own mature ecosystem, and this project deliberately **does not rebuild it**. Pick an existing tool per platform, then map its export to the format above:
+
+| Platform | Existing tools (as of 2026-09) |
+|---|---|
+| Bilibili | BilibiliCrawler (GUI), MediaCrawler, this repo's `contrib/` |
+| YouTube | youtube-comment-downloader (MIT, no API key), youtube-comment-suite (GUI) |
+| Reddit | PRAW / URS (official API; Pushshift and `.json` endpoints are dead) |
+| Xiaohongshu · Douyin · Kuaishou · Weibo · Tieba · Zhihu | MediaCrawler (⚠️ **non-commercial license**) |
+| Many platforms (agent-native) | Agent-Reach |
+
+**Check two things before choosing**: license terms (MediaCrawler is explicitly non-commercial) and legal exposure (Reddit filed complaints over unauthorized scraping in 2025).
+Full comparison, risk notes, and the "any tool → our format" mapping are in [`docs/collecting.md`](docs/collecting.md).
+
 ---
 
 ## The 6-step pipeline
