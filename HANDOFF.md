@@ -15,7 +15,7 @@
 - 做 **L3 建设性综合**
 
 **仓库**：https://github.com/TrueFurina/comment-distillery （public / MIT）
-**状态**：七战实战验证完毕，P0/P1/P2 已闭环，CI 全绿（`1e63c09` success，3 个 Python 版本）。
+**状态**：七战实战验证完毕，P0/P1/P2 已闭环、P3 适配部分完成，CI 全绿（`bbda7d0` success，3 个 Python 版本）。
 
 **冷启动读这三份**：`HANDOFF.md`（本文，接手）→ [`ROADMAP.md`](ROADMAP.md)（下一步做什么）→ [`docs/retrospective.md`](docs/retrospective.md)（七战方法论沉淀与量化判据）。
 
@@ -25,7 +25,7 @@
 
 ```
 E:\Program\comment-distillery\           ← 项目根 = git 仓库根
-├── .git/                                （HEAD: 1e63c09，remote: SSH）
+├── .git/                                （HEAD: bbda7d0，remote: SSH）
 ├── .github/workflows/ci.yml            （3 个 Python 版本，7 步：compileall/零依赖守卫/unittest/无裸铁律×2/golden×2/端到端冒烟）
 ├── scripts/prep.py                      （预处理：编码容错 → 去重 → 去噪 → 按赞降序 → 导出）
 ├── scripts/verify_citations.py          （引用幻觉机验，强制质量门）
@@ -40,6 +40,7 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 ├── docs/retrospective.md                （七战沉淀：五次修正 / 7 条判据 / 质量门 G1–G7）
 ├── docs/rule-provenance.md              （规则溯源：9 铁律 / 5 待复现 / 7 环境事实，附复现判据）
 ├── docs/overturned.md                   （被推翻结论台账 OT-1…OT-5，含"再次推翻的条件"）
+├── docs/distribution.md                 （★ 分发作战清单：gh 命令 / awesome PR 文案 / 帖子骨架）
 ├── SKILL.md / README.md / README.en.md / CHANGELOG.md
 │
 └── cases/                               ← 实战档案（已在 .gitignore，仅本地留存）
@@ -128,9 +129,10 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 ## 六、仓库状态
 
 ```
-HEAD     1e63c09  docs(P2): 方法论去过拟合——规则溯源台账 + 无裸铁律机验
+HEAD     bbda7d0  feat(P3): 分发适配——npx skills add 可用 + README 真实产出片段
 origin   git@github.com:TrueFurina/comment-distillery.git   (SSH)
-CI       .github/workflows/ci.yml  7 步全绿（1e63c09 / cf3d8a4 / 5ab6e38 均 success）
+CI       .github/workflows/ci.yml  7 步全绿（bbda7d0 / 1e63c09 / cf3d8a4 均 success）
+安装     npx skills add TrueFurina/comment-distillery   （--list 实测 Found 1 skill）
 迁移     E:\Program\comment-distillery，cases/ 已 gitignore，仅本地留存
 ```
 
@@ -150,8 +152,9 @@ CI       .github/workflows/ci.yml  7 步全绿（1e63c09 / cf3d8a4 / 5ab6e38 均
 6. ✅ **七战沉淀件**：`docs/retrospective.md` —— 五次方法论修正 + 7 条量化判据 + 交付质量门 G1–G7 + 与 AGI-Distiller 对照 + 已知局限。
 7. ✅ **P1 golden 评估集**（2026-09-26）：8 场景 / 4 类，baseline 100.0，变异 31/31 拦截。
 8. 🆕 **P2 方法论去过拟合**（2026-09-26）：`docs/rule-provenance.md` + `docs/overturned.md` + `scripts/check_rule_tags.py`（CI 强制）。**读规则时注意：带 `[战N·待复现]` 的是假设，不是规律。**
+9. 🆕 **P3 分发**（2026-09-26 进行中）：`npx skills add` 适配已完成（实测 Found 1 skill）+ README 真实产出片段已上。**剩余三项必须由你本人执行**——GitHub metadata（`docs/distribution.md` §1-A 有现成 `gh repo edit` 命令）/ awesome 列表 PR（§1-B 有现成英文文案）/ 社区发帖（§1-C 有骨架）。我无账号、不代发公开内容。
 
-**当前第一优先级（P3 分发）**：P1/P2 已闭环——现在既能证明"引用是真的"，也能证明"改规则后是否变强"，且单战证据不再冒充铁律。下一步是让更多人知道，见 `ROADMAP.md` P3。
+**当前第一优先级（P3 剩余分发动作）**：P1/P2 已闭环——既能证明"引用是真的"，也能证明"改规则后是否变强"，且单战证据不再冒充铁律。**卡在"需要你的账号"这一步**，清单与文案全部就位，见 `docs/distribution.md`。
 
 ---
 
