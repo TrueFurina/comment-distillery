@@ -86,17 +86,20 @@
 
 ---
 
-### P3 · 分发（决定外部影响力）
+### P3 · 分发（决定外部影响力）— 🟡 进行中
 
-沿用冲刺路线图 M2，按 ROI 排序：
+沿用冲刺路线图 M2，按 ROI 排序。**完整作战清单（含可直接复制的 PR 文案 / 帖子草稿）见 `docs/distribution.md`。**
 
-| 优先级 | 动作 | 验收 |
-|---|---|---|
-| P0 | `npx skills add` 适配（vercel-labs/skills） | 一条命令可安装 |
-| P0 | awesome 列表 PR（`awesome-claude-skills` 等） | 至少 1 个合入 |
-| P1 | 英文 README 第一屏放**真实输出片段** | 3 秒能看懂产出是什么 |
-| P1 | Reddit `r/ClaudeAI` / `r/LocalLLaMA` Show & Tell + 中文社区同步 | 各发一轮 |
-| P2 | 方法论长文（"Why comment sections are the most underrated dataset"） | 长尾搜索流量 |
+| 优先级 | 动作 | 验收 | 状态 |
+|---|---|---|---|
+| P0 | `npx skills add` 适配（vercel-labs/skills） | 一条命令可安装 | ✅ **已完成**（`--list` 实测 Found 1 skill）；frontmatter 已改触发式 + `metadata.version` |
+| P1 | 英文 README 第一屏放**真实输出片段** | 3 秒能看懂产出是什么 | ✅ **已完成**（含引用/反例/行动清单/自曝盲区四段真实产出） |
+| P1 | GitHub 仓库元数据（description + topics） | `gh repo view` 可见 | ⏳ **需你执行**（`docs/distribution.md` §1-A 有现成命令） |
+| P1 | awesome 列表 PR（ComposioHQ / VoltAgent / m-fyi） | 至少 1 个合入 | ⏳ **需你执行**（§1-B 有现成英文 PR 文案） |
+| P2 | Reddit `r/ClaudeAI` / `r/LocalLLaMA` Show & Tell + 中文社区同步 | 各发一轮 | ⏳ **需你执行**（§1-C 有骨架） |
+| P3 | 方法论长文（"Why comment sections are the most underrated dataset"） | 长尾搜索流量 | ⏳ 素材已就位（§1-D） |
+
+**适配时确认的关键规范**：仓库根 `SKILL.md` 即构成单 skill 仓库、无需 manifest；⚠️ **绝不能在其旁边再建 `skills/` 目录**（会短路发现）——保持现状，不要重构成 `skills/comment-distillery/`。
 
 **停止条件**：若 3 个月内 awesome PR 全被拒、且社区零反馈 → **回到定位重新评估**，不继续堆渠道动作。
 

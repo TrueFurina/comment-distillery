@@ -22,6 +22,45 @@ An **Agent Skill + zero-dependency toolchain** that distills **a crowd's unstruc
 
 ---
 
+## What the output actually looks like
+
+Excerpt from [`examples/sample_guide.md`](examples/sample_guide.md) (**synthetic corpus**: 26 items → 23 after denoising). Three things to notice: **every claim traces back to a concrete item**, **every consensus is paired with a counter-example**, and **it discloses where it might be wrong**.
+
+```markdown
+### Topic A: Is the learning curve a design flaw?
+
+**Consensus side**
+> "Beginners have to grasp three abstract concepts before their first
+>  command runs. For non-technical users that's a walk-away-level
+>  barrier." [src:c1006|score7|root]
+
+**Counter-example hedge**
+> "A steep curve isn't bad design. Much of the complexity in pro tools
+>  is forced by real requirements. Hiding it just means users hit it
+>  later — it doesn't disappear." [src:c1010|score58|reply]
+
+Note: the most important framing in the whole thread has 2 points,
+while the highest-scored item (842) is "lol first". That is the
+"high score != high signal" problem, in the wild.
+```
+
+**Action checklist (excerpt)**
+
+| When | Action |
+|---|---|
+| This week | Decide whether you're asking "worth learning?" or "worth switching?" — the answers can be opposites `[src:c1020\|score2\|root]` |
+| This month | Assess maintainer sustainability (response latency, commit-frequency trend), not just the feature list `[src:c1012\|score4\|root]` |
+
+**The blind spots it states about itself**
+
+> - **Score bias**: score = what's easiest to upvote, not what most people agree with.
+> - **Sample bias**: 23 items carry no statistical representativeness.
+> - **Data nature**: synthetic — contains no real user content.
+
+> Every `[src:…]` above is machine-checked against the corpus by `verify_citations.py` — **a non-empty diff blocks delivery**. That gate has caught 2 hallucinated citations in our own guides.
+
+---
+
 ## Why another wheel?
 
 Because this space has three layers, the first two are saturated, and the third is barely explored:
@@ -68,6 +107,16 @@ These separate this project from "yet another summarizer" — **never to be cut*
 ---
 
 ## Quick start
+
+### Install into your agent (one command)
+
+```bash
+npx skills add TrueFurina/comment-distillery
+```
+
+Works with Claude Code / Cursor / Codex / Windsurf / Copilot and 40+ other agents (`vercel-labs/skills` resolves the install path automatically). Browse without installing: `npx skills add TrueFurina/comment-distillery --list`.
+
+### Or use the scripts directly
 
 **Zero dependencies — no `pip install` needed.** Python 3.8+ is enough.
 
@@ -232,6 +281,7 @@ comment-distillery/
 │   ├── retrospective.md     # ★ 7-run retrospective: 5 corrections, quantified heuristics, gates
 │   ├── rule-provenance.md   # ★ provenance: which run validated which rule; 1-run evidence = "pending"
 │   ├── overturned.md        # ★ overturned claims log (incl. what would overturn them again)
+│   ├── distribution.md      # distribution playbook (copy-paste PR / post drafts)
 │   └── compliance.md        # compliance & ethics
 ├── scripts/
 │   ├── prep.py              # preprocessing (zero deps)
