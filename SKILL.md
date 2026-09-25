@@ -10,7 +10,7 @@ agent_created: true
 > 把一堆群体文本，炼成一份有据可查的行动指南。
 
 - **开源仓库**：<https://github.com/TrueFurina/comment-distillery>（MIT，零依赖）
-- **详细文档**：`docs/` —— 格式规范 `canonical-format.md` / 语料域适配 `domains.md` / 流水线 `pipeline.md` / 合规 `compliance.md`
+- **详细文档**：`docs/` —— 格式规范 `canonical-format.md` / **语料从哪来 `collecting.md`** / 语料域适配 `domains.md` / 流水线 `pipeline.md` / 合规 `compliance.md`
 - **人读说明**：`README.md`（中文）、`README.en.md`（English）
 - **可选采集桥接**：`contrib/`（非核心、无支持；合规责任自负）
 
@@ -44,6 +44,10 @@ agent_created: true
    - 用法：`python fetch_bilibili_comments.py <BV号或链接> [out.csv] [--roots-only]`
    - `--roots-only`：只拉一级评论、跳过楼中楼。**追求时效与稳定性时优先用它**——一级评论是观点主体，而子回复接口限流风险最高。实测同一视频：全量抓取 5 分钟仍未完成，roots-only 约 1 分钟拿满 1501 条。
    - ⚠️ `contrib/` 属**非核心可选件**，不在主仓支持范围内，合规责任由使用者自负（见 `contrib/README.md`）。
+
+> **语料从哪来？** 本项目**不做采集**。B站 / YouTube / Reddit / 小红书 / 抖音 / 知乎 等各平台都有成熟的现成工具，
+> 选型对照与"任意工具输出 → CCF"的映射方法见 `docs/collecting.md`（含许可证差异与法律风险提示）。
+> 用户手上通常已经有爬好的 CSV——**优先直接要文件，不要自己去爬**。
 
 ### Canonical Corpus Format（CCF，统一语料格式）
 
