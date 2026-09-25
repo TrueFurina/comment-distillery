@@ -9,6 +9,11 @@ agent_created: true
 > **Turn a pile of crowd text into an evidence-cited action guide.**
 > 把一堆群体文本，炼成一份有据可查的行动指南。
 
+- **开源仓库**：<https://github.com/TrueFurina/comment-distillery>（MIT，零依赖）
+- **详细文档**：`docs/` —— 格式规范 `canonical-format.md` / 语料域适配 `domains.md` / 流水线 `pipeline.md` / 合规 `compliance.md`
+- **人读说明**：`README.md`（中文）、`README.en.md`（English）
+- **可选采集桥接**：`contrib/`（非核心、无支持；合规责任自负）
+
 ## 何时使用
 
 - 用户手里有一份**群体文本语料**（评论/问卷/访谈/反馈/讨论记录），或给了视频链接，想要"有建设性的深度分析"，而不是情绪饼图 / 词云摘要。
