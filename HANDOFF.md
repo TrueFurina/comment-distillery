@@ -15,7 +15,7 @@
 - 做 **L3 建设性综合**
 
 **仓库**：https://github.com/TrueFurina/comment-distillery （public / MIT）
-**状态**：七战实战验证完毕，CI 全绿（`0f95ee9` success，3 个 Python 版本）。
+**状态**：七战实战验证完毕，P0/P1/P2 已闭环，CI 全绿（`1e63c09` success，3 个 Python 版本）。
 
 **冷启动读这三份**：`HANDOFF.md`（本文，接手）→ [`ROADMAP.md`](ROADMAP.md)（下一步做什么）→ [`docs/retrospective.md`](docs/retrospective.md)（七战方法论沉淀与量化判据）。
 
@@ -25,7 +25,7 @@
 
 ```
 E:\Program\comment-distillery\           ← 项目根 = git 仓库根
-├── .git/                                （HEAD: 0f95ee9，remote: SSH）
+├── .git/                                （HEAD: 1e63c09，remote: SSH）
 ├── .github/workflows/ci.yml            （3 个 Python 版本，7 步：compileall/零依赖守卫/unittest/无裸铁律×2/golden×2/端到端冒烟）
 ├── scripts/prep.py                      （预处理：编码容错 → 去重 → 去噪 → 按赞降序 → 导出）
 ├── scripts/verify_citations.py          （引用幻觉机验，强制质量门）
@@ -128,9 +128,9 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 ## 六、仓库状态
 
 ```
-HEAD     0f95ee9  docs: 补第七战（楼中楼辩论层）+ 坑清单固化 + 项目交接手册
+HEAD     1e63c09  docs(P2): 方法论去过拟合——规则溯源台账 + 无裸铁律机验
 origin   git@github.com:TrueFurina/comment-distillery.git   (SSH)
-CI       .github/workflows/ci.yml  5 步全绿（0f95ee9 / cef6a6b / d52c3e5 三次均 success）
+CI       .github/workflows/ci.yml  7 步全绿（1e63c09 / cf3d8a4 / 5ab6e38 均 success）
 迁移     E:\Program\comment-distillery，cases/ 已 gitignore，仅本地留存
 ```
 
