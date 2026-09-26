@@ -15,6 +15,7 @@
 | SKILL.md frontmatter 规范 | ✅ | description 改为**触发式**（"当用户说…时使用"），新增 `metadata.version` |
 | 英文 README 第一屏真实输出片段 | ✅ | 新增「What the output actually looks like」——引用溯源 / 反例对冲 / 行动清单 / 自曝盲区，四段全取真实产出 |
 | 中文 README 同步 | ✅ | 同上，加「真实产出长什么样」+ 安装命令 |
+| GitHub 仓库元数据 | 🟡 | description ✅ 已设；12 个 topics ✅ 但缺 `agent-skills` / `claude-skills` / `skills` / `ai-agents`——**见 §1-A 的补齐命令** |
 
 **适配时确认的关键规范**（来自 vercel-labs/skills 生态文档，非猜测）：
 
@@ -28,9 +29,29 @@
 
 ## 1. 需要你执行的动作（按 ROI 排序）
 
-### A. GitHub 仓库元数据（2 分钟，最高 ROI）
+### A. GitHub 仓库元数据 — 🟡 已执行一半，**需补 4 个 topics**
 
-`npx skills find` 与 GitHub 搜索都读这些字段。本地改不了，跑一次即可：
+`npx skills find` 与 GitHub 搜索都读这些字段。
+
+**执行记录（2026-09-26 直连 GitHub API 实测）**：
+
+- `description` ✅ **已设**。实际文案比本文原建议更完整，**保持不动**；
+- `topics` 🟡 **已有 12 个**，但与本文原建议的集合不一致——关键是实际写成了 `agentskills`（**无连字符**），而生态里流通的检索词是 `agent-skills`，**两者在 GitHub 搜索里不等价**。
+
+**因此只需补这 4 个**（GitHub 上限 20 个 topics，12 → 16，安全）：
+
+```bash
+gh repo edit TrueFurina/comment-distillery \
+  --add-topic agent-skills \
+  --add-topic claude-skills \
+  --add-topic skills \
+  --add-topic ai-agents
+```
+
+**验收**：`gh repo view TrueFurina/comment-distillery --json description,repositoryTopics` 里能**同时**看到 `agent-skills` 与 `claude-skills`。
+
+<details>
+<summary>原始建议命令（含 description 重设）— 已评估，<b>不建议执行</b>，仅存档</summary>
 
 ```bash
 gh repo edit TrueFurina/comment-distillery \
@@ -45,7 +66,7 @@ gh repo edit TrueFurina/comment-distillery \
   --add-topic zero-dependency
 ```
 
-**验收**：`gh repo view TrueFurina/comment-distillery --json description,repositoryTopics` 能看到上述内容。
+</details>
 
 ### B. awesome 列表 PR（每个 5 分钟，中等 ROI）
 

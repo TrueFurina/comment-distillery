@@ -25,7 +25,7 @@
 
 ```
 E:\Program\comment-distillery\           ← 项目根 = git 仓库根
-├── .git/                                （HEAD: bbda7d0，remote: SSH）
+├── .git/                                （HEAD 见 `git log -1`，remote: SSH）
 ├── .github/workflows/ci.yml            （3 个 Python 版本，7 步：compileall/零依赖守卫/unittest/无裸铁律×2/golden×2/端到端冒烟）
 ├── scripts/prep.py                      （预处理：编码容错 → 去重 → 去噪 → 按赞降序 → 导出）
 ├── scripts/verify_citations.py          （引用幻觉机验，强制质量门）
@@ -129,9 +129,12 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 ## 六、仓库状态
 
 ```
-HEAD     bbda7d0  feat(P3): 分发适配——npx skills add 可用 + README 真实产出片段
+HEAD     见 `git log -1`（最后核验 2026-09-26 为 2cae432；**本文件每次提交后 hash 都会前进一格，属正常**——
+         先前写法把 hash 写死，导致每次提交都要改一次，是自找的漂移源）
 origin   git@github.com:TrueFurina/comment-distillery.git   (SSH)
-CI       .github/workflows/ci.yml  7 步全绿（bbda7d0 / 1e63c09 / cf3d8a4 均 success）
+CI       .github/workflows/ci.yml  **9 个质量门步骤**全绿
+         （compileall / 零依赖守卫 / unittest / 无裸铁律 / 判据变异验证 / golden 变异 / golden 基线 / prep 冒烟 / 引用机验冒烟；
+          最近三次 2cae432 / bbda7d0 / f685484 均 success）
 安装     npx skills add TrueFurina/comment-distillery   （--list 实测 Found 1 skill）
 迁移     E:\Program\comment-distillery，cases/ 已 gitignore，仅本地留存
 ```
@@ -152,9 +155,10 @@ CI       .github/workflows/ci.yml  7 步全绿（bbda7d0 / 1e63c09 / cf3d8a4 均
 6. ✅ **七战沉淀件**：`docs/retrospective.md` —— 五次方法论修正 + 7 条量化判据 + 交付质量门 G1–G7 + 与 AGI-Distiller 对照 + 已知局限。
 7. ✅ **P1 golden 评估集**（2026-09-26）：8 场景 / 4 类，baseline 100.0，变异 31/31 拦截。
 8. 🆕 **P2 方法论去过拟合**（2026-09-26）：`docs/rule-provenance.md` + `docs/overturned.md` + `scripts/check_rule_tags.py`（CI 强制）。**读规则时注意：带 `[战N·待复现]` 的是假设，不是规律。**
-9. 🆕 **P3 分发**（2026-09-26 进行中）：`npx skills add` 适配已完成（实测 Found 1 skill）+ README 真实产出片段已上。**剩余三项必须由你本人执行**——GitHub metadata（`docs/distribution.md` §1-A 有现成 `gh repo edit` 命令）/ awesome 列表 PR（§1-B 有现成英文文案）/ 社区发帖（§1-C 有骨架）。我无账号、不代发公开内容。
+9. 🟡 **P3 分发**（2026-09-26）：`npx skills add` 适配 ✅（实测 Found 1 skill）+ README 真实产出片段 ✅ + **GitHub 元数据 ✅**（2026-09-26 实测：description 已设 / **12 个 topics** / license MIT）。**仅剩两项需要你的账号**——awesome 列表 PR（§1-B 有现成英文文案）/ 社区发帖（§1-C 有骨架）。我无账号、不代发公开内容。
+   - ⚠️ **topics 复核发现**：实际生效的是 `agentskills`（无连字符），而 `docs/distribution.md` §1-A 建议的是 `agent-skills` / `claude-skills`——**两者不等价，前者几乎不会被搜到**。建议补上连字符版本（见 `docs/distribution.md` §1-A）。
 
-**当前第一优先级（P3 剩余分发动作）**：P1/P2 已闭环——既能证明"引用是真的"，也能证明"改规则后是否变强"，且单战证据不再冒充铁律。**卡在"需要你的账号"这一步**，清单与文案全部就位，见 `docs/distribution.md`。
+**当前状态（2026-09-26）**：P0 / P1 / P2 已闭环，P3 适配侧已完成，**代码侧无待办**。剩余全部是「需要你本人账号」的公开动作（awesome PR ×3 / 社区发帖），文案与命令已就位，见 `docs/distribution.md`。**P4 经你拍板不做**（真实语料脱敏风险 > 收益，保留合成样例）。**P5 为长线研究问题，不设 deadline**。
 
 ---
 

@@ -94,18 +94,21 @@
 |---|---|---|---|
 | P0 | `npx skills add` 适配（vercel-labs/skills） | 一条命令可安装 | ✅ **已完成**（`--list` 实测 Found 1 skill）；frontmatter 已改触发式 + `metadata.version` |
 | P1 | 英文 README 第一屏放**真实输出片段** | 3 秒能看懂产出是什么 | ✅ **已完成**（含引用/反例/行动清单/自曝盲区四段真实产出） |
-| P1 | GitHub 仓库元数据（description + topics） | `gh repo view` 可见 | ⏳ **需你执行**（`docs/distribution.md` §1-A 有现成命令） |
+| P1 | GitHub 仓库元数据（description + topics） | `gh repo view` 可见 | ✅ **已完成**（2026-09-26 实测：description 已设 / **12 topics** / MIT） |
+| — | ⚠️ topics 复核 | 可搜索性 | ⚠️ 见下方「topics 复核」——实际是 `agentskills`，与建议的 `agent-skills` 不等价 |
 | P1 | awesome 列表 PR（ComposioHQ / VoltAgent / m-fyi） | 至少 1 个合入 | ⏳ **需你执行**（§1-B 有现成英文 PR 文案） |
 | P2 | Reddit `r/ClaudeAI` / `r/LocalLLaMA` Show & Tell + 中文社区同步 | 各发一轮 | ⏳ **需你执行**（§1-C 有骨架） |
 | P3 | 方法论长文（"Why comment sections are the most underrated dataset"） | 长尾搜索流量 | ⏳ 素材已就位（§1-D） |
 
 **适配时确认的关键规范**：仓库根 `SKILL.md` 即构成单 skill 仓库、无需 manifest；⚠️ **绝不能在其旁边再建 `skills/` 目录**（会短路发现）——保持现状，不要重构成 `skills/comment-distillery/`。
 
+**⚠️ topics 复核（2026-09-26，直连 GitHub API 实测）**：仓库现有 12 个 topics 里是 `agentskills`（**无连字符**），而 `docs/distribution.md` §1-A 建议的是 `agent-skills` / `claude-skills`。两者在 GitHub 搜索里**不等价**——带连字符的写法才是生态里流通的检索词。补齐是「需要你账号」的动作，命令见 §1-A。
+
 **停止条件**：若 3 个月内 awesome PR 全被拒、且社区零反馈 → **回到定位重新评估**，不继续堆渠道动作。
 
 ---
 
-### P4 · 场景升维收尾
+### P4 · 场景升维收尾 ⛔ **已决定不做**（2026-09-26 用户拍板）
 
 | 动作 | 说明 | 风险 |
 |---|---|---|
@@ -114,7 +117,7 @@
 
 **验收**：至少 2 个非 B 站示例端到端跑通 + 脱敏数据集通过 PII 扫描。
 
-**停止条件**：脱敏成本高于收益时，保留合成样例 `examples/sample_corpus.csv`，不强行上真实数据。
+**决定（2026-09-26）：不做。** 理由——脱敏不彻底即合规事故，而合成样例 `examples/sample_corpus.csv` 已能端到端演示全部流水线；非 B 站适配器同理，它真正的验证价值在「换平台后判据是否仍成立」，那属于 P5 研究问题，不是分发阻塞项。**重新考虑的触发条件**：出现 ≥2 位外部使用者明确卡在"没有非 B 站示例"。在此之前不投入。
 
 ---
 
