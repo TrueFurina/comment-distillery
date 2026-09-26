@@ -125,7 +125,13 @@ Not a scraper and not a sentiment dashboard by design — collection (L1) and
 statistics (L2) are left to the existing ecosystem. This is L3 only.
 ```
 
-### C. Reddit / 社区 Show & Tell（各 15 分钟，长尾流量）
+### C. Reddit / 社区 Show & Tell — ✅ **成稿已备齐（2026-09-26），只差提交动作**
+
+> **四篇全部是可直接整篇复制的成稿**（标题 + 正文 + 每渠道提交步骤），见 [`docs/submittables/README.md`](submittables/README.md)：
+> `reddit-claudeai.md` / `reddit-localllama.md` / `juejin.md` / `zhihu.md`。原骨架已由成稿取代；原 §1-D 长文由掘金/知乎两篇承担，不再单独写。
+> 纪律：发帖后**评论回复也属公开发言**；被删不重发；提交后把 submittables 状态表改成 ✅ 并回填链接。
+
+<details><summary>（历史骨架，仅存档——勿再使用，已被成稿取代）</summary>
 
 | 渠道 | 建议标题 | 备注 |
 |---|---|---|
@@ -155,10 +161,14 @@ Ask:   想要的是"有没有人也在做 L3 综合"的讨论，不是 star。
 
 > ⚠️ 发帖时**不要**用营销语气，不要只丢链接。Reddit 对 self-promo 敏感——以"我们踩了这个坑、这是解法"的复盘口吻发，附完整 honest limitations，效果好得多。
 
-### D. 方法论长文（P2 优先级，长尾搜索）
+</details>
+
+### D. 方法论长文 — ✅ **已并入 §C 的成稿**（2026-09-26）
+
+不再单独成文：掘金稿承担工程管道视角（`docs/submittables/juejin.md`），知乎稿承担「代理指标替代真值」的思辨复盘（`docs/submittables/zhihu.md`）。原标题方向与素材清单留档如下：
 
 标题方向：**"Why comment sections are the most underrated dataset"** 或
-「为什么"高赞"是最差的信号：我们在 4.5 万条评论上被数据打穿了五次」
+「为什么"高赞"是最差的信号：我们在 4.7 万条评论（46,746 实算）上被数据打穿了五次」
 
 素材全部现成（`docs/retrospective.md` + `docs/overturned.md`）：
 
@@ -208,10 +218,10 @@ CI `36225711223`（main）· Deploy site `36225711371`（main）· Build Windows
 | 落地形态（exe + 官网） | ✅ exe 三项自检全 PASS；官网 HTML 自检 + 无头渲染核验通过 | 无 |
 | Release + Pages | ✅ Release 资产可下载且**复算哈希与本地件一致**；官网线上 HTTP 200 | 无 |
 | awesome PR | **至少 1 个合入**（✅ 2 个已提交：ComposioHQ#2002 / m-fyi#2，待审） | **3 个月内 PR 全被拒且社区零反馈 → 回到定位重新评估**，不继续堆渠道动作 |
-| 社区发帖 | 各渠道发一轮 | 同上 |
-| 长文 | 发布并进入长尾搜索 | 无 deadline |
+| 社区发帖 | 各渠道发一轮（**成稿已备齐**：[`docs/submittables/`](submittables/README.md) 四篇复制即发） | 同上 |
+| 长文 | 发布并进入长尾搜索（已并入掘金/知乎两篇） | 无 deadline |
 
-> 上表**只剩一行未完成**（社区发帖）。awesome PR 已于 2026-09-26 用仓库 token 提交 2 个（ComposioHQ / m-fyi；VoltAgent 按其"不接受全新 skill"的规则缓发）。
+> 上表**只剩一行待执行**（社区发帖提交动作，成稿已齐、只差你点发布）。awesome PR 已于 2026-09-26 用仓库 token 提交 2 个（ComposioHQ / m-fyi；VoltAgent 按其"不接受全新 skill"的规则缓发）。
 
 **不把 star 当目标**，只当"分发是否奏效"的观测指标。
 

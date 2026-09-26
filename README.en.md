@@ -372,7 +372,7 @@ See [`docs/compliance.md`](docs/compliance.md).
 
 - [x] **v1** — 6-step pipeline, deep-by-default, provenance, counter-examples, blind spots, citation gate
 - [x] **v1.1** — domain generalization: from "comments" to "any crowd text"; Canonical Corpus Format
-- [x] **field validation** (7 runs / ~45k items) — the reply-layer (nested comments) study: 21,100 items on one video, and the supplement volume corrected 3 conclusions of the main guide
+- [x] **field validation** (7 runs / 46,746 items) — the reply-layer (nested comments) study: 21,100 items on one video, and the supplement volume corrected 3 conclusions of the main guide
 - [x] **v1.3** — golden test set: 8 cases / 4 categories, baseline scores 100, and 31 mutants prove the grader actually deducts (see [`golden/README.md`](golden/README.md))
 - [x] **v1.4** — delivery: Windows desktop exe (collect → prep → export pack → verify) + website (`site/`)
 - [ ] **v2** — adaptation examples for more domains (surveys / interviews / tickets)
