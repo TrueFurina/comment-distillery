@@ -197,14 +197,14 @@ CI       .github/workflows/ci.yml  **13 个质量门步骤**全绿
 6. ✅ **七战沉淀件**：`docs/retrospective.md` —— 五次方法论修正 + 7 条量化判据 + 交付质量门 G1–G7 + 与 AGI-Distiller 对照 + 已知局限。
 7. ✅ **P1 golden 评估集**（2026-09-26）：8 场景 / 4 类，baseline 100.0，变异 31/31 拦截。
 8. 🆕 **P2 方法论去过拟合**（2026-09-26）：`docs/rule-provenance.md` + `docs/overturned.md` + `scripts/check_rule_tags.py`（CI 强制）。**读规则时注意：带 `[战N·待复现]` 的是假设，不是规律。**
-9. 🟡 **P3 分发**（2026-09-26）：`npx skills add` 适配 ✅（实测 Found 1 skill）+ README 真实产出片段 ✅ + GitHub 元数据 ✅ + **topics 已补齐 ✅**（16 个，补入 `agent-skills` / `claude-skills` / `skills` / `ai-agents`——**由本地 token 直接调 API 执行，不需用户操作**）。**仅剩两项需要你的账号**——awesome 列表 PR（§1-B 有现成英文文案）/ 社区发帖（§1-C 有骨架）。我无账号、不代发公开内容。
+9. 🟡 **P3 分发**（2026-09-26）：`npx skills add` 适配 ✅（实测 Found 1 skill）+ README 真实产出片段 ✅ + GitHub 元数据 ✅ + **topics 已补齐 ✅**（16 个，补入 `agent-skills` / `claude-skills` / `skills` / `ai-agents`——**由本地 token 直接调 API 执行，不需用户操作**）。**awesome PR 已提交 2 个**（[ComposioHQ#2002](https://github.com/ComposioHQ/awesome-claude-skills/pull/2002) / [m-fyi#2](https://github.com/m-fyi/awesome-claude-skills/pull/2)，同日用 token 提交；VoltAgent 按其"不接受全新 skill"规则缓发）。**仅剩社区发帖需要你的账号**（§1-C 有骨架）——公开发言不代发。
 10. ✅ **`cases/` 产物层公开**（2026-09-26 用户拍板）：9 个 md / **277 KB** 进仓库（各战指南 + 设计留档）；原始语料与中间产物按 `docs/compliance.md` §2 **保持不公开**。实现与红线见 §二 的「公开口径」。
 11. ✅ **LICENSE 保留 MIT**（2026-09-26 用户确认）：依据是 `docs/compliance.md` §0——"本项目可以 MIT 开源、可被企业采用"。**不适用**"原创项目一律不加 LICENSE"这条个人规则（它针对私有项目；公开仓库无 LICENSE = 保留所有权利，反而与分发目标矛盾）。
 12. ✅ **P3.5 交付形态**（2026-09-26）：Windows 桌面 exe（`app/` + `app_main.py`）+ 官网（`site/`）+ 可复现构建（`scripts/make_icon.py` / `scripts/build_exe.py` / `build-exe.yml` / `pages.yml`）。**exe 三项自检全 PASS**（资源齐全 / 真建窗口 / 端到端跑通预处理→打包→引用机验）。设计决策与回滚方式见 `ROADMAP.md` §P3.5。
 13. ✅ **顺带修掉两个真 bug**（2026-09-26）：① `verify_citations.py` 的 `--field` 参数一直被解析却从未传下去（形同虚设），已接通；② `crawl()` 的协作式停止钩子与 `_CallbackWriter` —— GUI 中途停止时已抓部分照常写出。
 14. ✅ **GitHub Release + Pages 首发**（2026-09-26）：tag `v1.4.0` → `0ba07ce`（**已移到修复 CI 红之后的提交**——当时它**从未成功构建过**，属"尚未成立"而非"已发布后又变"；与后来 v1.4.1 的处理**不同**：已发布的内容变了就**发新版、不重写资产**）；Release 已挂 exe（**11,682,955 字节**）；官网 <https://truefurina.github.io/comment-distillery/> 线上 HTTP 200。**原判"需要你的仓库权限"是误判**——本地 token 直连 API 全做完。**Pages 首次部署失败的真因不是 Source 选错，是 Pages 根本没启用**（`GET /repos/.../pages` → 404）；一行 `POST /pages {"build_type":"workflow"}` 修好。发布件已下载回来复算 SHA-256，与本地冒烟验证件**完全一致**。三条工作流全绿：CI `36225711223` / Deploy site `36225711371` / Build exe `36225715001`。
 
-**当前状态（2026-09-26）**：P0 / P1 / P2 已闭环，P3 适配侧全部完成（含 topics 补齐），**P3.5 交付形态完成并已发布上线**（当前版 Release **v1.5.0** + 官网），`cases/` 产物层已公开。**代码侧无待办，远端侧也无待办**——tag / Release / Pages 全部由本地 token 完成并逐项核验。剩余**只有一类**「需要你本人账号」的动作：**awesome PR ×3 与社区发帖**（以你的身份公开发言，我不代发；文案命令已就位，见 `docs/distribution.md` §1-B/C/D）。**P4 经拍板不做**（保留合成样例；原始语料明确无需备份）。**P5 为长线研究问题，不设 deadline**。
+**当前状态（2026-09-26）**：P0 / P1 / P2 已闭环，P3 适配侧全部完成（含 topics 补齐），**P3.5 交付形态完成并已发布上线**（当前版 Release **v1.5.0** + 官网），`cases/` 产物层已公开。**awesome PR 已提交 2 个待审**（ComposioHQ#2002 / m-fyi#2；VoltAgent 缓发）。**代码侧无待办，远端侧也无待办**。剩余**只有一项**需要你本人：**社区发帖**（以你的身份公开发言，我不代发；骨架在 `docs/distribution.md` §1-C）。**P4 经拍板不做**（保留合成样例；原始语料明确无需备份）。**P5 为长线研究问题，不设 deadline**。
 
 ---
 

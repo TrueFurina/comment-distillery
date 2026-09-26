@@ -70,13 +70,13 @@ gh repo edit TrueFurina/comment-distillery \
 
 ### B. awesome 列表 PR（每个 5 分钟，中等 ROI）
 
-已核实的真实列表仓库（**都还活着，且接受社区条目**）：
+已核实的真实列表仓库：
 
-| 仓库 | 特点 | 优先级 |
+| 仓库 | 特点 | 状态 |
 |---|---|---|
-| <https://github.com/ComposioHQ/awesome-claude-skills> | 规模最大（~68k★），收录 1000+ skills，有明确社区贡献路径 | **P0** |
-| <https://github.com/VoltAgent/awesome-claude-skills> | "the most contributed Agent Skills repository"，有 CONTRIBUTING.md | P1 |
-| <https://github.com/m-fyi/awesome-claude-skills> | 按**真实安装数**排名，有 live directory（aaaa.fyi） | P2 |
+| <https://github.com/ComposioHQ/awesome-claude-skills> | 规模最大（75k★），收录 1000+ skills，有明确社区贡献路径 | ✅ **已提交 PR** [ComposioHQ#2002](https://github.com/ComposioHQ/awesome-claude-skills/pull/2002)（2026-09-26，+1 行进 Data & Analysis 分类） |
+| <https://github.com/m-fyi/awesome-claude-skills> | 按**真实安装数**排名，有 live directory（aaaa.fyi） | ✅ **已提交 PR** [m-fyi#2](https://github.com/m-fyi/awesome-claude-skills/pull/2)（2026-09-26，+1 行进排名列表末位） |
+| <https://github.com/VoltAgent/awesome-claude-skills> | "the most contributed Agent Skills repository"，有 CONTRIBUTING.md | ⏸ **缓发**：其 CONTRIBUTING 明文 "Brand new skills that were just created are not accepted"（本仓库 2026-09-25 创建、1★）。**等有真实安装量/社区采用后再提**，届时标题格式须为 `Add skill: TrueFurina/comment-distillery`、描述 ≤10 词、条目加进 Community Skills 对应子分类 |
 
 > `skills.sh`（vercel 官方 leaderboard）**不需要 PR**——安装量上去会自动出现。所以 A 和 B 之外，真正能推它上榜的只有"让更多人装"。
 
@@ -207,12 +207,11 @@ CI `36225711223`（main）· Deploy site `36225711371`（main）· Build Windows
 | 元数据 | ✅ `gh repo view` 能看到 description + topics | 无 |
 | 落地形态（exe + 官网） | ✅ exe 三项自检全 PASS；官网 HTML 自检 + 无头渲染核验通过 | 无 |
 | Release + Pages | ✅ Release 资产可下载且**复算哈希与本地件一致**；官网线上 HTTP 200 | 无 |
-| awesome PR | **至少 1 个合入** | **3 个月内 PR 全被拒且社区零反馈 → 回到定位重新评估**，不继续堆渠道动作 |
+| awesome PR | **至少 1 个合入**（✅ 2 个已提交：ComposioHQ#2002 / m-fyi#2，待审） | **3 个月内 PR 全被拒且社区零反馈 → 回到定位重新评估**，不继续堆渠道动作 |
 | 社区发帖 | 各渠道发一轮 | 同上 |
 | 长文 | 发布并进入长尾搜索 | 无 deadline |
 
-> 上表**只剩两行未完成**（awesome PR / 社区发帖），且都属"以你身份公开发言"。
-> 其余全部已闭环并有可复算证据——不要因为文档没更新而重复劳动。
+> 上表**只剩一行未完成**（社区发帖）。awesome PR 已于 2026-09-26 用仓库 token 提交 2 个（ComposioHQ / m-fyi；VoltAgent 按其"不接受全新 skill"的规则缓发）。
 
 **不把 star 当目标**，只当"分发是否奏效"的观测指标。
 
