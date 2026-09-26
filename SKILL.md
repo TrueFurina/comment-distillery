@@ -2,7 +2,7 @@
 name: comment-distillery
 description: 把任何一群人对同一议题的自发文本（评论区 / 问卷开放题 / 访谈逐字稿 / 产品反馈 / Issue 讨论 / 弹幕）蒸馏成带引用溯源、反例对冲、盲区说明的厚指南。当用户说「把评论整理成指南」「评论区洞察」「评论分析」「问卷开放题整理」「访谈记录提炼」「用户反馈分析」「群体文本分析」，或给出一堆未结构化的群体文本想要建设性结论时使用。不做采集、不做情感饼图，只做 L3 建设性综合。
 metadata:
-  version: 1.1.0
+  version: 1.4.0
 agent_created: true
 ---
 
@@ -12,6 +12,8 @@ agent_created: true
 > 把一堆群体文本，炼成一份有据可查的行动指南。
 
 - **开源仓库**：<https://github.com/TrueFurina/comment-distillery>（MIT，零依赖）
+- **官网**：<https://truefurina.github.io/comment-distillery/>
+- **桌面工具（Windows）**：`dist/comment-distillery.exe`（约 11 MB 单文件免安装）—— 采集 → 预处理 → 导出蒸馏包 → 引用校验。**不内置 LLM**：它只负责把语料和本文件打包好，蒸馏那一步交给你自己的 AI，因此零 API Key、零成本，方法论也永远跟本文件一致。
 - **详细文档**：`docs/` —— 格式规范 `canonical-format.md` / **语料从哪来 `collecting.md`** / 语料域适配 `domains.md` / 流水线 `pipeline.md` / 合规 `compliance.md`
 - **规则溯源**：`docs/rule-provenance.md`（每条规则的验证战次；**单战证据标「待复现」，不是铁律**）· `docs/overturned.md`（被推翻结论台账）
 - **人读说明**：`README.md`（中文）、`README.en.md`（English）
@@ -49,6 +51,7 @@ agent_created: true
    - 用法：`python fetch_bilibili_comments.py <BV号或链接> [out.csv] [--roots-only]`
    - `--roots-only`：只拉一级评论、跳过楼中楼。**追求时效与稳定性时优先用它**——一级评论是观点主体，而子回复接口限流风险最高。实测同一视频：全量抓取 5 分钟仍未完成，roots-only 约 1 分钟拿满 1501 条。
    - ⚠️ `contrib/` 属**非核心可选件**，不在主仓支持范围内，合规责任由使用者自负（见 `contrib/README.md`）。
+   - 非技术用户路线：`dist/comment-distillery.exe` 的「采集」页签做同一件事（同一份实现），并在同一界面把预处理与蒸馏包导出也走完。
 
 > **语料从哪来？** 本项目**不做采集**。B站 / YouTube / Reddit / 小红书 / 抖音 / 知乎 等各平台都有成熟的现成工具，
 > 选型对照与"任意工具输出 → CCF"的映射方法见 `docs/collecting.md`（含许可证差异与法律风险提示）。

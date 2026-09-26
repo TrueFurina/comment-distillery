@@ -35,6 +35,7 @@ import json
 import time
 import gzip
 import hashlib
+import contextlib
 import urllib.request
 import urllib.parse
 import csv
@@ -232,33 +233,74 @@ def fmt_time(ts):
         return str(ts)
 
 
-def main():
-    if len(sys.argv) < 2:
-        print("用法: python fetch_bilibili_comments.py <BV号或链接> [out.csv]")
-        sys.exit(1)
-    arg = sys.argv[1]
-    out_csv = "bilibili_comments.csv"
-    roots_only = False
-    for extra in sys.argv[2:]:
-        if extra == "--roots-only":
-            roots_only = True
-        else:
-            out_csv = extra
+class _CallbackWriter:
+    """把 print 输出按行转给回调。
+
+    用途：fetch_main / fetch_sub 内部用 print 输出告警（限流、翻页失败等）。
+    与其去改动这两个算法的每一处 print（回归风险），这里用 redirect_stdout
+    把它们的输出统一接进日志回调 —— 算法零改动。
+    """
+
+    def __init__(self, emit):
+        self._emit = emit
+        self._buf = ""
+
+    def write(self, s):
+        if s is None:
+            return
+        self._buf += s
+        while "\n" in self._buf:
+            line, self._buf = self._buf.split("\n", 1)
+            if line.strip():
+                self._emit(line.rstrip())
+
+    def flush(self):
+        if self._buf.strip():
+            self._emit(self._buf.rstrip())
+        self._buf = ""
+
+    def isatty(self):
+        return False
+
+
+def crawl(arg, out_csv, roots_only=False, on_log=None, on_progress=None, should_stop=None):
+    """抓取 B 站视频评论并写 CSV —— CLI 与桌面 GUI 共用的单一入口。
+
+    arg           BV 号或视频链接
+    out_csv       输出 CSV 路径（utf-8-sig；列名与 prep.py 的字段别名对齐）
+    roots_only    True = 只抓一级评论（规避子回复限流，快而稳）
+    on_log(msg)   日志回调，默认 print
+    on_progress(done, total, subs)  进度回调
+    should_stop() 返回 True 时在两条一级评论之间优雅停止，已抓部分仍会正常写出
+
+    返回 {bv, oid, n_top, n_sub, n_total, out_csv, stopped}
+    无法解析 BV、或 view 接口失败时抛 RuntimeError。
+    """
+    log = on_log or (lambda m: print(m))
+    writer = _CallbackWriter(log)
 
     bv = extract_bv(arg)
     if not bv:
-        print("无法从输入解析 BV 号")
-        sys.exit(1)
+        raise RuntimeError("无法从输入解析 BV 号（示例：BV1xx411c7mD 或 https://www.bilibili.com/video/BV.../）")
     oid = get_aid(bv)
-    print(f"解析: {bv} -> aid {oid}")
+    log(f"解析: {bv} -> aid {oid}")
 
-    print("拉取一级评论...")
-    mains = fetch_main(oid, mode=3)
-    print(f"  一级评论数: {len(mains)}")
+    log("拉取一级评论...")
+    with contextlib.redirect_stdout(writer):
+        mains = fetch_main(oid, mode=3)
+    writer.flush()
+    log(f"一级评论数: {len(mains)}")
+    if on_progress:
+        on_progress(0, len(mains), 0)
 
     rows = []  # csv 行 dict
     total_sub = 0
+    stopped = False
     for idx, r in enumerate(mains, 1):
+        if should_stop and should_stop():
+            stopped = True
+            log(f"收到停止请求：已完成 {idx - 1}/{len(mains)} 条一级评论，正在写出已抓取的部分…")
+            break
         rpid = r.get("rpid")
         member = r.get("member", {}) or {}
         rows.append({
@@ -272,13 +314,17 @@ def main():
             "父评论ID": "",
             "用户ID": member.get("mid", ""),
         })
-        # 拉子回复（仅讨论型楼中楼 rcount>=3，避免海量无效请求触发限流雪崩）
         rcount = r.get("rcount", 0)
         if roots_only:
             # 只抓一级评论模式：跳过子回复，规避限流、快速拿到观点主体
+            if on_progress and (idx % 5 == 0 or idx == len(mains)):
+                on_progress(idx, len(mains), total_sub)
             continue
+        # 拉子回复（仅讨论型楼中楼 rcount>=3，避免海量无效请求触发限流雪崩）
         if rcount and rcount >= 3:
-            subs = fetch_sub(oid, rpid)
+            with contextlib.redirect_stdout(writer):
+                subs = fetch_sub(oid, rpid)
+            writer.flush()
             total_sub += len(subs)
             for s in subs:
                 sm = s.get("member", {}) or {}
@@ -295,8 +341,10 @@ def main():
                 })
             # 每条根之间随机休眠，平滑限速
             time.sleep(random.uniform(0.15, 0.5))
+        if on_progress and (idx % 5 == 0 or idx == len(mains)):
+            on_progress(idx, len(mains), total_sub)
         if idx % 50 == 0:
-            print(f"  进度: {idx}/{len(mains)} 条一级, 已拉子回复 {total_sub}")
+            log(f"进度: {idx}/{len(mains)} 条一级, 已拉子回复 {total_sub}")
 
     # 写 CSV (utf-8-sig 让 Excel 正确显示中文)
     cols = ["评论ID", "根评论ID", "是否为回复", "评论内容", "点赞数", "回复数", "时间", "父评论ID", "用户ID"]
@@ -305,7 +353,37 @@ def main():
         w.writeheader()
         for row in rows:
             w.writerow(row)
-    print(f"完成: 共 {len(rows)} 条 (一级 {len(mains)} + 子回复 {total_sub}) -> {out_csv}")
+
+    log(f"完成: 共 {len(rows)} 条 (一级 {sum(1 for x in rows if x['是否为回复'] == '否')} + 子回复 {total_sub}) -> {out_csv}")
+    return {
+        "bv": bv,
+        "oid": oid,
+        "n_top": sum(1 for x in rows if x["是否为回复"] == "否"),
+        "n_sub": total_sub,
+        "n_total": len(rows),
+        "out_csv": out_csv,
+        "stopped": stopped,
+    }
+
+
+def main():
+    if len(sys.argv) < 2:
+        print("用法: python fetch_bilibili_comments.py <BV号或链接> [out.csv] [--roots-only]")
+        sys.exit(1)
+    arg = sys.argv[1]
+    out_csv = "bilibili_comments.csv"
+    roots_only = False
+    for extra in sys.argv[2:]:
+        if extra == "--roots-only":
+            roots_only = True
+        else:
+            out_csv = extra
+
+    try:
+        crawl(arg, out_csv, roots_only=roots_only)
+    except RuntimeError as e:
+        print(e)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

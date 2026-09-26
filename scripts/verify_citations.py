@@ -32,8 +32,12 @@ ID_ALIASES = ["评论id", "comment_id", "commentid", "cid", "id", "评论编号"
 DEFAULT_PATTERNS = [r"c\d{6,}", r"\b\d{8,}\b"]
 
 
-def load_ids(path):
-    """读取语料 CSV 的全部 ID（编码容错）。"""
+def load_ids(path, field=None):
+    """读取语料 CSV 的全部 ID（编码容错）。
+
+    field 显式给出时优先按该列名取；否则走别名自动识别。
+    （注：--field 曾是空转参数——解析了却从未传下来，2026-09-26 修复。）
+    """
     last_err = None
     for enc in ("utf-8-sig", "gb18030", "gbk", "utf-8"):
         try:
@@ -41,14 +45,19 @@ def load_ids(path):
                 reader = csv.DictReader(f)
                 names = list(reader.fieldnames) if reader.fieldnames else []
                 col = None
-                for c in ID_ALIASES:                      # 精确优先
+                if field:                                 # 0) 显式指定优先
+                    for n in names:
+                        if n and n.strip().lower() == field.strip().lower():
+                            col = n
+                            break
+                for c in ID_ALIASES:                      # 1) 精确优先
+                    if col:
+                        break
                     for n in names:
                         if n and n.strip().lower() == c.lower():
                             col = n
                             break
-                    if col:
-                        break
-                if not col:                               # 子串兜底
+                if not col:                               # 2) 子串兜底
                     for c in ID_ALIASES:
                         if len(c) < 3:
                             continue
@@ -86,6 +95,56 @@ def extract_cited(text, patterns):
     return cited
 
 
+def run(guide, corpora, field=None, patterns=None):
+    """执行引用机验，返回结果 dict（不打印、不退出进程）。
+
+    单一实现：CLI(main) 与桌面 GUI(app/core.py) 共用。
+    返回键:
+        real       语料 ID 全集(set)
+        cited      指南中被引用的 ID 集合(set)
+        bad       幻觉引用（有序 list）
+        per_corpus [{path, n, col}]
+        contexts   {pid: 上下文片段}
+        patterns   实际生效的兜底正则
+    文件不存在时抛 FileNotFoundError（由调用方决定怎么呈现）。
+    """
+    for c in corpora:
+        if not os.path.exists(c):
+            raise FileNotFoundError(f"语料不存在: {c}")
+    if not os.path.exists(guide):
+        raise FileNotFoundError(f"指南不存在: {guide}")
+
+    real = set()
+    per_corpus = []
+    for c in corpora:
+        ids, col = load_ids(c, field)
+        real |= ids
+        per_corpus.append({"path": c, "n": len(ids), "col": col})
+
+    text = open(guide, encoding="utf-8").read()
+    pats = patterns if patterns else DEFAULT_PATTERNS
+    cited = extract_cited(text, pats)
+    bad = sorted(i for i in cited if i not in real)
+
+    contexts = {}
+    for b in bad:
+        m = re.search(re.escape(b), text)
+        if m:
+            s = max(0, m.start() - 60)
+            contexts[b] = text[s:m.end() + 60].replace("\n", " ")
+
+    return {
+        "guide": guide,
+        "real": real,
+        "cited": cited,
+        "bad": bad,
+        "per_corpus": per_corpus,
+        "contexts": contexts,
+        "patterns": pats,
+        "field": field,
+    }
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description="引用真实性机验（幻觉引用检测）")
     ap.add_argument("guide", help="待验的指南 markdown")
@@ -95,38 +154,24 @@ def main(argv=None):
                     help="自定义兜底 ID 正则，可重复；默认 c\\d{6,} 与 \\b\\d{8,}\\b")
     args = ap.parse_args(argv)
 
-    for c in args.corpora:
-        if not os.path.exists(c):
-            print(f"[ERR] 语料不存在: {c}", file=sys.stderr)
-            return 2
-    if not os.path.exists(args.guide):
-        print(f"[ERR] 指南不存在: {args.guide}", file=sys.stderr)
+    try:
+        res = run(args.guide, args.corpora, args.field, args.pattern)
+    except FileNotFoundError as e:
+        print(f"[ERR] {e}", file=sys.stderr)
         return 2
 
-    real = set()
-    for c in args.corpora:
-        ids, col = load_ids(c)
-        real |= ids
-        print(f"[ok] {os.path.basename(c)}: {len(ids)} ids (列: {col})")
+    for c in res["per_corpus"]:
+        print(f"[ok] {os.path.basename(c['path'])}: {c['n']} ids (列: {c['col']})")
 
-    text = open(args.guide, encoding="utf-8").read()
-    patterns = args.pattern if args.pattern else DEFAULT_PATTERNS
-    cited = extract_cited(text, patterns)
-    bad = sorted(i for i in cited if i not in real)
+    print(f"\n语料 ID 全集: {len(res['real'])}")
+    print(f"指南引用 ID  : {len(res['cited'])}")
+    print(f"幻觉引用     : {len(res['bad'])}")
 
-    print(f"\n语料 ID 全集: {len(real)}")
-    print(f"指南引用 ID  : {len(cited)}")
-    print(f"幻觉引用     : {len(bad)}")
-
-    if bad:
+    if res["bad"]:
         print("\n=== ❌ 幻觉引用（指南中引用了不存在于语料的 ID）===")
-        for b in bad:
-            # 打印所在上下文，便于定位替换
-            for m in re.finditer(re.escape(b), text):
-                s = max(0, m.start() - 60)
-                ctx = text[s:m.end() + 60].replace("\n", " ")
-                print(f"  {b}  … {ctx} …")
-                break
+        for b in res["bad"]:
+            ctx = res["contexts"].get(b)
+            print(f"  {b}  … {ctx} …" if ctx else f"  {b}")
         print("\n请把这些 ID 替换为语料中真实存在的条目，或删除该条引用后重跑本脚本。")
         print("诚实的降级方式是减少引用条数，绝不是保留一个『看起来对』的 ID。")
         return 1

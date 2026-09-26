@@ -2,15 +2,29 @@
 
 本项目遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
-## [Unreleased]
+## [1.4.0] — 2026-09-26（含 1.2 / 1.3 全部变更）
+
+### Added
+- **交付形态：Windows 桌面工具**（`app/` + `app_main.py`，约 11 MB 单文件 exe，免安装）—— 四页签一站式：① 采集 B站评论（含楼中楼，可中途停止）② 预处理（去重/去噪/统计）③ 导出蒸馏包 ④ 引用机验。
+  - **不内置 LLM 是刻意选择**：exe 只产出「蒸馏包」（语料 + 方法论 + 可直接粘贴的 `PROMPT.md`），蒸馏交还给用户自选的 AI。因此**零 API Key、零调用成本**，且方法论永远引用仓库当前 `SKILL.md`，不会随 exe 固化而过期。
+  - **GUI 只用标准库 `tkinter`**，零第三方运行期依赖；PyInstaller 仅构建期依赖。核心层 `app/core.py` **不重写任何方法论**，全部委托调用 `scripts/` 与 `contrib/`，保证 exe 与仓库永不分叉。
+  - 自检三项全 PASS：`--selfcheck`（资源齐全）/ `--selftest-gui`（真建窗口）/ `--selftest-run`（端到端真跑 预处理→打包→引用机验）。
+  - **`build_exe.py --verify`**：逐项比对产物内随包资源与仓库当前版本的 SHA-256，并反向检查"产物里混入了构建期脚本"。**防的是一类最隐蔽的漂移**——改了 `SKILL.md`/脚本后忘重建，exe 外表无异常、`--selfcheck` 照样 PASS（它只看"文件在不在"），但用户导出的蒸馏包里带的是过期方法论。
+  - 随包资源改为**显式文件清单**（不再整目录打包）：`build_exe.py` / `make_icon.py` 属构建期，**故意不进产物**——否则"改构建脚本 → 产物过期 → 重建 → 又变"形成循环。
+  - 构建可复现：`scripts/make_icon.py`（标准库手写 ICO，不引入 Pillow）+ `scripts/build_exe.py`（PyInstaller）+ `.github/workflows/build-exe.yml`（CI 真打包 + 双冒烟 + `--verify`）。
+- **官网**（`site/index.html`）—— 单文件静态页，仿 SecAutoMind 设计系统；**其中每个数字都可在仓库中指到出处**，并保留 honest limitations 段落。`.github/workflows/pages.yml` 发布到 GitHub Pages。
+- **CLI 脚本抽出可调用入口**（纯增量，未改任何 CLI 签名）：`prep.run()` / `verify_citations.run()` / `fetch_bilibili_comments.crawl()`，供桌面工具与 CLI 共用同一条实现，避免两套逻辑漂移。
+- **`corpus_ccf.csv`** —— `prep.py` 新增产出规范语料（Canonical Corpus Format），作为引用机验与跨语料合并的单一真值源。
+- `tests/test_app_core.py`（16 个用例，全量 45 → **61**）。
 
 ### Fixed
+- **`verify_citations.py` 的 `--field` 参数形同虚设**：一直被 argparse 解析，却从未传进 `load_ids()`，显式指定列名等于无效。现已接通，并补了「显式指定 → 命中；指定不存在的列 → 回退」的双向验证。
 - **重复评论未被去重**（第六战实测发现）：一份 20,399 行的抓取结果里，**4,501 行是同 ID、同内容、同赞数的完全重复行**（占 22%），根因是热度排序（`mode=3`）下点赞数实时变化、分页游标在相邻页之间重叠。后果不只是规模虚高——**它会让同一条观点被重复计入共识度**，直接污染"高赞即共识"的判断。修复：
   - `scripts/prep.py` 在去噪前按 ID 去重，并在 `stats.json` 新增 `dup_dropped` 字段；
   - `contrib/fetch_bilibili_comments.py` 的 `fetch_main` 按 `rpid` 去重，整页重复时提前终止翻页；
   - 新增 2 个回归测试（`test_duplicate_ids_are_dropped` / `test_dup_dropped_zero_on_clean_corpus`），并做**变异验证**：人为取消去重后测试必须 FAIL。
 
-### Added
+### Added（P3 分发 / P2 方法论去过拟合 / 语料）
 - **P3 分发（进行中）** — `docs/distribution.md` 作战清单：可直接复制的 GitHub metadata 命令、awesome 列表英文 PR 文案、Reddit/中文社区帖子骨架、方法论长文大纲。
   - 已完成：`npx skills add TrueFurina/comment-distillery` 适配（`--list` 实测 **Found 1 skill**）；SKILL.md frontmatter 改为**触发式 description** + `metadata.version`；中英文 README 第一屏新增**真实产出片段**（引用溯源 / 反例对冲 / 行动清单 / 自曝盲区四段）。
   - ⚠️ 适配规范要点：仓库根 `SKILL.md` 即构成单 skill 仓库、无需 manifest；**绝不能在其旁边再建 `skills/` 目录**（根 SKILL.md 会短路 CLI 发现）。

@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>comment-distillery · 评论蒸馏器 — 把一堆群体文本炼成一份有据可查的行动指南</title>
+<meta name="description" content="comment-distillery：Agent Skill + 零依赖工具链。把评论区 / 问卷开放题 / 访谈逐字稿 / 工单讨论蒸馏成带认知框架、共识与争议、反例对冲、引用溯源、行动清单与盲区说明的厚指南。七战实战验证，61 项自动化测试，零第三方依赖。">
+<meta property="og:title" content="comment-distillery · 评论蒸馏器">
+<meta property="og:description" content="反例对冲 · 引用溯源 · 盲区诚实说明 —— 现有工具停在「告诉你大家什么情绪」，我们补的是 L3 建设性综合。">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23070b16'/><path d='M50 22 L78 50 L50 78 L22 50 Z' fill='%2300e59b'/></svg>">
+<style>
+:root{
+  --bg0:#070b16; --bg1:#0b1020; --bg2:#0f1830;
+  --panel:rgba(20,27,46,.72); --panel-solid:#141b2e;
+  --line:rgba(90,120,180,.18); --line-strong:rgba(0,229,155,.35);
+  --ink:#e8eefc; --muted:#8fa3c9; --dim:#5d7298;
+  --acc:#00e59b; --acc-soft:rgba(0,229,155,.12);
+  --blue:#38b6ff; --blue-soft:rgba(56,182,255,.12);
+  --warn:#ffb454; --violet:#8b7bff;
+  --radius:18px; --shadow:0 20px 60px rgba(0,0,0,.38);
+  --grad:linear-gradient(135deg,#00e59b 0%,#38b6ff 100%);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg0);color:var(--ink);font-family:"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;line-height:1.7;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;background:
+  radial-gradient(1000px 600px at 85% -10%,rgba(56,182,255,.14),transparent 60%),
+  radial-gradient(900px 500px at -10% 20%,rgba(0,229,155,.09),transparent 55%),
+  radial-gradient(700px 500px at 60% 110%,rgba(139,123,255,.10),transparent 60%);
+  pointer-events:none;z-index:-2}
+body::after{content:"";position:fixed;inset:0;background-image:linear-gradient(rgba(120,150,220,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(120,150,220,.05) 1px,transparent 1px);background-size:56px 56px;pointer-events:none;z-index:-1;mask-image:radial-gradient(ellipse at center,black 30%,transparent 75%)}
+a{color:var(--blue);text-decoration:none}
+a:hover{color:var(--acc)}
+code{font-family:"Cascadia Code",Consolas,monospace;background:rgba(255,255,255,.05);border:1px solid var(--line);padding:2px 7px;border-radius:6px;color:var(--acc);font-size:.88em}
+pre{background:#080d1a;border:1px solid var(--line);border-radius:14px;padding:18px 20px;overflow-x:auto;font-family:"Cascadia Code",Consolas,monospace;font-size:13px;color:var(--muted)}
+pre code{background:none;border:none;padding:0;color:inherit;font-size:inherit}
+.container{max-width:1120px;margin:0 auto;padding:0 28px}
+section{position:relative;padding:96px 0}
+
+/* NAV */
+.sk{position:sticky;top:0;z-index:100;background:rgba(7,11,22,.78);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.sk-in{display:flex;align-items:center;justify-content:space-between;height:64px}
+.logo{display:flex;align-items:center;gap:10px;font-size:19px;font-weight:800;letter-spacing:.4px;color:var(--ink)}
+.logo .mark{width:30px;height:30px;border-radius:9px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:15px;color:#04120c;font-weight:900;box-shadow:0 0 18px rgba(0,229,155,.4)}
+.logo em{font-style:normal;background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.nav a{color:var(--muted);margin-left:26px;font-size:14px;transition:color .2s}
+.nav a:hover{color:var(--acc);text-decoration:none}
+.nav .cta{background:var(--acc-soft);border:1px solid var(--line-strong);color:var(--acc)!important;padding:8px 18px;border-radius:99px;font-weight:700}
+@media(max-width:820px){.nav a{margin-left:14px;font-size:13px}.nav a.hide{display:none}}
+
+/* HERO */
+.hero{min-height:92vh;display:flex;align-items:center;position:relative;padding:120px 0 60px}
+.hero-in{position:relative;z-index:2;text-align:center;max-width:1000px;margin:0 auto}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border:1px solid var(--line);padding:8px 20px;border-radius:99px;font-size:13px;color:var(--muted);letter-spacing:.6px;margin-bottom:28px}
+.eyebrow .pulse{width:8px;height:8px;border-radius:50%;background:var(--acc);box-shadow:0 0 12px var(--acc);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.hero h1{font-size:clamp(40px,6.4vw,76px);font-weight:900;letter-spacing:1px;line-height:1.08;margin-bottom:18px}
+.hero h1 .g{background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero .sub{font-size:clamp(16px,2vw,21px);color:var(--muted);max-width:800px;margin:0 auto 12px}
+.hero .sub b{color:var(--ink);font-weight:600}
+.hero .tags{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:22px 0 38px}
+.tagx{font-size:13px;color:var(--ink);background:rgba(255,255,255,.05);border:1px solid var(--line);padding:6px 16px;border-radius:99px}
+.tagx i{font-style:normal;color:var(--acc);margin-right:6px}
+
+/* download cards */
+.dl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:920px;margin:0 auto 20px}
+.dl-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px 16px;text-align:center;backdrop-filter:blur(8px);transition:transform .18s,border-color .18s,box-shadow .18s;position:relative;display:flex;flex-direction:column}
+.dl-card:hover{transform:translateY(-3px);border-color:var(--line-strong);box-shadow:var(--shadow)}
+.dl-card .os{font-size:15px;font-weight:900;letter-spacing:.4px;color:var(--ink)}
+.dl-card .os small{display:block;font-size:11.5px;font-weight:600;color:var(--dim);margin-top:3px;letter-spacing:.2px;font-weight:500}
+.dl-card .rec{position:absolute;top:-9px;right:12px;background:var(--grad);color:#04120c;font-size:10.5px;font-weight:900;padding:2px 9px;border-radius:99px;letter-spacing:.5px}
+.dl-card p{color:var(--muted);font-size:12.5px;margin:10px 0 0;text-align:left;flex:1}
+.btn{display:inline-flex;align-items:center;gap:9px;font-size:15px;font-weight:800;padding:13px 26px;border-radius:13px;transition:transform .18s,box-shadow .18s;border:none;cursor:pointer;margin-top:12px;justify-content:center}
+.btn-dl{background:var(--grad);color:#04120c;box-shadow:0 10px 34px rgba(0,229,155,.28)}
+.btn-dl:hover{transform:translateY(-3px);box-shadow:0 16px 48px rgba(0,229,155,.42);color:#04120c;text-decoration:none}
+.btn-dl svg{width:19px;height:19px}
+.btn-ghost{background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--ink);font-size:13.5px;padding:10px 18px;margin-top:8px}
+.btn-ghost:hover{border-color:var(--blue);transform:translateY(-2px);text-decoration:none;color:var(--ink)}
+.dl-meta{color:var(--dim);font-size:13px;margin-top:14px}
+@media(max-width:760px){.dl-grid{grid-template-columns:1fr;max-width:400px}}
+
+/* stats band */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:70px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px 12px;backdrop-filter:blur(8px)}
+.stat .num{font-size:clamp(26px,3.2vw,42px);font-weight:900;background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.stat .lbl{color:var(--muted);font-size:13px;margin-top:2px}
+
+/* section head */
+.sh{max-width:800px;margin-bottom:52px}
+.sh .idx{font-size:13px;letter-spacing:4px;color:var(--acc);margin-bottom:10px;font-weight:700}
+.sh h2{font-size:clamp(26px,3.4vw,40px);font-weight:900;line-height:1.2;margin-bottom:14px}
+.sh p{color:var(--muted);font-size:16px}
+
+/* cards */
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:30px 26px;backdrop-filter:blur(10px);transition:transform .2s,border-color .2s,box-shadow .2s;position:relative;overflow:hidden}
+.card::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:var(--grad);opacity:0;transition:opacity .25s}
+.card:hover{transform:translateY(-4px);border-color:var(--line-strong);box-shadow:var(--shadow)}
+.card:hover::before{opacity:1}
+.card .ic{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px}
+.card h3{font-size:19px;font-weight:800;margin-bottom:10px}
+.card p{color:var(--muted);font-size:14.5px}
+.card ul{list-style:none;margin-top:10px}
+.card li{color:var(--muted);font-size:13.5px;padding:5px 0 5px 20px;position:relative}
+.card li::before{content:"▹";position:absolute;left:0;color:var(--acc)}
+.ic-a{background:var(--acc-soft);color:var(--acc)}
+.ic-b{background:var(--blue-soft);color:var(--blue)}
+.ic-v{background:rgba(139,123,255,.12);color:var(--violet)}
+.ic-w{background:rgba(255,180,84,.1);color:var(--warn)}
+.big-num{font-size:40px;font-weight:900;background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;line-height:1.15}
+@media(max-width:860px){.grid3,.grid2{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.grid3,.grid2,.stats{grid-template-columns:1fr}}
+
+/* pipeline rows */
+.arch{display:flex;flex-direction:column;gap:12px}
+.arch-row{display:flex;gap:18px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px 24px;backdrop-filter:blur(8px)}
+.arch-row .n{flex:0 0 42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;background:var(--acc-soft);color:var(--acc)}
+.arch-row .l{flex:0 0 168px;font-weight:800;font-size:15.5px;padding-top:6px}
+.arch-row .l small{display:block;color:var(--dim);font-weight:500;font-size:11.5px;margin-top:2px;letter-spacing:.3px}
+.arch-row .r{color:var(--muted);font-size:13.5px;flex:1;padding-top:4px}
+.arch-arrow{text-align:center;color:var(--dim);font-size:13px;letter-spacing:8px;margin:-2px 0}
+@media(max-width:860px){.arch-row{flex-wrap:wrap}.arch-row .l{flex:1 1 100%;padding-top:0}}
+
+/* table */
+.tbl{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px}
+.tbl th,.tbl td{border-bottom:1px solid var(--line);padding:12px 14px;text-align:left;vertical-align:top}
+.tbl th{color:var(--acc);font-size:12.5px;letter-spacing:.6px;font-weight:700;text-transform:uppercase}
+.tbl td{color:var(--muted)}
+.tbl td:first-child{color:var(--ink);font-weight:700;white-space:nowrap}
+.tbl tr:hover td{background:rgba(255,255,255,.02)}
+.tbl .mono{font-family:"Cascadia Code",Consolas,monospace;font-size:12.5px;color:var(--blue)}
+
+/* callout */
+.note{margin-top:26px;background:rgba(56,182,255,.06);border:1px solid rgba(56,182,255,.3);border-radius:14px;padding:18px 22px;font-size:14px;color:var(--muted)}
+.note.warn{background:rgba(255,180,84,.07);border-color:rgba(255,180,84,.35);color:var(--warn)}
+.note b{color:var(--ink)}
+.note.warn b{color:var(--warn)}
+
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.steps .card{text-align:center}
+.circle{width:52px;height:52px;border-radius:50%;color:#04120c;font-weight:900;font-size:22px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+@media(max-width:560px){.steps{grid-template-columns:1fr}}
+
+footer{border-top:1px solid var(--line);padding:44px 0 52px;margin-top:40px}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="sk">
+  <div class="container sk-in">
+    <div class="logo"><span class="mark">◈</span>comment-<em>distillery</em></div>
+    <div class="nav">
+      <a href="#about" class="hide">为什么</a>
+      <a href="#pipeline">方法</a>
+      <a href="#evidence" class="hide">实测证据</a>
+      <a href="#limits" class="hide">局限</a>
+      <a href="#download" class="cta">下载 v1.4.0</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="container hero-in">
+    <span class="eyebrow"><span class="pulse"></span>Agent Skill · 零第三方依赖 · MIT · 七战实战验证</span>
+    <h1>comment-<em class="g">distillery</em></h1>
+    <p class="sub">把一群人对同一议题的<b>自发文本</b>，蒸馏成一份<b>有据可查的行动指南</b><br>
+      评论区导出 · 问卷开放题 · 访谈逐字稿 · 产品反馈 · Issue 讨论 · 弹幕</p>
+    <div class="tags">
+      <span class="tagx"><i>▸</i>反例对冲</span>
+      <span class="tagx"><i>▸</i>引用溯源</span>
+      <span class="tagx"><i>▸</i>盲区诚实说明</span>
+      <span class="tagx"><i>▸</i>认知框架</span>
+      <span class="tagx"><i>▸</i>行动清单</span>
+      <span class="tagx"><i>▸</i>零依赖</span>
+    </div>
+
+    <div class="dl-grid">
+      <div class="dl-card">
+        <div class="rec">推荐</div>
+        <div class="os">桌面工具<small>Windows x64 · 单文件免安装</small></div>
+        <a class="btn btn-dl" href="https://github.com/TrueFurina/comment-distillery/releases/latest">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          下载 exe · 11.1 MB
+        </a>
+        <p>采集 → 预处理 → 导出蒸馏包 → 引用校验，四项全在图形界面里。</p>
+      </div>
+      <div class="dl-card">
+        <div class="os">一行安装<small>Claude Code / Cursor / Codex …</small></div>
+        <a class="btn btn-dl" href="#download">npx skills add</a>
+        <p>把方法论装进你的 agent，让它按 <code>SKILL.md</code> 处理你自己的语料。</p>
+      </div>
+      <div class="dl-card">
+        <div class="os">源码<small>纯标准库 · Python 3.10+</small></div>
+        <a class="btn btn-ghost" href="https://github.com/TrueFurina/comment-distillery">查看仓库 →</a>
+        <p>不需要 <code>pip install</code>。CI 在 3.10 / 3.12 / 3.13 上跑 61 项测试。</p>
+      </div>
+    </div>
+    <div class="dl-meta">exe 未做代码签名，首次运行 Windows SmartScreen 会拦截 —— 属正常现象。
+      v1.4.0 的 SHA-256：<code>75029c737f66e87cefeb95ee9d988fd69bb9995f96df739a079c92b2b27ae3b0</code>
+      （以 <a href="https://github.com/TrueFurina/comment-distillery/releases">Releases</a> 页与实际产物为准）。</div>
+
+    <div class="stats">
+      <div class="stat"><div class="num">7</div><div class="lbl">战实战跑通</div></div>
+      <div class="stat"><div class="num">6</div><div class="lbl">份深度指南</div></div>
+      <div class="stat"><div class="num">61</div><div class="lbl">项自动化测试</div></div>
+      <div class="stat"><div class="num">0</div><div class="lbl">第三方依赖</div></div>
+    </div>
+  </div>
+</header>
+
+<!-- 01 ABOUT -->
+<section id="about">
+  <div class="container">
+    <div class="sh">
+      <div class="idx">01 · WHY</div>
+      <h2>这条赛道的前两层已经卷完了，第三层几乎没人做深</h2>
+      <p>现有的 L1 采集与 L2 统计摘要都很成熟。但它们都停在<b>「告诉你大家什么情绪」</b>。
+        真正值钱的问题在后面 —— 而这一跳没人系统性地补。</p>
+    </div>
+
+    <pre><code>L1 采集              L2 统计摘要           L3 建设性综合
+────────────────    ──────────────────    ─────────────────────────
+MediaCrawler 6万★     情感分布 / 词云 /      认知框架 + 共识 vs 争议
+BilibiliCrawler       高频主题 / 几句金句    + 反例对冲 + 引用溯源
+平台自带导出          …然后就没有然后了      + 行动清单 + 盲区说明
+                                            ★ 这里</code></pre>
+
+    <div class="grid3" style="margin-top:44px">
+      <div class="card">
+        <div class="ic ic-a">⚖️</div>
+        <h3>反例对冲</h3>
+        <p>每条共识都必须配反方论据。语料一片和谐时，<b>必须主动去楼中楼与低权重长文里开采反例</b>，不能因为「没看到反例」就省略本章。</p>
+        <ul><li>实测：《火柴人 VS 数学》一级评论几乎全正向</li>
+          <li>实质反驳 <b>69 条全在楼中楼</b></li></ul>
+      </div>
+      <div class="card">
+        <div class="ic ic-b">🔗</div>
+        <h3>引用溯源</h3>
+        <p>每条带数据的结论都要标 <code>[源:ID|权重N|层级]</code>，并用脚本与语料全集做差集机验 —— <b>差集非空就不许交付</b>。</p>
+        <ul><li>靠这一步在自己产出的指南里 <b>抓到过 2 次幻觉引用</b></li>
+          <li>诚实的降级是减少引用条数，不是留一个「看起来对」的 ID</li></ul>
+      </div>
+      <div class="card">
+        <div class="ic ic-v">🫥</div>
+        <h3>盲区诚实说明</h3>
+        <p>主动披露四类偏差，并写清「哪些部分没读」。指南的附录不是装饰，是<b>可信度的一部分</b>。</p>
+        <ul><li>幸存者偏差 / 平台偏差</li>
+          <li>算法偏差 / 时间偏差</li></ul>
+      </div>
+    </div>
+
+    <div class="note">
+      <b>它不是</b>爬虫、情感饼图、词云、舆情仪表盘。<b>它是</b>一个把群体文本转成认知结构的 Skill ——
+      「把一堆七嘴八舌，炼成一份能照着做、且知道哪里可能错的东西」。
+    </div>
+  </div>
+</section>
+
+<!-- 02 PIPELINE -->
+<section id="pipeline" style="background:linear-gradient(180deg,transparent,rgba(15,24,48,.5),transparent)">
+  <div class="container">
+    <div class="sh">
+      <div class="idx">02 · PIPELINE</div>
+      <h2>六步流水线 · 全部可机验</h2>
+      <p>前三步是工程，后三步是判断。每一步的产物都落盘，任何一条结论都能倒推回具体条目。</p>
+    </div>
+
+    <div class="arch">
+      <div class="arch-row"><div class="n">1</div>
+        <div class="l">接入<small>Ingest</small></div>
+        <div class="r">任意平台的导出 CSV，或直接用桌面工具的「采集」页拉 B 站评论（含楼中楼）。字段别名自动识别，编码容错 <code>utf-8-sig → gb18030 → gbk</code>。</div>
+      </div>
+      <div class="arch-arrow">▼</div>
+      <div class="arch-row"><div class="n">2</div>
+        <div class="l">预处理<small>Prep</small></div>
+        <div class="r">按 ID 去重 → 去噪 → 按权重降序 → 产出规范语料 <code>corpus_ccf.csv</code>、易读文本 <code>all_comments.txt</code>、真信号区 <code>low_score_long.txt</code>、统计与 ID 溯源映射。<b>先看 <code>dup_dropped</code>，再信任何规模数字。</b></div>
+      </div>
+      <div class="arch-arrow">▼</div>
+      <div class="arch-row"><div class="n">3</div>
+        <div class="l">通读与聚类<small>Read &amp; Cluster</small></div>
+        <div class="r">超大语料用「头部通读 + 脚本精筛长尾」两段式：头部按权重读到 ≈8（约 850 条），长尾筛低权重长文再精读 30–40 条。<b>约 1/6 阅读量覆盖 ~95% 信号</b>，未读完的部分必须在附录披露。</div>
+      </div>
+      <div class="arch-arrow">▼</div>
+      <div class="arch-row"><div class="n">4</div>
+        <div class="l">框架抽取<small>Synthesize</small></div>
+        <div class="r">提炼认知框架，再跑三件套：<b>4.1 反例对冲</b> · <b>4.2 引用溯源</b> · <b>4.3 盲区诚实说明</b>。这三条是本项目与一切摘要工具的分水岭，任何情况下不许砍。</div>
+      </div>
+      <div class="arch-arrow">▼</div>
+      <div class="arch-row"><div class="n">5</div>
+        <div class="l">结构化输出<small>Emit</small></div>
+        <div class="r">深度版（默认）/ 标准版 / 极简版三档。深度版含：多章正文 + 共识 vs 争议 + 反例对冲 + 引用溯源 + 行动清单 + 精华句 + 元方法论 + 方法与边界。</div>
+      </div>
+      <div class="arch-arrow">▼</div>
+      <div class="arch-row"><div class="n">6</div>
+        <div class="l">验证<small>Verify</small></div>
+        <div class="r"><b>6.1 引用真实性机验（强制硬门）</b> · 6.2 覆盖度自查 · 6.3 人工校验钩子。差集为空才允许交付。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 03 EVIDENCE -->
+<section id="evidence">
+  <div class="container">
+    <div class="sh">
+      <div class="idx">03 · EVIDENCE</div>
+      <h2>七战实测：方法论是被数据打出来的，不是想出来的</h2>
+      <p>下面每个数字都能在仓库里指到出处：<code>cases/</code>（原始档案）、<code>docs/retrospective.md</code>（沉淀）、<code>docs/rule-provenance.md</code>（规则溯源）。</p>
+    </div>
+
+    <div class="grid3">
+      <div class="card" style="text-align:center">
+        <div class="big-num">22%</div>
+        <h3 style="margin:8px 0 4px">重复行缺陷</h3>
+        <p>某次抓取 20,399 行里 <b>4,501 行是纯重复</b>。危害不是规模虚高，而是<b>把同一条观点重复计入共识度</b>。</p>
+      </div>
+      <div class="card" style="text-align:center">
+        <div class="big-num">31.9%</div>
+        <h3 style="margin:8px 0 4px">楼中楼占条数</h3>
+        <p>却只占<b>点赞量 14.6%</b>（均赞 22.0 vs 一级 60.1）。声音小，但<b>反例与纠错几乎只在这里</b>。</p>
+      </div>
+      <div class="card" style="text-align:center">
+        <div class="big-num">12</div>
+        <h3 style="margin:8px 0 4px">高价值评论总赞数</h3>
+        <p>8 条最高价值评论的赞数总和只有 12，而同场<b>最高赞段子单条 236,396</b>。高权重 ≠ 高信号。</p>
+      </div>
+    </div>
+
+    <h3 style="margin:52px 0 6px;font-size:20px">七战档案</h3>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:6px">⚠️ 目录编号 ≠ 战次编号 —— <code>05-mustwatch-math/</code> 实际含第 6 + 7 战（同一视频，先抓一级、后全量补抓楼中楼）。</p>
+    <table class="tbl">
+      <thead><tr><th>战次</th><th>规模</th><th>语料</th><th>该战验证了什么</th></tr></thead>
+      <tbody>
+        <tr><td>第 1 战</td><td class="mono">1,504</td><td>B站「AI 替代程序员」</td><td>流水线可行性</td></tr>
+        <tr><td>第 2 战</td><td class="mono">3,425</td><td>B站《山》AI 电影</td><td>两场核心争议专场</td></tr>
+        <tr><td>第 3 战</td><td class="mono">5,052</td><td>B站「清北 discouraged」</td><td>楼中楼捞出一级评论缺失的 <b>7 个议题</b>，其中 4 条直接对冲前文结论</td></tr>
+        <tr><td>第 4 战</td><td class="mono">8,941</td><td>薪资 903 + 43 岁被裁 8,038</td><td>多语料合并产出单语料看不到的洞察；<b>引用机验首次抓到幻觉引用</b></td></tr>
+        <tr><td>第 6 + 7 战</td><td class="mono">21,100</td><td>B站「入站必刷·火柴人 VS 数学」</td><td>抓到并修复 22% 重复行缺陷；补抓 <b>6,724 条楼中楼</b>后<b>修正正卷 3 条结论</b></td></tr>
+      </tbody>
+    </table>
+
+    <div class="note warn">
+      <b>关于「注意力漂移 2.5×」这个数字</b>：一条与视频主题零相关的英语语法争论楼拿到 2,867 赞，
+      是同场「视频有无教育价值」实质辩论（1,142 赞）的 2.5 倍。但它是<b>单个语料里的单个比值</b>，
+      在仓库里被明确标记为 <code>[战7·单样本]</code> —— <b>不能当常数用</b>，唯一用途是提醒「高赞楼 ≠ 议题重要」。
+    </div>
+  </div>
+</section>
+
+<!-- 04 DOWNLOAD -->
+<section id="download" style="background:linear-gradient(180deg,transparent,rgba(15,24,48,.5),transparent)">
+  <div class="container">
+    <div class="sh">
+      <div class="idx">04 · USE IT</div>
+      <h2>三种用法，按你手上有什么选</h2>
+      <p>桌面工具负责把「一个视频链接」变成「一个开箱即用的语料包」；
+        蒸馏那一步交给你自己选的那个 AI —— 所以<b>不需要任何 API Key</b>。</p>
+    </div>
+
+    <div class="steps">
+      <div class="card">
+        <div class="circle" style="background:var(--acc)">1</div>
+        <h3>桌面工具（有链接）</h3>
+        <p>下载 exe → ① 采集 → ② 预处理 → ③ 导出蒸馏包 → ④ 引用校验。
+          第 ③ 步产出一个文件夹，里面既有给 AI 读的语料与方法论，也有可直接粘贴的提示词。</p>
+      </div>
+      <div class="card">
+        <div class="circle" style="background:var(--blue)">2</div>
+        <h3>装进 agent（有语料）</h3>
+        <pre style="text-align:left;font-size:12px;margin-top:8px"><code>npx skills add \
+  TrueFurina/comment-distillery</code></pre>
+        <p>把 <code>SKILL.md</code> 装进 Claude Code / Cursor / Codex 等任意 agent，
+          直接丢给它一份评论 CSV。</p>
+      </div>
+      <div class="card">
+        <div class="circle" style="background:var(--violet)">3</div>
+        <h3>零依赖脚本（要自动化）</h3>
+        <pre style="text-align:left;font-size:12px;margin-top:8px"><code>python scripts/prep.py \
+  corpus.csv out/
+python scripts/verify_citations.py \
+  guide.md corpus.csv</code></pre>
+        <p>纯标准库，可以直接塞进你自己的 CI 或批量管线。</p>
+      </div>
+    </div>
+
+    <div class="note">
+      <b>桌面工具的四个页签</b>：① <b>采集</b>（B 站链接 → 评论含楼中楼 → CSV，支持中途停止、已抓部分照常写出）
+      · ② <b>预处理</b>（去重/去噪/统计，先看 <code>dup_dropped</code>）
+      · ③ <b>导出蒸馏包</b>（一键打包，含 <code>PROMPT.md</code>）
+      · ④ <b>引用校验</b>（幻觉引用差集检测）。
+    </div>
+  </div>
+</section>
+
+<!-- 05 LIMITS -->
+<section id="limits">
+  <div class="container">
+    <div class="sh">
+      <div class="idx">05 · LIMITS</div>
+      <h2>已知局限（写在这里，而不是藏起来）</h2>
+      <p>这一节是本项目最该被读的部分。一个不肯说自己哪里会错的方法论，不值得被信任。</p>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="ic ic-w">⚠️</div>
+        <h3>判分器只卡形式，不判推断质量</h3>
+        <p><code>golden/</code> 的 8 个场景 / 4 类判据检查的是<b>引用是否真实、覆盖率是否诚实、反例是否开采</b>。
+          一条「引用真实但推理错误」的结论照样能拿满分。这是设计边界，不是 bug。</p>
+      </div>
+      <div class="card">
+        <div class="ic ic-w">⚠️</div>
+        <h3>单样本判据不能当常数</h3>
+        <p>「注意力漂移 2.5×」「低赞长文 pasta 污染」等观察只被 1 战验证过，
+          在 <code>SKILL.md</code> 里被降级标为 <code>[战N·待复现]</code>。
+          <b>看到这个标记就说明它是假设，不是规律。</b></p>
+      </div>
+      <div class="card">
+        <div class="ic ic-w">⚠️</div>
+        <h3>公开档案只有产物层</h3>
+        <p><code>cases/</code> 只包含各战指南与设计文档，<b>原始评论 CSV 不公开</b> ——
+          所以<b>你拿不到原始语料来复现我们的跑分</b>。要验证引用真实性，请用你自己的语料跑
+          <code>verify_citations.py</code>。</p>
+      </div>
+      <div class="card">
+        <div class="ic ic-w">⚠️</div>
+        <h3>示例语料是合成的</h3>
+        <p>仓库自带的 <code>examples/sample_corpus.csv</code> 是 26 条合成数据（去噪后 23 条），
+          只能演示流水线形状，<b>不构成任何统计意义上的代表性</b>。</p>
+      </div>
+    </div>
+
+    <div class="note warn">
+      <b>还有一条元观察</b>：七战里方法论被数据打穿了 5 次，共同点是
+      <b>「用代理指标代替真值」</b> ——
+      点赞数↔认可度、文本长度↔思考深度、楼层深度↔观点完整性、ID 格式↔引用真实、行数↔语料规模。
+      完整复盘见 <a href="https://github.com/TrueFurina/comment-distillery/blob/main/docs/retrospective.md">docs/retrospective.md</a>，
+      被推翻结论台账见 <a href="https://github.com/TrueFurina/comment-distillery/blob/main/docs/overturned.md">docs/overturned.md</a>。
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container" style="text-align:center">
+    <div class="logo" style="justify-content:center;margin-bottom:12px"><span class="mark">◈</span>comment-<em>distillery</em></div>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:6px">
+      把一堆群体文本，炼成一份有据可查的行动指南。
+    </p>
+    <p style="color:var(--dim);font-size:12px">
+      MIT License · 零第三方依赖 ·
+      <a href="https://github.com/TrueFurina/comment-distillery">github.com/TrueFurina/comment-distillery</a> ·
+      <a href="https://github.com/TrueFurina/comment-distillery/issues">Issues</a>
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>

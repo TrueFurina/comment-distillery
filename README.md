@@ -5,7 +5,7 @@
 
 [![CI](https://github.com/TrueFurina/comment-distillery/actions/workflows/ci.yml/badge.svg)](https://github.com/TrueFurina/comment-distillery/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Dependencies](https://img.shields.io/badge/dependencies-zero-success.svg)](#快速开始)
 
 ---
@@ -105,7 +105,29 @@ bbc-skill            …然后就没有然后了      + 行动清单 + 盲区说
 
 ## 快速开始
 
-### 装进你的 Agent（一条命令）
+> 官网：<https://truefurina.github.io/comment-distillery/>
+
+### 一、桌面工具（Windows，图形界面）
+
+不想碰命令行就用这个：
+
+**[⬇ 下载 comment-distillery.exe](https://github.com/TrueFurina/comment-distillery/releases/latest)** —— 约 11 MB，单文件免安装。
+
+四个页签依次走完：
+
+| 页签 | 干什么 |
+|---|---|
+| **① 采集** | B 站链接 → 评论（含楼中楼）→ CSV；支持中途停止，已抓部分照常写出 |
+| **② 预处理** | 去重 / 去噪 / 统计；**先看 `dup_dropped` 再信任何规模数字** |
+| **③ 导出蒸馏包** | 一键打包成一个文件夹：语料 + 方法论 + 可直接粘贴的 `PROMPT.md` |
+| **④ 引用校验** | 幻觉引用差集检测 —— 差集非空就不许交付 |
+
+**蒸馏那一步交给你自己选的那个 AI**（Claude / ChatGPT / Codex / WorkBuddy…），所以**不需要任何 API Key**，也不产生调用成本；方法论永远跟你手上那份 `SKILL.md` 一致，不会过期。
+
+> exe 未做代码签名，首次运行 Windows SmartScreen 会拦截，点「更多信息 → 仍要运行」即可（属正常现象，非病毒）。
+> 想自己构建：`python scripts/make_icon.py && python scripts/build_exe.py`。
+
+### 二、装进你的 Agent（一条命令）
 
 ```bash
 npx skills add TrueFurina/comment-distillery
@@ -113,9 +135,9 @@ npx skills add TrueFurina/comment-distillery
 
 兼容 Claude Code / Cursor / Codex / Windsurf / Copilot 等 40+ agent（由 `vercel-labs/skills` 自动解析安装位置）。只想看不装：`npx skills add TrueFurina/comment-distillery --list`。
 
-### 直接用脚本（零依赖）
+### 三、直接用脚本（零依赖）
 
-**零依赖，不需要 `pip install`。** 只要 Python 3.8+。
+**零依赖，不需要 `pip install`。** 只要 Python 3.10+。
 
 ```bash
 git clone https://github.com/TrueFurina/comment-distillery.git
@@ -138,6 +160,7 @@ python scripts/verify_citations.py 你的指南.md examples/sample_corpus.csv
 | `low_score_long.txt` | **低权重长文**——真信号区（见下方"反直觉发现"） |
 | `stats.json` | 规模 / 互动 / 作者多样性 / 时间样本 / 信号词 |
 | `id_map.json` | `id → 权重/层级/回复数`，**溯源的依据** |
+| `corpus_ccf.csv` | **规范语料**（Canonical Corpus Format）—— 引用机验与跨语料合并的单一真值源 |
 
 ---
 
@@ -273,6 +296,12 @@ comment-distillery/
 ├── SKILL.md                 # ★ 核心：给 agent 读的完整技能说明
 ├── README.md / README.en.md # 人读的说明
 ├── ROADMAP.md               # 长期规划（含验收门槛与停止条件）
+├── app_main.py              # 桌面工具入口（源码运行 / PyInstaller 打包共用）
+├── app/                     # ★ 桌面工具（tkinter，零第三方依赖）
+│   ├── core.py              #   逻辑层：委托调用 scripts/ 与 contrib/，无 GUI 依赖
+│   └── gui.py               #   界面层：唯一接触 GUI 的模块
+├── site/index.html          # 官网（单文件静态页，GitHub Pages 发布）
+├── assets/icon.ico          # 应用图标（由 scripts/make_icon.py 标准库手写生成）
 ├── docs/
 │   ├── canonical-format.md  # 统一语料格式 + 字段别名全表
 │   ├── collecting.md        # 语料从哪来：各平台现成采集工具对照
@@ -286,7 +315,9 @@ comment-distillery/
 ├── scripts/
 │   ├── prep.py              # 预处理（零依赖）
 │   ├── verify_citations.py  # 引用真实性机验（强制质量门）
-│   └── check_rule_tags.py   # 机验 SKILL.md 无「裸铁律」（带变异验证）
+│   ├── check_rule_tags.py   # 机验 SKILL.md 无「裸铁律」（带变异验证）
+│   ├── build_exe.py         # 打包桌面 exe（PyInstaller，仅构建期依赖）
+│   └── make_icon.py         # 标准库手写 ICO 生成器（不引入 Pillow）
 ├── golden/                  # 评估集：8 场景 / 4 类，判「改规则后是否变强」
 │   ├── README.md
 │   ├── cases/               # 场景集（纯数据 JSON）
@@ -303,7 +334,7 @@ comment-distillery/
 │   ├── 01…04/               # 第 1–4 战：真实语料 → 深度指南
 │   ├── 05-mustwatch-math/   # 第 6+7 战：正卷 15 章 + 增补卷 10 章（含 3 处结论修正）
 │   └── notes/               # 设计留档：方案论述 / 开源冲刺路线图
-└── tests/                   # 回归测试（CI 自动跑）
+└── tests/                   # 回归测试 61 项（CI 自动跑）
 ```
 
 > `cases/` **只放产出**（各战指南 + 设计文档，共 9 个 md / 277 KB）。
@@ -332,6 +363,7 @@ comment-distillery/
 - [x] **v1.1** — 场景升维：从"评论"扩为"任何群体文本"，统一语料格式 CCF
 - [x] **实战**（七战 / 约 4.5 万条）— 辩论层（楼中楼）补抓实证：单视频 21,100 条，增补卷修正正卷 3 处结论
 - [x] **v1.3** — golden 评估集：8 场景 / 4 类，baseline 100 分，31 个变异体验证判分器有效（见 [`golden/README.md`](golden/README.md)）
+- [x] **v1.4** — 交付形态：Windows 桌面 exe（采集→预处理→导出蒸馏包→引用校验）+ 官网（`site/`）
 - [ ] **v2** — 更多语料域的适配示例（问卷 / 访谈 / 工单）
 - [ ] **v2** — 跨语料聚合（同一议题的多来源合并分析）
 - [ ] **v2** — 真·人工校验 loop（关键结论的交互式确认）

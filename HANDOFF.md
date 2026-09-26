@@ -26,16 +26,28 @@
 ```
 E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 ├── .git/                                （HEAD 见 `git log -1`，remote: SSH）
-├── .github/workflows/ci.yml            （3 个 Python 版本，**9 步**：compileall / 零依赖守卫 / unittest / 无裸铁律 / 判据变异验证 / golden 变异 / golden 基线 / prep 冒烟 / 引用机验冒烟）
+├── .github/workflows/
+│   ├── ci.yml                           （3 个 Python 版本，**11 步**：compileall / 零依赖守卫 / 官网自检 / unittest / 无裸铁律 / 判据变异验证 / golden 变异 / golden 基线 / prep 冒烟 / 引用机验冒烟 / 冒烟产出展示）
+│   ├── build-exe.yml                    （CI 上真跑 PyInstaller 打包 + 双冒烟，上传 artifact）
+│   └── pages.yml                        （官网发布到 GitHub Pages）
+├── app_main.py                          （桌面工具入口：源码运行 / PyInstaller 共用；含 --selfcheck / --selftest-gui / --selftest-run）
+├── app/
+│   ├── core.py                          （★ 逻辑层：只委托 scripts/ 与 contrib/，零 GUI 依赖 → 可单测）
+│   └── gui.py                           （界面层：tkinter，唯一接触 GUI 的模块）
+├── site/index.html                      （官网单文件静态页；内容全部取自仓库真实数据）
+├── assets/icon.ico                      （应用图标，由 scripts/make_icon.py 标准库手写生成，不引 Pillow）
 ├── scripts/prep.py                      （预处理：编码容错 → 去重 → 去噪 → 按赞降序 → 导出）
 ├── scripts/verify_citations.py          （引用幻觉机验，强制质量门）
 ├── scripts/check_rule_tags.py           （机验 SKILL.md 无「裸铁律」，含变异自验）
+├── scripts/build_exe.py                 （PyInstaller 打包脚本，仅构建期依赖，不进运行期）
+├── scripts/make_icon.py                 （标准库手写 ICO）
 ├── contrib/fetch_bilibili_comments.py   （纯标准库 WBI 签名抓取，含去重与退避）
 ├── golden/                              （评估集：8 场景 / 4 类，判分器 + 跑分器 + 变异验证）
-├── ROADMAP.md                           （长期规划 P0–P5，含验收门槛与停止条件）
+├── ROADMAP.md                           （长期规划 P0–P5 + P3.5，含验收门槛与停止条件）
 ├── tests/test_prep.py                   （27 个用例）
 ├── tests/test_golden.py                 （12 个用例）
 ├── tests/test_rule_tags.py              （6 个用例）
+├── tests/test_app_core.py               （16 个用例，桌面工具逻辑层）
 ├── docs/collecting.md                   （各社区采集工具 + 许可证 + 风险对照）
 ├── docs/retrospective.md                （七战沉淀：五次修正 / 7 条判据 / 质量门 G1–G7）
 ├── docs/rule-provenance.md              （规则溯源：9 铁律 / 5 待复现 / 7 环境事实，附复现判据）
@@ -56,6 +68,25 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
         ├── memory-snapshot/            ❌ 不公开（会话记忆，非项目资产）
         └── migrate_to_E.py             ❌ 不公开（一次性迁移脚本，含本机路径）
 ```
+
+### 交付形态（2026-09-26 新增）
+
+三条入口并存，**共用同一条实现**（GUI 与 CLI 调用的是同一批函数，不存在两套逻辑）：
+
+| 入口 | 面向谁 | 命令 / 方式 |
+|---|---|---|
+| **桌面 exe**（`dist/comment-distillery.exe`，~11 MB） | 非技术用户 | 双击；四页签：采集 → 预处理 → 导出蒸馏包 → 引用校验 |
+| **装进 Agent** | Agent 用户 | `npx skills add TrueFurina/comment-distillery` |
+| **命令行脚本** | 开发者 / CI | `python scripts/prep.py …` / `python contrib/fetch_bilibili_comments.py …` |
+
+**关键设计决策：exe 不内置 LLM。** 它只产出「蒸馏包」（语料 + `SKILL.md` + 可直接粘贴的 `PROMPT.md`），蒸馏那一步交还用户自选的 AI。收益：零 API Key、零调用成本，且方法论永远引用仓库当前 `SKILL.md`，**不会随 exe 固化而过期**。
+
+**重构纪律（务必延续）**：`scripts/*.py` 的 `main(argv)` 签名**不可改** —— `tests/` 直接调它。新增能力一律以 `run()` / `crawl()` 形式**追加**。
+新增的三个可调用入口：`prep.run()` / `verify_citations.run()` / `fetch_bilibili_comments.crawl()`。
+
+**exe 未被代码签名** → 首次运行 Windows SmartScreen 会拦截，点「更多信息 → 仍要运行」。属正常现象，README 已写明。
+
+**官网数字纪律**：`site/index.html` 里每个数字都必须能在仓库中指到出处（测试数 / 场景数 / 规则分级 / 代码规模），改代码后**同步复核官网**，不要让它变成漂移源。
 
 **`cases/` 的公开口径（2026-09-26 用户拍板）**：只公开**产物层**（9 个 md / 277 KB）。
 `.gitignore` 用**扩展名白名单反向**实现（`/cases/**/*.{csv,txt,json,py,svg}` 全部忽略）——
@@ -138,10 +169,12 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 HEAD     见 `git log -1`（最后核验 2026-09-26 为 2cae432；**本文件每次提交后 hash 都会前进一格，属正常**——
          先前写法把 hash 写死，导致每次提交都要改一次，是自找的漂移源）
 origin   git@github.com:TrueFurina/comment-distillery.git   (SSH)
-CI       .github/workflows/ci.yml  **9 个质量门步骤**全绿
-         （compileall / 零依赖守卫 / unittest / 无裸铁律 / 判据变异验证 / golden 变异 / golden 基线 / prep 冒烟 / 引用机验冒烟；
-          最近三次 2cae432 / bbda7d0 / f685484 均 success）
+CI       .github/workflows/ci.yml  **11 个质量门步骤**全绿
+         （compileall / 零依赖守卫 / 官网自检 / unittest 61 项 / 无裸铁律 / 判据变异验证 /
+          golden 变异 / golden 基线 / prep 冒烟 / 引用机验冒烟 / 冒烟产出展示）
+         另有 build-exe.yml（真打包 + 双冒烟）与 pages.yml（官网发布）
 安装     npx skills add TrueFurina/comment-distillery   （--list 实测 Found 1 skill）
+桌面     双击 dist/comment-distillery.exe（~11 MB 单文件，未签名 → SmartScreen 会提示，属正常）
 迁移     E:\Program\comment-distillery，cases/ 已 gitignore，仅本地留存
 ```
 
@@ -164,8 +197,11 @@ CI       .github/workflows/ci.yml  **9 个质量门步骤**全绿
 9. 🟡 **P3 分发**（2026-09-26）：`npx skills add` 适配 ✅（实测 Found 1 skill）+ README 真实产出片段 ✅ + GitHub 元数据 ✅ + **topics 已补齐 ✅**（16 个，补入 `agent-skills` / `claude-skills` / `skills` / `ai-agents`——**由本地 token 直接调 API 执行，不需用户操作**）。**仅剩两项需要你的账号**——awesome 列表 PR（§1-B 有现成英文文案）/ 社区发帖（§1-C 有骨架）。我无账号、不代发公开内容。
 10. ✅ **`cases/` 产物层公开**（2026-09-26 用户拍板）：9 个 md / **277 KB** 进仓库（各战指南 + 设计留档）；原始语料与中间产物按 `docs/compliance.md` §2 **保持不公开**。实现与红线见 §二 的「公开口径」。
 11. ✅ **LICENSE 保留 MIT**（2026-09-26 用户确认）：依据是 `docs/compliance.md` §0——"本项目可以 MIT 开源、可被企业采用"。**不适用**"原创项目一律不加 LICENSE"这条个人规则（它针对私有项目；公开仓库无 LICENSE = 保留所有权利，反而与分发目标矛盾）。
+12. ✅ **P3.5 交付形态**（2026-09-26）：Windows 桌面 exe（`app/` + `app_main.py`）+ 官网（`site/`）+ 可复现构建（`scripts/make_icon.py` / `scripts/build_exe.py` / `build-exe.yml` / `pages.yml`）。**exe 三项自检全 PASS**（资源齐全 / 真建窗口 / 端到端跑通预处理→打包→引用机验）。设计决策与回滚方式见 `ROADMAP.md` §P3.5。
+13. ✅ **顺带修掉两个真 bug**（2026-09-26）：① `verify_citations.py` 的 `--field` 参数一直被解析却从未传下去（形同虚设），已接通；② `crawl()` 的协作式停止钩子与 `_CallbackWriter` —— GUI 中途停止时已抓部分照常写出。
+14. ⏳ **GitHub Release + Pages 首发**：tag `v1.4.0` 与 exe 挂载需**推送到远端后**执行（本地无法验证 Pages 生效）。若首次 Pages 部署失败，最常见原因是仓库 Settings → Pages 的 Source 未切到 **GitHub Actions**。
 
-**当前状态（2026-09-26）**：P0 / P1 / P2 已闭环，P3 适配侧全部完成（含 topics 补齐），`cases/` 产物层已公开。**代码侧无待办。** 剩余只有「需要你本人账号」的两项公开动作（awesome PR ×3 / 社区发帖），文案与命令已就位，见 `docs/distribution.md`。**P4 经拍板不做**（保留合成样例；原始语料明确无需备份）。**P5 为长线研究问题，不设 deadline**。
+**当前状态（2026-09-26）**：P0 / P1 / P2 已闭环，P3 适配侧全部完成（含 topics 补齐），**P3.5 交付形态完成**，`cases/` 产物层已公开。**代码侧无待办。** 剩余只有两类「需要你本人账号 / 远端侧」的动作：① awesome PR ×3 与社区发帖（文案命令已就位，见 `docs/distribution.md`）；② Release 首发后核验 Pages 与下载链接生效。**P4 经拍板不做**（保留合成样例；原始语料明确无需备份）。**P5 为长线研究问题，不设 deadline**。
 
 ---
 
@@ -185,7 +221,9 @@ CI       .github/workflows/ci.yml  **9 个质量门步骤**全绿
 ## 八、快速上手命令
 
 ```bash
-PY="C:/Users/Lenovo/.workbuddy/binaries/python/versions/3.13.12/python.exe"
+PY="C:/Users/Lenovo/.workbuddy/binaries/python/versions/3.13.12/python.exe"   # 托管 3.13，零依赖脚本用
+PY313="C:/Users/Lenovo/AppData/Local/Programs/Python/Python313/python.exe"    # 官方 3.13，**带 tkinter**（GUI / 打包用）
+BUILD_PY="E:/Program/_cd_build/venv313/Scripts/python.exe"                    # 独立构建 venv（tkinter + PyInstaller 6.22.3）
 REPO="E:/Program/comment-distillery"
 
 # 预处理
@@ -195,7 +233,20 @@ REPO="E:/Program/comment-distillery"
 "$PY" "$REPO/scripts/verify_citations.py" <guide.md> <corpus.csv>
 
 # 本地复现 CI
-cd "$REPO" && "$PY" -m compileall -q scripts/ tests/ && "$PY" -m unittest discover -s tests
+cd "$REPO" && "$PY" -m compileall -q scripts/ tests/ golden/ app/ contrib/ && "$PY" -m unittest discover -s tests
+
+# 桌面工具（源码运行；GUI 需带 tkinter 的解释器，托管 Python 3.13 无 tkinter）
+"$PY313" "$REPO/app_main.py" --selfcheck                    # 资源齐全性（结果落盘 --report <path>）
+"$PY313" "$REPO/app_main.py" --selftest-gui                 # 真建窗口后自动关闭
+"$PY313" "$REPO/app_main.py" --selftest-run <outdir>        # 端到端：预处理→打包→引用机验
+
+# 打 exe（构建期需 PyInstaller；用带 tkinter 的 Python 建独立 venv）
+"$PY" "$REPO/scripts/make_icon.py"                          # 生成 assets/icon.ico（标准库手写）
+"$BUILD_PY" "$REPO/scripts/build_exe.py"                    # 产出 dist/comment-distillery.exe
+"$BUILD_PY" "$REPO/scripts/build_exe.py" --verify           # ★ 产物内资源是否与仓库逐项一致（防陈旧副本）
+"$REPO/dist/comment-distillery.exe" --selfcheck --report <path>
+"$REPO/dist/comment-distillery.exe" --selftest-run <dir>    # 端到端
+# 注：本地若有"批量删除守卫"，`--clean` 可能被拦；不加 --clean 直接重建即可（--noconfirm 会覆盖）。
 
 # golden 评估集（改 SKILL.md / 换模型后是否变强，用它测）
 "$PY" "$REPO/golden/run_golden.py" --self-test          # 变异验证：判分器是否真能扣分（CI 强制）

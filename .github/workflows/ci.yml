@@ -26,15 +26,33 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: 语法检查（stdlib compileall）
-        run: python -m compileall -q scripts/ tests/ golden/
+        run: python -m compileall -q scripts/ tests/ golden/ app/ contrib/
 
       - name: 守卫「零依赖」承诺
         run: |
-          if grep -rEn '^[[:space:]]*(import|from)[[:space:]]+(requests|urllib3|pandas|numpy|bs4|lxml|aiohttp|httpx)\b' scripts/ tests/; then
-            echo "::error::核心脚本引入了第三方依赖，违反零依赖承诺"
+          if grep -rEn '^[[:space:]]*(import|from)[[:space:]]+(requests|urllib3|pandas|numpy|bs4|lxml|aiohttp|httpx)\b' scripts/ tests/ app/ contrib/; then
+            echo "::error::核心代码引入了第三方依赖，违反零依赖承诺"
             exit 1
           fi
-          echo "✅ scripts/ 与 tests/ 均未引入第三方依赖"
+          echo "✅ scripts/ tests/ app/ contrib/ 均未引入第三方依赖（tkinter 属标准库）"
+
+      - name: 官网自检（单文件 / 无外链资源 / 锚点齐全）
+        run: |
+          python - <<'PY'
+          import re, pathlib, sys
+          html = pathlib.Path("site/index.html").read_text(encoding="utf-8")
+          bad = re.findall(r'(?:src|href)="https?://[^"]+\.(?:js|css|woff2?)"', html)
+          if bad:
+              print("发现外链资源：", bad); sys.exit(1)
+          ids = set(re.findall(r'\bid="([^"]+)"', html))
+          missing = sorted(set(re.findall(r'href="#([^"]+)"', html)) - ids)
+          if missing:
+              print("导航锚点无对应元素：", missing); sys.exit(1)
+          for tag in ("<html", "</html>", "<head>", "</head>", "<body>", "</body>"):
+              if tag not in html:
+                  print("缺少结构标签：", tag); sys.exit(1)
+          print(f"✅ 官网自检通过：{len(html)} 字符 / {len(ids)} 个锚点目标")
+          PY
 
       - name: 回归测试（纯标准库 unittest）
         run: python -m unittest discover -s tests -v

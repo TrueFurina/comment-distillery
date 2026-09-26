@@ -16,6 +16,9 @@
 | 英文 README 第一屏真实输出片段 | ✅ | 新增「What the output actually looks like」——引用溯源 / 反例对冲 / 行动清单 / 自曝盲区，四段全取真实产出 |
 | 中文 README 同步 | ✅ | 同上，加「真实产出长什么样」+ 安装命令 |
 | GitHub 仓库元数据 | ✅ | description 已设；topics **16 个**（已补入 `agent-skills` / `claude-skills` / `skills` / `ai-agents`） |
+| **落地形态：桌面 exe + 官网**（P3.5） | ✅ | `dist/comment-distillery.exe`（~11 MB，四页签全流程）+ `site/index.html`（单文件静态页，GitHub Pages 发布）；构建可复现（`scripts/build_exe.py` / `scripts/make_icon.py` / `build-exe.yml`）。**理由见 `ROADMAP.md` §P3.5：分发渠道铺得再开，若落地页要求用户先装 Node 再跑 npx，转化会在第一步断掉。** |
+
+**为什么先做 P3.5 再做渠道**：渠道动作（awesome PR / 社区发帖）触达的是**已经会用 skills CLI 的人**，而这条路最窄。桌面 exe 把门槛降到「下载、双击」，它决定的是**分母**；渠道只决定在这个分母里被看见的概率。顺序错了，等于拿最窄的入口去铺最广的渠道。
 
 **适配时确认的关键规范**（来自 vercel-labs/skills 生态文档，非猜测）：
 
@@ -160,6 +163,22 @@ Ask:   想要的是"有没有人也在做 L3 综合"的讨论，不是 star。
 
 **元论点（这篇文章真正值钱的地方）**：五次失效的共同点是**用代理指标代替真值**——
 点赞数↔认可度、文本长度↔思考深度、楼层深度↔观点完整性、ID 格式↔引用真实、行数↔语料规模。
+
+### E. Release 首发与 Pages 核验（需要你的仓库权限，5 分钟）
+
+代码侧已全部就位，剩下两步**必须在推送到远端之后**做，本地验证不了：
+
+1. **打 tag 并发 Release**（把 `dist/comment-distillery.exe` 挂上去，Release 正文附 SHA-256）：
+   ```bash
+   git tag -a v1.4.0 -m "v1.4.0 — 桌面工具 + 官网"
+   git push origin v1.4.0
+   gh release create v1.4.0 dist/comment-distillery.exe \
+     --title "v1.4.0 — Windows 桌面工具 + 官网" \
+     --notes-file <(sed -n '/## \[1.4.0\]/,/^---$/p' CHANGELOG.md)
+   ```
+   或用网页端 Releases → Draft a new release → 选 `v1.4.0` → 上传 exe。
+2. **核验 Pages 生效**：推送后到 Actions 看 `pages` 工作流。若失败，**最常见原因是仓库 Settings → Pages 的 Source 没切到 `GitHub Actions`**（默认是 `Deploy from a branch`，本仓库没有 `gh-pages` 分支，会 404）。
+3. **核验下载链路**：打开 <https://truefurina.github.io/comment-distillery/>，点「下载 exe」应落到 Release 页；确认 SmartScreen 提示属正常（未签名）。
 
 ---
 

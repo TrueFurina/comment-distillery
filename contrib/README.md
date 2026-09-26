@@ -21,6 +21,8 @@ L1 采集   →  L2 统计摘要  →  L3 建设性综合
 |---|---|
 | `fetch_bilibili_comments.py` | B站评论拉取（纯标准库、零依赖），输出符合 CCF 的 CSV |
 
+> **也被桌面工具复用**：`app/core.py` 调用本文件的 `crawl(arg, out_csv, roots_only, on_log, on_progress, should_stop)`，不另写一份抓取逻辑。**改本文件时要保证 `crawl()` 的参数语义不变**（GUI 的 ① 采集 页签依赖 `on_progress` 回调与 `should_stop` 协作式停止：中途停止时已抓部分照常写出）。
+
 ### 用法
 
 ```bash

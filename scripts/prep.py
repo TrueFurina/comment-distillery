@@ -109,20 +109,17 @@ def to_int(v):
         return 0
 
 
-def main(argv=None):
-    ap = argparse.ArgumentParser(description="comment-distillery 预处理")
-    ap.add_argument("input", help="语料 CSV 路径")
-    ap.add_argument("outdir", nargs="?", default=".", help="输出目录（默认当前目录）")
-    ap.add_argument("--low-max", type=int, default=DEFAULT_LOW_MAX,
-                    help=f"低权重阈值，score<=此值视为低权重（默认 {DEFAULT_LOW_MAX}）")
-    ap.add_argument("--low-min-len", type=int, default=DEFAULT_LOW_MIN_LEN,
-                    help=f"长文阈值，字符数>=此值视为长文（默认 {DEFAULT_LOW_MIN_LEN}）")
-    args = ap.parse_args(argv)
+def run(input_path, outdir, low_max=DEFAULT_LOW_MAX, low_min_len=DEFAULT_LOW_MIN_LEN):
+    """执行完整预处理，返回 (stats, paths)。
 
-    path, outdir = args.input, args.outdir
+    单一实现：CLI(main) 与桌面 GUI(app/core.py) 共用同一条逻辑，
+    避免"两套实现各自漂移"——本项目对数字漂移零容忍。
+
+    paths 键: all_comments / low_score_long / stats / id_map
+    """
     os.makedirs(outdir, exist_ok=True)
 
-    rows, names = load_rows(path)
+    rows, names = load_rows(input_path)
     f_id = map_field(names, "id")
     f_content = map_field(names, "content")
     f_score = map_field(names, "score")
@@ -185,11 +182,11 @@ def main(argv=None):
 
     # ---- 低权重长文（真信号区）----
     low_long = [x for x in recs
-                if x["score"] <= args.low_max and len(x["content"]) >= args.low_min_len]
+                if x["score"] <= low_max and len(x["content"]) >= low_min_len]
     low_long.sort(key=lambda x: -len(x["content"]))
     low_path = os.path.join(outdir, "low_score_long.txt")
     with open(low_path, "w", encoding="utf-8") as f:
-        f.write(f"# 低权重长文（权重<={args.low_max} 且 字数>={args.low_min_len}），按字数降序，共 {len(low_long)} 条\n\n")
+        f.write(f"# 低权重长文（权重<={low_max} 且 字数>={low_min_len}），按字数降序，共 {len(low_long)} 条\n\n")
         for x in low_long:
             f.write(f"[{x['id']} | 权重{x['score']} | {x['floor']} | 复{x['reply']}]\n{x['content']}\n\n")
 
@@ -234,9 +231,42 @@ def main(argv=None):
                     "reply": x["reply"]} for x in recs],
                   f, ensure_ascii=False, indent=2)
 
-    print(f"OK raw={raw} denoised={n} (一级{n - n_sub}/回复{n_sub}) "
-          f"score_sum={score_sum} low_long={len(low_long)}\n"
-          f"   -> {txt_path}\n   -> {low_path}\n   -> {stats_path}\n   -> {map_path}")
+    # ---- 规范语料 CSV（Canonical Corpus Format）----
+    # 下游（蒸馏包导出 / 引用机验 / 跨语料合并）都以它为单一真值源，
+    # 不必再各自去猜原始 CSV 的列名与脏值。
+    ccf_path = os.path.join(outdir, "corpus_ccf.csv")
+    ccf_cols = ["id", "content", "score", "reply", "time", "floor", "uid", "source"]
+    with open(ccf_path, "w", encoding="utf-8-sig", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=ccf_cols)
+        w.writeheader()
+        for x in recs:
+            w.writerow({k: x[k] for k in ccf_cols})
+
+    return stats, {
+        "all_comments": txt_path,
+        "low_score_long": low_path,
+        "stats": stats_path,
+        "id_map": map_path,
+        "corpus_ccf": ccf_path,
+    }
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description="comment-distillery 预处理")
+    ap.add_argument("input", help="语料 CSV 路径")
+    ap.add_argument("outdir", nargs="?", default=".", help="输出目录（默认当前目录）")
+    ap.add_argument("--low-max", type=int, default=DEFAULT_LOW_MAX,
+                    help=f"低权重阈值，score<=此值视为低权重（默认 {DEFAULT_LOW_MAX}）")
+    ap.add_argument("--low-min-len", type=int, default=DEFAULT_LOW_MIN_LEN,
+                    help=f"长文阈值，字符数>=此值视为长文（默认 {DEFAULT_LOW_MIN_LEN}）")
+    args = ap.parse_args(argv)
+
+    stats, out = run(args.input, args.outdir, args.low_max, args.low_min_len)
+    print(f"OK raw={stats['total_raw']} denoised={stats['total_after_denoise']} "
+          f"(一级{stats['n_top_level']}/回复{stats['n_reply']}) "
+          f"score_sum={stats['score_sum']} low_long={stats['n_low_score_long']}\n"
+          f"   -> {out['all_comments']}\n   -> {out['low_score_long']}\n"
+          f"   -> {out['stats']}\n   -> {out['id_map']}")
 
 
 if __name__ == "__main__":

@@ -36,7 +36,22 @@ python -m unittest discover -s tests -v
 # 端到端冒烟
 python scripts/prep.py examples/sample_corpus.csv /tmp/cd-out
 python scripts/verify_citations.py examples/sample_guide.md examples/sample_corpus.csv
+
+# 桌面工具（GUI 需带 tkinter 的解释器；逻辑层 app/core.py 不依赖 GUI，可单独测）
+python -m unittest tests.test_app_core -v      # 逻辑层 16 个用例
+python app_main.py --selfcheck                 # 随包资源齐全性（--report <path> 落盘）
+python app_main.py --selftest-gui              # 真建窗口、真跑事件循环后自动退出
+python app_main.py --selftest-run /tmp/cd-run  # 端到端：预处理 → 导出包 → 引用机验
+
+# 打包后（需 PyInstaller + 带 tkinter 的解释器）
+python scripts/make_icon.py && python scripts/build_exe.py
+python scripts/build_exe.py --verify           # ★ 产物内资源与仓库是否逐项一致（防"陈旧副本"）
 ```
+
+**改动 GUI 时的三条纪律**：
+1. `scripts/*.py` 的 `main(argv)` 签名**不可改**（`tests/` 直接调它）。要复用就**追加** `run()` / `crawl()` 这类可调用入口，让 CLI 与 GUI 共用同一条实现——**不要复制一份逻辑到 `app/`**。
+2. 方法论相关的一切（流程步骤、判据、提示词）**必须读仓库当前文件**（`SKILL.md` / `docs/`），不要硬编码进 `app/`。exe 内固化提示词 = 上线即过期。
+3. 打包后**必须真启动一次**（`--selfcheck` / `--selftest-gui` / `--selftest-run`）再宣称可用。「装上了 ≠ 能用」是本项目的硬教训。
 
 ### 提交前自检清单
 
@@ -45,6 +60,7 @@ python scripts/verify_citations.py examples/sample_guide.md examples/sample_corp
 - [ ] 没有引入第三方依赖
 - [ ] 没有提交真实数据 / 凭证
 - [ ] 若改了 CLI 参数或产出格式，同步更新 `README.md`、`docs/`、`SKILL.md`
+- [ ] 若改了测试数 / 场景数 / 规则分级等**可计数**的事实，同步更新 `site/index.html`（官网每个数字都必须能在仓库里指到出处）
 - [ ] 若修了 bug，在 `CHANGELOG.md` 记录（说明**根因**，不只是"修了个 bug"）
 
 ---

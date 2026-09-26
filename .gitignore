@@ -60,3 +60,9 @@ tmp/
 .workbuddy/
 # golden 跑分报告（随时可重生成，不进仓库）
 golden/results/
+
+# ── PyInstaller 构建产物（体积大、可随时重建，不进仓库）──
+# 发布走 GitHub Release 挂载 exe，仓库里只留构建脚本。
+/build/
+/dist/
+*.spec

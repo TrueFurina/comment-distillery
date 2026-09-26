@@ -1,0 +1,109 @@
+name: Build Windows exe
+
+# 可复现的 exe 构建：在干净的 windows runner 上打包并跑完两道冒烟，
+# 再把产物挂到指定 Release。
+#
+# v1.4.0 的发布资产是用同一条命令在本地 3.13 环境构建并冒烟验证的
+# （SHA-256 见 Release 说明）。本工作流供后续无人值守重建使用。
+#
+# 本地等价命令：
+#   python scripts/make_icon.py
+#   python scripts/build_exe.py --clean
+#   dist\comment-distillery.exe --selfcheck
+#   dist\comment-distillery.exe --selftest-run <dir>
+#   dist\comment-distillery.exe --selftest-gui
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "要挂载产物的 Release 标签（如 v1.4.0）。留空则只留 Artifact。"
+        required: false
+        default: ""
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: 安装构建期依赖（PyInstaller 只存在于构建期，不进产物逻辑）
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pyinstaller
+
+      - name: 生成图标（纯标准库手写 ICO，不引入 Pillow）
+        run: python scripts/make_icon.py
+
+      - name: 打包
+        run: python scripts/build_exe.py --clean
+
+      - name: 核验产物内资源与仓库逐项一致（防陈旧副本）
+        run: python scripts/build_exe.py --verify
+
+      - name: 冒烟① 随包资源自检
+        shell: pwsh
+        run: |
+          $exe = "dist/comment-distillery.exe"
+          $rep = Join-Path $env:RUNNER_TEMP "selfcheck.txt"
+          $p = Start-Process -FilePath $exe -ArgumentList "--selfcheck", "--report", $rep -Wait -PassThru
+          Get-Content $rep
+          if ($p.ExitCode -ne 0) { Write-Error "selfcheck 失败"; exit 1 }
+
+      - name: 冒烟② 端到端跑通（预处理 → 打包 → 引用机验）
+        shell: pwsh
+        run: |
+          $exe = "dist/comment-distillery.exe"
+          $out = Join-Path $env:RUNNER_TEMP "cdout"
+          $rep = Join-Path $env:RUNNER_TEMP "run.txt"
+          $p = Start-Process -FilePath $exe -ArgumentList "--selftest-run", $out, "--report", $rep -Wait -PassThru
+          Get-Content $rep
+          if ($p.ExitCode -ne 0) { Write-Error "端到端自检失败"; exit 1 }
+
+      # runner 无交互桌面，GUI 初始化可能不可用故不设为硬门；
+      # 本地构建时这一步是必须过的（v1.0.0 本地实测 exit 0）。
+      - name: 冒烟③ 真建窗口（headless runner 上允许跳过）
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          $p = Start-Process -FilePath "dist/comment-distillery.exe" -ArgumentList "--selftest-gui" -Wait -PassThru
+          Write-Host "gui smoke exit=$($p.ExitCode)"
+
+      - name: 记录产物哈希
+        shell: pwsh
+        run: |
+          $h = (Get-FileHash dist/comment-distillery.exe -Algorithm SHA256).Hash.ToLower()
+          $size = [math]::Round((Get-Item dist/comment-distillery.exe).Length / 1MB, 1)
+          "SHA256=$h"  | Tee-Object -FilePath dist/SHA256.txt
+          "SIZE_MB=$size" | Tee-Object -FilePath dist/SHA256.txt -Append
+          # 与站点上写的体积做一致性检查，防止文档漂移
+          $site = Select-String -Path site/index.html -Pattern '下载 exe · ([\d.]+) MB' -AllMatches
+          $claimed = $site.Matches[0].Groups[1].Value
+          Write-Host "站点标注 $claimed MB / 实际 $size MB"
+          if ($claimed -ne "$size") { Write-Warning "站点体积标注与实际产物不一致，请更新 site/index.html" }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: comment-distillery-exe
+          path: |
+            dist/comment-distillery.exe
+            dist/SHA256.txt
+
+      - name: 挂载到 Release
+        if: startsWith(github.ref, 'refs/tags/v') || inputs.tag != ''
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $tag = if ($env:GITHUB_REF -like 'refs/tags/*') { $env:GITHUB_REF -replace '^refs/tags/','' } else { "${{ inputs.tag }}" }
+          gh release view $tag 2>$null
+          if ($LASTEXITCODE -ne 0) { gh release create $tag --title $tag --notes "见仓库 CHANGELOG" }
+          gh release upload $tag dist/comment-distillery.exe dist/SHA256.txt --clobber

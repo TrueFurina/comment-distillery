@@ -1,0 +1,63 @@
+name: Deploy site
+
+# 官网是纯静态单文件（site/index.html），用官方 Pages 动作直接发布。
+# 不走「分支根目录 /docs」那条路：docs/ 里是 Markdown 文档，根路径没有 index.html。
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同一时间只跑一个部署；新的推送打断排队中的旧任务，但不打断正在跑的部署
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 站点自检（单文件、无外链依赖、关键锚点齐全）
+        run: |
+          set -e
+          test -f site/index.html || { echo "缺少 site/index.html"; exit 1; }
+          python3 - <<'PY'
+          import re, pathlib, sys
+          html = pathlib.Path("site/index.html").read_text(encoding="utf-8")
+          # 1) 不允许引用外部脚本/样式/字体（离线可开、无第三方追踪）
+          bad = re.findall(r'(?:src|href)="https?://[^"]+\.(?:js|css|woff2?)"', html)
+          if bad:
+              print("发现外链资源：", bad); sys.exit(1)
+          # 2) 导航锚点必须都能找到对应元素
+          ids = set(re.findall(r'\bid="([^"]+)"', html))
+          anchors = set(re.findall(r'href="#([^"]+)"', html))
+          missing = sorted(anchors - ids)
+          if missing:
+              print("导航锚点无对应元素：", missing); sys.exit(1)
+          # 3) 基本结构完整
+          for tag in ("<html", "</html>", "<head>", "</head>", "<body>", "</body>"):
+              if tag not in html:
+                  print("缺少结构标签：", tag); sys.exit(1)
+          print(f"OK 站点自检通过：{len(html)} 字符 / {len(ids)} 个锚点目标")
+          PY
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
