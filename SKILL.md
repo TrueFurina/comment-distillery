@@ -189,6 +189,10 @@ id,text,parent_id,is_reply,score,reply_count,created_at,author_id,source
 - **引用机验脚本的两个已知误报** `[环境]`：① markdown 表格里的转义竖线 `\|` 会被当成引用分隔符；② 文档正文里**提及**某个错误 ID（用于说明"这是幻觉"）反而被当成真引用。写指南时避开在这两种位置出现引用格式。
 - **GitHub 推送两条通道，哪条通走哪条** `[环境]`：`github.com:443` 直连可能被阻断（`curl` 到 `api.github.com` 通但 `git` 不通，表现为 fetch `Connection reset`）；改用 **SSH**（`ssh.github.com:443` 与 `github.com:22` 实测均可用）。若走 HTTPS，`gho_` 类 token **必须 URL 内嵌**（`https://x-access-token:${TOKEN}@github.com/...`），用 `Authorization: Bearer` header 会报 invalid。
 - **⚠️ `.gitignore` 里写 `cases/` 会吞掉任意层级的同名目录** `[环境]`：gitignore 中不带前导斜杠的目录名匹配**任意层级**，实测导致 `golden/cases/` 被一并忽略——`git add golden` 静默跳过场景文件，**既不报错也不进暂存区**，只会在核对清单时才发现少了一整个目录。**必须写成 `/cases/` 锚定仓库根**；同理检查 `data/` / `out/` / `tmp/` 等条目。
+- **Windows 控制台默认 cp1252 → `print` 中文直接抛 `UnicodeEncodeError`** `[环境]`：报错看着像逻辑错，实际是编码错（**本地中文区域是 cp936，一切正常，所以极易漏到 CI 才炸**）。实测 GitHub 的 windows runner 因此让整个构建步骤失败。两头修：① 脚本入口 `sys.stdout.reconfigure(encoding="utf-8", errors="replace")`；② CI 设 `PYTHONUTF8=1`，并加一道「在 `PYTHONIOENCODING=cp1252` 下跑一遍」的守卫步骤。
+- **PowerShell 5.1 的 `Select-String` 默认按 ANSI 读文件** `[环境]`：拿它去匹配**无 BOM 的 UTF-8** 中文（如从 `site/index.html` 里抓体积标注）会乱码、静默匹配不到，下一步 `$Matches[0]` 直接索引越界失败。必须显式 `Get-Content -Raw -Encoding UTF8` + `[regex]::Match`。
+- **PyInstaller 的 `--add-data` 一旦配合 `--specpath`，相对路径会相对 spec 目录解析** `[环境]`：实测报 `Unable to find build/SKILL.md`。**一律传绝对路径**。
+- **打包产物里的资源是"快照"，自检只看"在不在"** `[环境]`：改了 `SKILL.md`/脚本忘重建，exe 外表无异常、启动自检照样 PASS，但用户导出的包里是过期方法论。**必须做内容级核验**（读产物归档、与仓库逐项比对 SHA-256）。
 
 ---
 

@@ -18,6 +18,8 @@
 - `tests/test_app_core.py`（16 个用例，全量 45 → **61**）。
 
 ### Fixed
+- **CI 的 Windows 打包工作流整步失败：`print` 中文在 cp1252 控制台上抛 `UnicodeEncodeError`**（tag 首跑实测暴露）。报错看着像逻辑错，实际是编码错——**本地中文区域是 cp936 所以一切正常，问题只在 CI 才现形**。两头修：① 五个脚本入口加 `utf8_stdout()`（`sys.stdout.reconfigure(encoding="utf-8", errors="replace")`，被重定向成 StringIO 时静默跳过）；② `build-exe.yml` 统一设 `PYTHONUTF8=1`；③ `ci.yml` 加一道**编码守卫**步骤：在 `PYTHONIOENCODING=cp1252` 下真跑一遍「话最多」的四个脚本，锁死这类回归（顺带断言图标重生成字节不变 = 构建可复现）。
+- **CI 哈希步骤的 `Select-String` 按 ANSI 读无 BOM 的 UTF-8 文件**：从 `site/index.html` 抓体积标注必然乱码 → 匹配不到 → 下一步 `$Matches[0]` 索引越界。改用 `Get-Content -Raw -Encoding UTF8` + `[regex]::Match`，并在正则未命中时给出明确错误而不是让 PowerShell 抛异常。
 - **`verify_citations.py` 的 `--field` 参数形同虚设**：一直被 argparse 解析，却从未传进 `load_ids()`，显式指定列名等于无效。现已接通，并补了「显式指定 → 命中；指定不存在的列 → 回退」的双向验证。
 - **重复评论未被去重**（第六战实测发现）：一份 20,399 行的抓取结果里，**4,501 行是同 ID、同内容、同赞数的完全重复行**（占 22%），根因是热度排序（`mode=3`）下点赞数实时变化、分页游标在相邻页之间重叠。后果不只是规模虚高——**它会让同一条观点被重复计入共识度**，直接污染"高赞即共识"的判断。修复：
   - `scripts/prep.py` 在去噪前按 ID 去重，并在 `stats.json` 新增 `dup_dropped` 字段；

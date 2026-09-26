@@ -32,6 +32,16 @@ ID_ALIASES = ["评论id", "comment_id", "commentid", "cid", "id", "评论编号"
 DEFAULT_PATTERNS = [r"c\d{6,}", r"\b\d{8,}\b"]
 
 
+def utf8_stdout():
+    """stdout/stderr 切 UTF-8：Windows 控制台可能是 cp1252，print 中文会
+    UnicodeEncodeError（实测 GitHub windows runner 因此整步失败）。"""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+
+
 def load_ids(path, field=None):
     """读取语料 CSV 的全部 ID（编码容错）。
 
@@ -146,6 +156,7 @@ def run(guide, corpora, field=None, patterns=None):
 
 
 def main(argv=None):
+    utf8_stdout()
     ap = argparse.ArgumentParser(description="引用真实性机验（幻觉引用检测）")
     ap.add_argument("guide", help="待验的指南 markdown")
     ap.add_argument("corpora", nargs="+", help="一个或多个语料 CSV（引用必须来自它们的并集）")

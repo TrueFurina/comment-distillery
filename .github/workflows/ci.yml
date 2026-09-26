@@ -36,6 +36,23 @@ jobs:
           fi
           echo "✅ scripts/ tests/ app/ contrib/ 均未引入第三方依赖（tkinter 属标准库）"
 
+      - name: 编码守卫（cp1252 控制台下 print 中文不得崩溃）
+        # 实锤过的坑：Windows 控制台默认 cp1252，脚本 print 中文会 UnicodeEncodeError。
+        # GitHub 的 windows runner 就这样让整个构建步骤失败过——报错看着像逻辑错，其实是编码错。
+        # 这里在 cp1252 下跑一遍最"话多"的脚本，锁死这类回归。
+        run: |
+          sha_before=$(sha256sum assets/icon.ico | cut -d' ' -f1)
+          PYTHONIOENCODING=cp1252 python scripts/make_icon.py
+          sha_after=$(sha256sum assets/icon.ico | cut -d' ' -f1)
+          if [ "$sha_before" != "$sha_after" ]; then
+            echo "::error::图标生成不确定（重跑字节不同）——产物不可复现"
+            exit 1
+          fi
+          PYTHONIOENCODING=cp1252 python scripts/check_rule_tags.py
+          PYTHONIOENCODING=cp1252 python scripts/prep.py examples/sample_corpus.csv /tmp/cd-enc
+          PYTHONIOENCODING=cp1252 python scripts/verify_citations.py examples/sample_guide.md examples/sample_corpus.csv
+          echo "✅ cp1252 控制台下中文输出正常（降级替换而非抛异常）；图标生成可复现"
+
       - name: 官网自检（单文件 / 无外链资源 / 锚点齐全）
         run: |
           python - <<'PY'

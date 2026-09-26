@@ -26,6 +26,22 @@ import os
 import re
 import sys
 
+
+def utf8_stdout():
+    """把 stdout/stderr 切到 UTF-8。
+
+    不这么做会踩一个很隐蔽的坑：Windows 控制台默认编码可能是 cp1252（非中文区域），
+    此时 print 中文直接抛 UnicodeEncodeError，脚本"看起来是逻辑错、其实是编码错"。
+    实测 GitHub 的 windows runner 就是这样让整个构建步骤失败的。
+    errors="replace" 保证最坏情况也只是显示成 ?，而不是把任务打挂。
+    """
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass          # 被重定向成非 TextIOWrapper（如 StringIO）时忽略
+
+
 DEFAULT_LOW_MAX = 8        # 低权重阈值：score <= 此值
 DEFAULT_LOW_MIN_LEN = 120  # 长文阈值：字符数 >= 此值
 MIN_LEN = 4                # 去噪：正文短于此值直接丢弃
@@ -252,6 +268,7 @@ def run(input_path, outdir, low_max=DEFAULT_LOW_MAX, low_min_len=DEFAULT_LOW_MIN
 
 
 def main(argv=None):
+    utf8_stdout()
     ap = argparse.ArgumentParser(description="comment-distillery 预处理")
     ap.add_argument("input", help="语料 CSV 路径")
     ap.add_argument("outdir", nargs="?", default=".", help="输出目录（默认当前目录）")

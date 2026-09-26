@@ -27,7 +27,7 @@
 E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 ├── .git/                                （HEAD 见 `git log -1`，remote: SSH）
 ├── .github/workflows/
-│   ├── ci.yml                           （3 个 Python 版本，**11 步**：compileall / 零依赖守卫 / 官网自检 / unittest / 无裸铁律 / 判据变异验证 / golden 变异 / golden 基线 / prep 冒烟 / 引用机验冒烟 / 冒烟产出展示）
+│   ├── ci.yml                           （3 个 Python 版本，**12 步**：compileall / 零依赖守卫 / 编码守卫 / 官网自检 / unittest / 无裸铁律 / 判据变异验证 / golden 变异 / golden 基线 / prep 冒烟 / 引用机验冒烟 / 冒烟产出展示）
 │   ├── build-exe.yml                    （CI 上真跑 PyInstaller 打包 + 双冒烟，上传 artifact）
 │   └── pages.yml                        （官网发布到 GitHub Pages）
 ├── app_main.py                          （桌面工具入口：源码运行 / PyInstaller 共用；含 --selfcheck / --selftest-gui / --selftest-run）
@@ -169,10 +169,10 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 HEAD     见 `git log -1`（最后核验 2026-09-26 为 2cae432；**本文件每次提交后 hash 都会前进一格，属正常**——
          先前写法把 hash 写死，导致每次提交都要改一次，是自找的漂移源）
 origin   git@github.com:TrueFurina/comment-distillery.git   (SSH)
-CI       .github/workflows/ci.yml  **11 个质量门步骤**全绿
-         （compileall / 零依赖守卫 / 官网自检 / unittest 61 项 / 无裸铁律 / 判据变异验证 /
+CI       .github/workflows/ci.yml  **12 个质量门步骤**全绿
+         （compileall / 零依赖守卫 / 编码守卫 / 官网自检 / unittest 61 项 / 无裸铁律 / 判据变异验证 /
           golden 变异 / golden 基线 / prep 冒烟 / 引用机验冒烟 / 冒烟产出展示）
-         另有 build-exe.yml（真打包 + 双冒烟）与 pages.yml（官网发布）
+         另有 build-exe.yml（真打包 + --verify 资源核验 + 三道冒烟）与 pages.yml（官网发布）
 安装     npx skills add TrueFurina/comment-distillery   （--list 实测 Found 1 skill）
 桌面     双击 dist/comment-distillery.exe（~11 MB 单文件，未签名 → SmartScreen 会提示，属正常）
 迁移     E:\Program\comment-distillery，cases/ 已 gitignore，仅本地留存

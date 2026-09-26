@@ -366,7 +366,19 @@ def crawl(arg, out_csv, roots_only=False, on_log=None, on_progress=None, should_
     }
 
 
+def utf8_stdout():
+    """stdout/stderr 切 UTF-8：Windows 控制台可能是 cp1252，print 中文会
+    UnicodeEncodeError（实测 GitHub windows runner 因此整步失败）。
+    桌面工具走 log 回调、不经 stdout，故只影响 CLI 用法。"""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+
+
 def main():
+    utf8_stdout()
     if len(sys.argv) < 2:
         print("用法: python fetch_bilibili_comments.py <BV号或链接> [out.csv] [--roots-only]")
         sys.exit(1)

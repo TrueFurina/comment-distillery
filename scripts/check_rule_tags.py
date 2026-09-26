@@ -30,6 +30,17 @@ import sys
 import tempfile
 from pathlib import Path
 
+
+def utf8_stdout():
+    """stdout/stderr 切 UTF-8：Windows 控制台可能是 cp1252，print 中文会
+    UnicodeEncodeError（实测 GitHub windows runner 因此整步失败）。"""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+
+
 TAG_RE = re.compile(r"\[(?:战[0-9]+(?:·[^\[\]]*)?|环境|设计)\]")
 NUM_RE = re.compile(r"^\d+\.\s+\*\*")
 # 只有三件套锚点之后的 numbered list 才是「规则」；
@@ -122,6 +133,7 @@ def check(path: Path, collect_spans: bool = False):
 
 
 def main():
+    utf8_stdout()
     ap = argparse.ArgumentParser(description="机验 SKILL.md 规则条目均带溯源标记")
     ap.add_argument("--file", default=None, help="待检查文件（默认仓库根 SKILL.md）")
     ap.add_argument("--self-test", action="store_true", help="变异验证：删标记后必须 FAIL")

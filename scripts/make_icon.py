@@ -16,6 +16,17 @@ import sys
 import zlib
 from pathlib import Path
 
+
+def utf8_stdout():
+    """stdout/stderr 切 UTF-8：Windows 控制台可能是 cp1252，print 中文会
+    UnicodeEncodeError（实测 GitHub windows runner 因这一步直接构建失败）。"""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+
+
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "assets" / "icon.ico"
 
@@ -99,6 +110,7 @@ def png_bytes(size):
 
 
 def main():
+    utf8_stdout()
     OUT.parent.mkdir(parents=True, exist_ok=True)
     images = [(s, png_bytes(s)) for s in SIZES]
 

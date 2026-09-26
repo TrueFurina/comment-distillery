@@ -38,6 +38,17 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 NAME = "comment-distillery"
 
+
+def utf8_stdout():
+    """stdout/stderr 切 UTF-8：Windows 控制台可能是 cp1252，print 中文会
+    UnicodeEncodeError（实测 GitHub windows runner 因此构筑步骤失败）。
+    本脚本的输出与子进程输出都含中文，最后一道保险放在这里。"""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+
 # 随包资源：(源路径, 包内目标目录)。漏任何一条都会让 exe 运行到一半报错，
 # 因此 app/core.py 的 selfcheck() 会在启动时一次性把它们检出来。
 #
@@ -140,6 +151,7 @@ def verify_pack(exe: Path) -> int:
 
 
 def main(argv=None):
+    utf8_stdout()
     ap = argparse.ArgumentParser(description="打包 comment-distillery 桌面 exe")
     ap.add_argument("--console", action="store_true", help="保留控制台窗口（排障用）")
     ap.add_argument("--onedir", action="store_true", help="目录版而非单文件")
