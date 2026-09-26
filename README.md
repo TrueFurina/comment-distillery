@@ -318,13 +318,14 @@ comment-distillery/
 │   ├── retrospective.md     # ★ 七战沉淀：五次方法论修正 + 量化判据 + 交付质量门
 │   ├── rule-provenance.md   # ★ 规则溯源：每条规则的验证战次，单战证据标「待复现」
 │   ├── overturned.md        # ★ 被推翻结论台账（含"什么证据会再次推翻它"）
+│   ├── engineering-pitfalls.md  # 维护/构建本仓库才会踩的坑（不进打包产物）
 │   ├── distribution.md      # 分发作战清单（PR 文案 / 帖子草稿，可直接复制）
 │   └── compliance.md        # 合规与伦理边界
 ├── scripts/
 │   ├── prep.py              # 预处理（零依赖）
 │   ├── verify_citations.py  # 引用真实性机验（强制质量门）
 │   ├── check_rule_tags.py   # 机验 SKILL.md 无「裸铁律」（带变异验证）
-│   ├── check_doc_consistency.py  # 文档一致性机验：版本口径 / Release tag / 站点数字 / 中英对等（带变异验证）
+│   ├── check_doc_consistency.py  # 文档一致性机验：版本口径 / Release tag / 站点数字 / 规则计数 / 中英对等（带变异验证）
 │   ├── build_exe.py         # 打包桌面 exe（PyInstaller，仅构建期依赖）
 │   └── make_icon.py         # 标准库手写 ICO 生成器（不引入 Pillow）
 ├── golden/                  # 评估集：8 场景 / 4 类，判「改规则后是否变强」

@@ -51,7 +51,8 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 ├── tests/test_app_core.py               （16 个用例，桌面工具逻辑层）
 ├── docs/collecting.md                   （各社区采集工具 + 许可证 + 风险对照）
 ├── docs/retrospective.md                （七战沉淀：五次修正 / 7 条判据 / 质量门 G1–G7）
-├── docs/rule-provenance.md              （规则溯源：9 铁律 / 5 待复现 / 17 环境事实，附复现判据；计数由机验强制与 SKILL.md 对齐）
+├── docs/rule-provenance.md              （规则溯源：9 铁律 / 5 待复现 / 6 环境事实 / 13 工程坑，附复现判据；计数由机验强制与 SKILL.md + docs/engineering-pitfalls.md 对齐）
+├── docs/engineering-pitfalls.md         （维护/构建类踩坑 13 条；★ **不进打包产物**——改它不必重发 exe）
 ├── docs/overturned.md                   （被推翻结论台账 OT-1…OT-5，含"再次推翻的条件"）
 ├── docs/distribution.md                 （★ 分发作战清单：gh 命令 / awesome PR 文案 / 帖子骨架）
 ├── SKILL.md / README.md / README.en.md / CHANGELOG.md
@@ -203,7 +204,7 @@ CI       .github/workflows/ci.yml  **13 个质量门步骤**全绿
 13. ✅ **顺带修掉两个真 bug**（2026-09-26）：① `verify_citations.py` 的 `--field` 参数一直被解析却从未传下去（形同虚设），已接通；② `crawl()` 的协作式停止钩子与 `_CallbackWriter` —— GUI 中途停止时已抓部分照常写出。
 14. ✅ **GitHub Release + Pages 首发**（2026-09-26）：tag `v1.4.0` → `0ba07ce`（**已移到修复 CI 红之后的提交**——当时它**从未成功构建过**，属"尚未成立"而非"已发布后又变"；与后来 v1.4.1 的处理**不同**：已发布的内容变了就**发新版、不重写资产**）；Release 已挂 exe（**11,682,955 字节**）；官网 <https://truefurina.github.io/comment-distillery/> 线上 HTTP 200。**原判"需要你的仓库权限"是误判**——本地 token 直连 API 全做完。**Pages 首次部署失败的真因不是 Source 选错，是 Pages 根本没启用**（`GET /repos/.../pages` → 404）；一行 `POST /pages {"build_type":"workflow"}` 修好。发布件已下载回来复算 SHA-256，与本地冒烟验证件**完全一致**。三条工作流全绿：CI `36225711223` / Deploy site `36225711371` / Build exe `36225715001`。
 
-**当前状态（2026-09-26）**：P0 / P1 / P2 已闭环，P3 适配侧全部完成（含 topics 补齐），**P3.5 交付形态完成并已发布上线**（当前版 Release **v1.4.1** + 官网），`cases/` 产物层已公开。**代码侧无待办，远端侧也无待办**——tag / Release / Pages 全部由本地 token 完成并逐项核验。剩余**只有一类**「需要你本人账号」的动作：**awesome PR ×3 与社区发帖**（以你的身份公开发言，我不代发；文案命令已就位，见 `docs/distribution.md` §1-B/C/D）。**P4 经拍板不做**（保留合成样例；原始语料明确无需备份）。**P5 为长线研究问题，不设 deadline**。
+**当前状态（2026-09-26）**：P0 / P1 / P2 已闭环，P3 适配侧全部完成（含 topics 补齐），**P3.5 交付形态完成并已发布上线**（当前版 Release **v1.5.0** + 官网），`cases/` 产物层已公开。**代码侧无待办，远端侧也无待办**——tag / Release / Pages 全部由本地 token 完成并逐项核验。剩余**只有一类**「需要你本人账号」的动作：**awesome PR ×3 与社区发帖**（以你的身份公开发言，我不代发；文案命令已就位，见 `docs/distribution.md` §1-B/C/D）。**P4 经拍板不做**（保留合成样例；原始语料明确无需备份）。**P5 为长线研究问题，不设 deadline**。
 
 ---
 

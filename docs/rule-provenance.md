@@ -46,28 +46,48 @@
 
 这类不是"从语料里归纳出的经验"，而是对操作系统/工具/协议行为的观测，一次踩到即可记录。
 
-**本表是 SKILL.md 「环境坑」章节的完整索引——行数必须与 SKILL.md 的 `[环境]` 条目数相等**，
-由 `scripts/check_doc_consistency.py` 机验（此前长期是 7 vs 17 的静默缺口：SKILL.md 加条目不进台账，没人发现）。
+**2026-09-26 按读者拆成两张表**：
+
+- **§3.1 蒸馏侧** —— 做蒸馏的人会踩到的；正文在 `SKILL.md`「环境坑」，**随打包产物分发**。
+- **§3.2 维护侧** —— 只有维护 / 构建本仓库才会踩到的；正文在 `docs/engineering-pitfalls.md`，**不进打包产物**。
+
+**为什么拆**：`SKILL.md` 是 exe 的随包资源，**改它就必须重发一版产物**。而维护类坑（CI 编码、PyInstaller、
+文档漂移）对"只用不维护"的人零价值——混在一起会导致**为改一条构建笔记而被迫发版**（实测发生过）。
+**判据**：这个坑会让"只用不维护"的人改变做法吗？ 会 → §3.1；不会 → §3.2。
+
+### 3.1 蒸馏侧（对应 `SKILL.md`「环境坑」章节，6 条）
+
+**行数必须与 SKILL.md 的 `[环境]` 条目数相等**，由 `scripts/check_doc_consistency.py` 机验
+（此前长期是 7 vs 17 的静默缺口：SKILL.md 加条目不进台账，没人发现）。
 
 | # | 条目 | 首次观测 |
 |---|---|---|
 | 1 | Windows 下传给 Python 的路径须用 `C:/...` 而非 `/c/...` | 全战沿用 |
 | 2 | SSL `UNEXPECTED_EOF` 多为代理污染，须 `ProxyHandler({})` 强制直连 | 战3 抓取期（后续全量抓取沿用有效） |
-| 3 | 隔离 venv 里 `pip install` 卡在 setuptools 编译 = setuptools 损坏，须强制重装 | P1 环境搭建期 |
-| 4 | 别自己写 bv2av，直接调官方 `view` 接口取 `data.aid` | 战1 |
-| 5 | heredoc 写 Windows 路径会静默改写反斜杠 → 一律用编辑工具 | 环境常态 |
-| 6 | 热度排序下分页游标重叠 → 大比例重复行（实测 22%，4501/20399） | 战6 |
-| 7 | 跨盘移动不要用 `shutil.move`（退化为 copy+rmtree，源侧留副本） | 迁移期（2026-09-26） |
-| 8 | 引用机验的两个已知误报：转义竖线 `\|`、正文里"提及"错误 ID | 战4 起 |
-| 9 | GitHub `github.com:443` 直连可能被阻断 → 走 SSH | 仓库维护期 |
-| 10 | `.gitignore` 里 `cases/` 非锚定会吞掉 `golden/cases/` | P1（2026-09-26） |
-| 11 | Windows 控制台默认 cp1252 → `print` 中文抛 `UnicodeEncodeError`（本地 cp936 测不出） | v1.4.0 tag 首跑（2026-09-26） |
-| 12 | PowerShell 5.1 `Select-String` 默认按 ANSI 读，匹配无 BOM UTF-8 中文必失败 | 同上 |
-| 13 | PyInstaller `--add-data` 配合 `--specpath` 时相对路径相对 spec 目录解析 | 首次打包（2026-09-26） |
-| 14 | 打包产物内资源是"快照"，自检只看"在不在"→ 必须内容级核验 | P3.5（2026-09-26） |
-| 15 | 文档口径漂移靠人眼 grep 必定会漏（一次"全面核对"仍漏 3 处） | P3 分发期（2026-09-26） |
-| 16 | 同一判据在多个工作流里各内联一份实现，本身就是漂移源 | 同上（官网自检曾有三份） |
-| 17 | 在 CI 里比对"站点标注的产物哈希"会制造假红线（非可复现构建） | 同上 |
+| 3 | 别自己写 bv2av，直接调官方 `view` 接口取 `data.aid` | 战1 |
+| 4 | heredoc 写 Windows 路径会静默改写反斜杠 → 一律用编辑工具 | 环境常态 |
+| 5 | 热度排序下分页游标重叠 → 大比例重复行（实测 22%，4501/20399） | 战6 |
+| 6 | 引用机验的两个已知误报：转义竖线 `\|`、正文里"提及"错误 ID | 战4 起 |
+
+### 3.2 维护侧（对应 `docs/engineering-pitfalls.md`，13 条）
+
+同样由 `scripts/check_doc_consistency.py` 机验与 `docs/engineering-pitfalls.md` 的条目数相等。
+
+| # | 条目 | 首次观测 |
+|---|---|---|
+| 1 | 隔离 venv 里 `pip install` 卡在 setuptools 编译 = setuptools 损坏，须强制重装 | P1 环境搭建期 |
+| 2 | 跨盘移动不要用 `shutil.move`（退化为 copy+rmtree，源侧留副本） | 迁移期（2026-09-26） |
+| 3 | GitHub `github.com:443` 直连可能被阻断 → 走 SSH | 仓库维护期 |
+| 4 | `.gitignore` 里 `cases/` 非锚定会吞掉 `golden/cases/` | P1（2026-09-26） |
+| 5 | Windows 控制台默认 cp1252 → `print` 中文抛 `UnicodeEncodeError`（本地 cp936 测不出） | v1.4.0 tag 首跑 |
+| 6 | PowerShell 5.1 `Select-String` 默认按 ANSI 读，匹配无 BOM UTF-8 中文必失败 | 同上 |
+| 7 | PyInstaller `--add-data` 配合 `--specpath` 时相对路径相对 spec 目录解析 | 首次打包 |
+| 8 | 打包产物内资源是"快照"，自检只看"在不在"→ 必须内容级核验 | P3.5 |
+| 9 | 文档口径漂移靠人眼 grep 必定会漏（一次"全面核对"仍漏 3 处） | P3 分发期 |
+| 10 | 同一判据在多个工作流里各内联一份实现，本身就是漂移源 | 同上（官网自检曾有三份） |
+| 11 | 在 CI 里比对"站点标注的产物哈希"会制造假红线（非可复现构建） | 同上 |
+| 12 | `actions/checkout` 在 tag 推送时默认只带那一个 tag（会把"存在的 tag"误判为不存在） | v1.4.1 tag 首跑 |
+| 13 | Actions 日志端点 302 后会转发 `Authorization` → `401 InvalidAuthenticationInfo` | 同上 |
 
 ---
 
@@ -85,4 +105,9 @@ ROADMAP 原文要求"仅 1 战的先进 `cases/notes/`，标注待复现"。实�
 
 - 每完成一战，回到本文件：在 §2 找有没有被复现的（有 → 移入 §1，并在 SKILL.md 去掉 `[待复现]` 标记）；
 - 新观察到的单次现象 → 先进 §2，不要直接写进 SKILL.md 铁律区；
-- `scripts/check_rule_tags.py` 会机验 SKILL.md 无"裸铁律"（条目缺标记即 FAIL，CI 卡死）。
+- **新踩到一个环境/工具类坑** → 先按 §3 的判据分侧：**会让"只用不维护"的人改变做法吗？**
+  会 → 写进 `SKILL.md`「环境坑」并在 §3.1 加一行；不会 → 写进 `docs/engineering-pitfalls.md` 并在 §3.2 加一行。
+  **别把维护类坑塞进 `SKILL.md`**——它是 exe 的随包资源，改它就得重发一版产物；
+- `scripts/check_rule_tags.py` 会机验 SKILL.md 无"裸铁律"（条目缺标记即 FAIL，CI 卡死）；
+- `scripts/check_doc_consistency.py` 会机验 §3.1 / §3.2 的行数分别等于 SKILL.md 与
+  `docs/engineering-pitfalls.md` 的条目数，以及 HANDOFF / ROADMAP 里那句计数声明（错一个即 CI 红）。

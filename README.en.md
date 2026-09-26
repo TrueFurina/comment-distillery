@@ -318,13 +318,14 @@ comment-distillery/
 │   ├── retrospective.md     # ★ 7-run retrospective: 5 corrections, quantified heuristics, gates
 │   ├── rule-provenance.md   # ★ provenance: which run validated which rule; 1-run evidence = "pending"
 │   ├── overturned.md        # ★ overturned claims log (incl. what would overturn them again)
+│   ├── engineering-pitfalls.md  # pitfalls only when maintaining/building this repo (not shipped)
 │   ├── distribution.md      # distribution playbook (copy-paste PR / post drafts)
 │   └── compliance.md        # compliance & ethics
 ├── scripts/
 │   ├── prep.py              # preprocessing (zero deps)
 │   ├── verify_citations.py  # citation verification (hard gate)
 │   ├── check_rule_tags.py   # no "bare rules" gate for SKILL.md (with mutation self-test)
-│   ├── check_doc_consistency.py  # doc-consistency gate: version / release tags / site numbers / zh-en parity (with mutation self-test)
+│   ├── check_doc_consistency.py  # doc-consistency gate: version / release tags / site numbers / rule counts / zh-en parity (with mutation self-test)
 │   ├── build_exe.py         # package the desktop exe (PyInstaller; build-time only)
 │   └── make_icon.py         # hand-written ICO generator (stdlib only, no Pillow)
 ├── golden/                  # test set: 8 cases / 4 categories — did it actually get better?

@@ -2,7 +2,34 @@
 
 本项目遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
-## [Unreleased]
+## [1.5.0] — 2026-09-26
+
+> **为什么要发 1.5.0**：`SKILL.md` 是**打进 exe 的随包资源**。本次把维护类环境事实从 `SKILL.md`
+> 拆分出去，`SKILL.md` 内容随之变化 → 已发布的 exe 里那份方法论副本会与仓库不一致
+> （本地 `--verify` 当场会红）。按「Release 不可变、内容变了就发新版」的既定口径发 1.5.0。
+> **这也是拆分要付的最后一次版本代价**：拆完之后，改 CI / 构建笔记 / 文档漂移这类**维护侧**内容
+> 一律不必再重发产物（见下）。
+
+### Changed
+- **按读者拆分 `SKILL.md` 的「环境坑」章节**（拆分动机：这 17 条混了两类读者，导致为「对 exe 用户零价值」的改动被迫发版）。
+  - **`SKILL.md` 只留蒸馏侧 6 条**（做蒸馏的人/agent 真正会踩的：Windows 路径写法、代理污染假死、
+    bv2av、heredoc 改写反斜杠、分页游标重叠导致大比例重复、引用机验的两个已知误报）。
+  - **维护/构建侧 11 条移入新文件 [`docs/engineering-pitfalls.md`](docs/engineering-pitfalls.md)**
+    （cp1252 编码、PowerShell 5.1 按 ANSI 读文件、PyInstaller `--add-data`+`--specpath`、
+    产物快照核验、`.gitignore` 非锚定、`shutil.move` 跨盘、SSH 通道、pip/setuptools 损坏、
+    文档漂移、判据重复实现、CI 里比产物哈希的假红线），**该文件不进打包产物**。
+  - 两条此前只在 `HANDOFF.md` 零散提及、一直没有正式归宿的维护坑（`fetch-depth: 0`、
+    「判据只读仓库内事实」）一并归位到该文件。
+  - 收益：**此后改 CI / 构建 / 文档一致性这类内容，不必再重建产物、不必再发版**；exe 用户的
+    `SKILL.md` 也更干净（只含与蒸馏相关的经验）。
+- **规则溯源台账 `docs/rule-provenance.md` §3 拆为两张表**：§3.1 蒸馏侧（对应 `SKILL.md`，
+  6 条）/ §3.2 维护侧（对应 `docs/engineering-pitfalls.md`，13 条），并附**分流规则**——
+  新坑进来先问「蒸馏时会踩到吗」，会 → `SKILL.md`，不会 → `docs/engineering-pitfalls.md`。
+- **机验升级为「四方一致」**：`check_doc_consistency.py` 的规则计数项现在同时校验
+  ① `SKILL.md` 的 `[环境]` 条目数 == 台账 §3.1 行数；② `docs/engineering-pitfalls.md` 条目数
+  == 台账 §3.2 行数；③ `HANDOFF.md` / `ROADMAP.md` 里那句计数**声明本身存在且数字正确**
+  （声明被整行删掉也算漂移——没有声明就没有矛盾可查，所以「声明存在」本身就是判据）。
+  变异用例 7 → **11 个**（新增：台账少记一条 / 维护侧文档少一条 / 声明数字写错 / 声明整行被删）。
 
 ### Fixed
 - **CI 与 Build exe 双双变红：`actions/checkout` 在 tag 推送时默认只带那一个 tag。**
@@ -16,9 +43,6 @@
   - 同一行重复出现的同一 tag 只报一次（原先 `[x](url)` 形式会重复两行）。
   - **教训**：判据尽量只读仓库内的事实。一旦依赖本地 tag / 网络 / 外部状态，
     就会在「环境不同」时给出假红或假绿。
-- **本修复不需要重发产物**：`check_doc_consistency.py` 与工作流文件都**不在** exe 的随包资源清单里，
-  `SKILL.md` 未变，`--verify` 仍 10/10，产物哈希仍是发布件那一份 `dd7ae074…`。
-  （这正是「随包资源用显式文件清单、不整目录打包」的收益：构建期/维护期文件不进产物，就不会互相拖累版本。）
 
 ## [1.4.1] — 2026-09-26
 

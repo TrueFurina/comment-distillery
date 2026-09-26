@@ -15,8 +15,13 @@
 | 3 | 官网标注的 SHA-256 / 体积 == 真实产物 | 重建 exe 后忘改站点（最典型的一类漂移） |
 | 4 | 官网无外链资源、锚点齐全 | 单文件承诺被悄悄打破 |
 | 5 | 中英 README 徽章集合一致 | 只改了其中一边 |
-| 6 | 规则计数三方一致（SKILL.md / 溯源台账 / HANDOFF 声明） | 「加了规则不进台账」——长期静默缺口的成因 |
+| 6 | 规则计数四方一致（SKILL.md / 维护侧文档 / 溯源台账 §3.1+§3.2 / 文档里的计数声明） | 「加了条目不进台账」「拆了表没同步声明」——长期静默缺口的成因 |
 | 7 | 已证伪表述不再出现 | 被推翻的判断留在文档里误导后来人 |
+
+**第 6 项的四方是**（2026-09-26 环境坑按读者拆表后确定）：`SKILL.md`「环境坑」（蒸馏侧，随打包产物分发）
+↔ 台账 §3.1；`docs/engineering-pitfalls.md`（维护侧，**不进打包产物**）↔ 台账 §3.2；
+外加**任何同时提到「铁律」与「环境事实」的句子**都必须按 4 元组写全（HANDOFF / ROADMAP 各一处）。
+拆表本身是"改 SKILL.md 就得重发 exe"这个约束的解药——详见 `docs/rule-provenance.md` §3。
 
 用法：
     python scripts/check_doc_consistency.py                  # 检查
@@ -271,6 +276,21 @@ def _section(text, header):
     return m.group(0) if m else ""
 
 
+def _sub_section(text, header):
+    """取三级子章节（`### 3.1 …`），在下一个 `## ` 或 `### ` 处截止。
+
+    §3 拆成 §3.1/§3.2 后必须分开取——否则 `_section(text, "## 3.")` 会把两张表
+    的行数加在一起，计数核对就失去意义。
+    """
+    m = re.search(rf"^{re.escape(header)}.*?(?=\n#{{2,3}} |\Z)", text, re.S | re.M)
+    return m.group(0) if m else ""
+
+
+def _env_count(text):
+    """数形如 `- **…** `[环境]`` 的条目（SKILL.md 与维护侧文档共用同一写法）。"""
+    return len(re.findall(r"^- .*?`\[环境\]`", text, re.M))
+
+
 def _table_rows(sec):
     """取 markdown 表格的数据行（排除表头与分隔行）。"""
     out = []
@@ -287,40 +307,83 @@ def _table_rows(sec):
     return out
 
 
+# ── 6. 规则计数：四处必须对上 ────────────────────────────────────────────────
+#    SKILL.md「环境坑」(蒸馏侧)  ↔  台账 §3.1
+#    docs/engineering-pitfalls.md (维护侧)  ↔  台账 §3.2
+#    SKILL.md「待复现观察」  ↔  台账 §2
+#    + 任何同时提到「铁律」与「环境事实」的句子，都必须按 4 元组写全
+#
+# 2026-09-26 起 §3 按读者拆成两张表（蒸馏侧随打包产物分发、维护侧不进产物）。
+# 拆表让"改一条构建笔记"不再触发热发布——所以这里也要**分别**核对两张表，
+# 不能把两处行数加总了事（那会让"少记一条"永远看不出来）。
+CANON_COUNTS = re.compile(
+    r"(\d+)\s*条?\s*铁律[^/\n]{0,16}/\s*"
+    r"(\d+)\s*条?\s*待复现[^/\n]{0,16}/\s*"
+    r"(\d+)\s*条?\s*环境事实[^/\n]{0,16}/\s*"
+    r"(\d+)\s*条?\s*工程坑")
+
+
 def check_rule_counts(root):
-    skill, prov = root / "SKILL.md", root / "docs/rule-provenance.md"
+    skill = root / "SKILL.md"
+    prov = root / "docs/rule-provenance.md"
+    eng = root / "docs/engineering-pitfalls.md"
     if not skill.exists() or not prov.exists():
         return [("SKIP", "缺少 SKILL.md 或 docs/rule-provenance.md，跳过规则计数核对")]
     st, pt = skill.read_text(encoding="utf-8"), prov.read_text(encoding="utf-8")
 
-    env_skill = len(re.findall(r"^- .*?`\[环境\]`", _section(st, "### 环境坑"), re.M))
+    env_skill = _env_count(_section(st, "### 环境坑"))
     tw_skill = len(re.findall(r"^- .*?`\[战\d+·(?:待复现|单样本)\]`",
                               _section(st, "## 待复现观察"), re.M))
-    env_prov = len(_table_rows(_section(pt, "## 3.")))
     tw_prov = len(_table_rows(_section(pt, "## 2.")))
     iron_prov = len(_table_rows(_section(pt, "## 1.")))
+    env_prov_a = len(_table_rows(_sub_section(pt, "### 3.1")))
+    env_prov_b = len(_table_rows(_sub_section(pt, "### 3.2")))
 
     bad = []
-    if env_skill != env_prov:
-        bad.append(f"环境事实：SKILL.md 有 {env_skill} 条，台账 §3 只有 {env_prov} 行"
-                   "（SKILL.md 加了条目不进台账——这正是它长期静默缺口的成因）")
+    if env_skill != env_prov_a:
+        bad.append(f"蒸馏侧环境坑：SKILL.md 有 {env_skill} 条，台账 §3.1 只有 {env_prov_a} 行"
+                   "（加了条目不进台账——这正是它长期静默缺口的成因）")
     if tw_skill != tw_prov:
         bad.append(f"待复现：SKILL.md 有 {tw_skill} 条，台账 §2 只有 {tw_prov} 行")
 
-    # HANDOFF 里那句「N 铁律 / N 待复现 / N 环境事实」是最典型的手写数字，必须对上
-    ho = root / "HANDOFF.md"
-    if ho.exists():
-        m = re.search(r"(\d+)\s*铁律\s*/\s*(\d+)\s*待复现\s*/\s*(\d+)\s*环境事实",
-                      ho.read_text(encoding="utf-8"))
-        if m:
-            h_iron, h_tw, h_env = (int(x) for x in m.groups())
-            if (h_iron, h_tw, h_env) != (iron_prov, tw_prov, env_prov):
-                bad.append(f"HANDOFF 声明 {h_iron} 铁律 / {h_tw} 待复现 / {h_env} 环境事实，"
-                           f"台账实际为 {iron_prov} / {tw_prov} / {env_prov}")
+    env_eng = None
+    if eng.exists():
+        env_eng = _env_count(eng.read_text(encoding="utf-8"))
+        if env_eng != env_prov_b:
+            bad.append(f"维护侧工程坑：docs/engineering-pitfalls.md 有 {env_eng} 条，"
+                       f"台账 §3.2 只有 {env_prov_b} 行")
+    else:
+        bad.append("缺少 docs/engineering-pitfalls.md（维护侧环境坑的唯一真源）")
+
+    # 计数声明：**同时出现「铁律」与「环境事实」的句子，必须按 4 元组写全**。
+    # 为什么按"句"扫而不是只查 HANDOFF 一处：这类手写数字历史上散在多份文档里，
+    # 只钉一处等于让其余几处继续漂移（同族的漏检比已知那处更危险）。
+    want = (iron_prov, tw_prov, env_prov_a, env_prov_b) if env_eng is not None else None
+    seen_in = set()
+    for p in _doc_files(root):
+        for i, line in enumerate(p.read_text(encoding="utf-8").splitlines(), 1):
+            if "铁律" not in line or "环境事实" not in line:
+                continue
+            m = CANON_COUNTS.search(line)
+            if not m:
+                bad.append(f"{_rel(root, p)}:{i} 提到规则计数却没按新口径写全"
+                           "（须形如「N 铁律 / N 待复现 / N 环境事实 / N 工程坑」）")
+                continue
+            seen_in.add(_rel(root, p))
+            got = tuple(int(x) for x in m.groups())
+            if want and got != want:
+                bad.append(f"{_rel(root, p)}:{i} 声明 {got[0]} 铁律 / {got[1]} 待复现 / "
+                           f"{got[2]} 环境事实 / {got[3]} 工程坑，台账实际为 "
+                           f"{want[0]} / {want[1]} / {want[2]} / {want[3]}")
+    if "HANDOFF.md" not in seen_in:
+        bad.append("HANDOFF.md 里找不到规则计数声明"
+                   "（那句 N 铁律 / N 待复现 / N 环境事实 / N 工程坑）")
 
     if bad:
         return [("FAIL", "规则计数口径不一致：\n    " + "\n    ".join(bad))]
-    return [("OK", f"规则计数一致（{iron_prov} 铁律 / {tw_prov} 待复现 / {env_prov} 环境事实）")]
+    return [("OK", f"规则计数一致（{iron_prov} 铁律 / {tw_prov} 待复现 / "
+                   f"{env_prov_a} 环境事实（蒸馏侧）/ {env_prov_b} 工程坑（维护侧））")]
+
 
 
 CHECKS = [
@@ -431,13 +494,58 @@ def _mut_anchor(st):
     return None
 
 
-def _mut_rule_counts(st):
-    """从台账里删掉一行环境事实 → 计数核对必须报错"""
-    f = st / "docs/rule-provenance.md"
-    lines = f.read_text(encoding="utf-8").splitlines(keepends=True)
-    idx = max(i for i, l in enumerate(lines) if l.strip().startswith("| 17 |"))
-    del lines[idx]
-    f.write_text("".join(lines), encoding="utf-8")
+def _drop_line(path, needle):
+    """删掉第一个含 needle 的整行（变异用）。定位不到就直接炸，避免"变异没生效却报 OK"。"""
+    ls = path.read_text(encoding="utf-8").splitlines(keepends=True)
+    hit = [i for i, l in enumerate(ls) if needle in l]
+    if not hit:
+        raise AssertionError(f"变异定位失败：{path.name} 里找不到 {needle!r}")
+    del ls[hit[0]]
+    path.write_text("".join(ls), encoding="utf-8")
+
+
+def _mut_table_a(st):
+    """台账 §3.1（蒸馏侧）少记一条 → 计数核对必须报错"""
+    _drop_line(st / "docs/rule-provenance.md", "别自己写 bv2av")
+    return None
+
+
+def _mut_env_doc_entry(st):
+    """维护侧文档删掉一条 → §3.2 的行数就对不上了，必须报错。
+
+    这条同时证明「新拆出来的维护侧文档真的被读了」——否则它是一份没人管的孤儿文档。
+    """
+    _drop_line(st / "docs/engineering-pitfalls.md", "Actions 的 job 日志端点")
+    return None
+
+
+def _mut_count_statement(st):
+    """把计数声明里的数字改错（9→8）→ 必须报错"""
+    f = st / "ROADMAP.md"
+    f.write_text(f.read_text(encoding="utf-8").replace("9 条铁律（≥2 战）", "8 条铁律（≥2 战）"),
+                 encoding="utf-8")
+    return None
+
+
+def _mut_stmt_gone(st):
+    """删掉 HANDOFF 的计数声明整行 → 必须报错。
+
+    「声明被整段删掉」是一种伪装成"没有不一致"的漂移——没有声明就没有矛盾可查，
+    所以必须单独把"声明存在"本身当作判据。
+    """
+    _drop_line(st / "HANDOFF.md", "工程坑")
+    return None
+
+
+def _mut_legacy_statement(st):
+    """在别的文档里写回**旧的三段式**声明（只写铁律/待复现/环境事实）→ 必须报错。
+
+    这条单独造在一个原本没有声明的位置，为的是**只**触发"未按新口径写全"那个分支；
+    真实历史正是这样漏的：声明换了口径，散落各处的副本还停在旧格式。
+    """
+    f = st / "CONTRIBUTING.md"
+    f.write_text(f.read_text(encoding="utf-8")
+                 + "\n> 规则计数：9 铁律 / 5 待复现 / 6 环境事实。\n", encoding="utf-8")
     return None
 
 
@@ -448,7 +556,11 @@ CASES = [
     ("写回已证伪表述", "已证伪表述", _mut_refuted),
     ("只删英文 README 的一个徽章", "中英 README 对等", _mut_badge),
     ("站点加了无对应元素的锚点", "官网结构", _mut_anchor),
-    ("台账少记一条环境事实", "规则计数一致", _mut_rule_counts),
+    ("台账 §3.1 少记一条（蒸馏侧）", "规则计数一致", _mut_table_a),
+    ("维护侧文档少一条（未进 §3.2）", "规则计数一致", _mut_env_doc_entry),
+    ("计数声明里的数字改错", "规则计数一致", _mut_count_statement),
+    ("HANDOFF 的计数声明整行被删", "规则计数一致", _mut_stmt_gone),
+    ("别处写回旧的三段式声明", "规则计数一致", _mut_legacy_statement),
 ]
 
 

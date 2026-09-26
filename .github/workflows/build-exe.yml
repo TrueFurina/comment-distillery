@@ -6,7 +6,7 @@ name: Build Windows exe
 #   - push tag v*  ：证明"干净环境里也能构建 + 跑通"，产物走 Artifact，**不动 Release**；
 #   - workflow_dispatch + 填 tag：把该次 CI 产物正式挂到指定 Release。
 #
-# v1.4.0 / v1.4.1 的发布资产都是本地构建、逐项冒烟验证后手动挂上去的
+# v1.4.0 / v1.4.1 / v1.5.0 的发布资产都是本地构建、逐项冒烟验证后手动挂上去的
 # （SHA-256 见 Release 说明与官网）。本工作流供后续无人值守重建使用。
 #
 # 本地等价命令：
@@ -19,7 +19,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "要挂载产物的 Release 标签（如 v1.4.1）。留空则只留 Artifact。"
+        description: "要挂载产物的 Release 标签（如 v1.5.0）。留空则只留 Artifact。"
         required: false
         default: ""
   push:

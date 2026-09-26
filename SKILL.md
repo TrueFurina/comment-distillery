@@ -2,7 +2,7 @@
 name: comment-distillery
 description: 把任何一群人对同一议题的自发文本（评论区 / 问卷开放题 / 访谈逐字稿 / 产品反馈 / Issue 讨论 / 弹幕）蒸馏成带引用溯源、反例对冲、盲区说明的厚指南。当用户说「把评论整理成指南」「评论区洞察」「评论分析」「问卷开放题整理」「访谈记录提炼」「用户反馈分析」「群体文本分析」，或给出一堆未结构化的群体文本想要建设性结论时使用。不做采集、不做情感饼图，只做 L3 建设性综合。
 metadata:
-  version: 1.4.1
+  version: 1.5.0
 agent_created: true
 ---
 
@@ -175,27 +175,22 @@ id,text,parent_id,is_reply,score,reply_count,created_at,author_id,source
 ### 环境坑（已踩过，别重蹈）
 
 > `[环境]` = 操作系统/工具/协议行为，**一次踩到即记录**，不适用"≥2 战"门槛。
+>
+> **这里只留「做蒸馏的人会踩到」的坑。** 只有**维护 / 构建本仓库**才会踩到的那些（CI 编码、PyInstaller、
+> 产物核验、文档漂移等 **13 条**）已移出本文件 → 仓库内 `docs/engineering-pitfalls.md`。
+> 移出是刻意的：本文件是 **exe 的随包资源**，改它就得重发一版产物；而那些坑对"只用不维护"的人零价值，
+> 混在一起等于**为改一条构建笔记而被迫发版**（实测发生过）。
+> **判据（新增条目时先问）**：这个坑会让"只用不维护"的人改变做法吗？ **会 → 留这里**；**不会 → 进那份文档**。
 
 - **传给 Windows Python 的路径必须用 `C:/...` 而非 Git Bash 的 `/c/...`** `[环境]`：后者会被解析成 `C:\c\Users\...`，导致脚本"报成功"但产物落在错误位置、核验时找不到文件。
 - **`SSL: UNEXPECTED_EOF_WHILE_READING` 中途断连通常是代理污染，不是被封** `[环境]`：Windows 上 urllib 默认 `getproxies()` 会读注册表系统代理（Clash 等失效后仍被沿用），表现为翻到第 N 页突然假死、数据只拿到一小半。修复：`urllib.request.build_opener(urllib.request.ProxyHandler({}))` **强制直连** + 请求级重试。实测：修复前翻到第 19 页断连只拿 360 条，修复后一次拿满 1501 条。
-- **隔离 venv 里 `pip install` 卡在 `pyyaml`/setuptools 编译** `[环境]`（`cython_sources` / `_distutils_hack` 缺失）：是 setuptools 在中断升级里**损坏**了。修复 `pip install --force-reinstall --no-deps setuptools wheel`，并优先用镜像的二进制 wheel（`--only-binary :all:`）。**这也是本 skill 坚持零依赖纯标准库的原因之一。**
 - **别自己写 bv2av** `[环境]`：网上多种版本（6 位/10 位、基 58/基 10、指数方向各异）极易错配，算出的 aid 会偏差几个数量级。直接调官方 `view` 接口取 `data.aid`。
 - **用 heredoc（`python - <<'PY'`）写含 Windows 路径的内容会静默改写反斜杠** `[环境]`：写文件一律用编辑工具，不要用 heredoc。
 - **⚠️ 分页游标重叠 → 大比例重复行（实测 22%）** `[环境]`：热度排序（`mode=3`）下点赞数实时变化，分页游标会在相邻页之间重叠，抓回来的 CSV 里会出现大量「同 ID、同内容、同赞数」的完全重复行。实测某次抓 20399 行，其中 **4501 行是重复**。
   - **危害不止规模虚高**：它会把同一条观点重复计入共识度，直接污染「高赞即共识」的判断。
   - **修复必须两头做**：① 抓取端按 `rpid` 去重，整页重复时提前终止翻页；② `prep.py` 去噪前按 ID 去重，并在 `stats.json` 输出 `dup_dropped` 字段。
   - **交付前必查**：`unique_id_count == row_count` 是否成立。不等就说明有重复或空值。
-- **跨盘移动文件不要用 Python `shutil.move`** `[环境]`：Windows 跨盘时它退化为 copy+rmtree，而 rmtree 可能被安全删除钩子拦截 → 报 `[WinError 17] 系统无法将文件移到不同的磁盘驱动器`，**copy 已成功但源侧留下副本**（静默产生重复）。**跨盘移动请用原生 PowerShell `Move-Item`**。
 - **引用机验脚本的两个已知误报** `[环境]`：① markdown 表格里的转义竖线 `\|` 会被当成引用分隔符；② 文档正文里**提及**某个错误 ID（用于说明"这是幻觉"）反而被当成真引用。写指南时避开在这两种位置出现引用格式。
-- **GitHub 推送两条通道，哪条通走哪条** `[环境]`：`github.com:443` 直连可能被阻断（`curl` 到 `api.github.com` 通但 `git` 不通，表现为 fetch `Connection reset`）；改用 **SSH**（`ssh.github.com:443` 与 `github.com:22` 实测均可用）。若走 HTTPS，`gho_` 类 token **必须 URL 内嵌**（`https://x-access-token:${TOKEN}@github.com/...`），用 `Authorization: Bearer` header 会报 invalid。
-- **⚠️ `.gitignore` 里写 `cases/` 会吞掉任意层级的同名目录** `[环境]`：gitignore 中不带前导斜杠的目录名匹配**任意层级**，实测导致 `golden/cases/` 被一并忽略——`git add golden` 静默跳过场景文件，**既不报错也不进暂存区**，只会在核对清单时才发现少了一整个目录。**必须写成 `/cases/` 锚定仓库根**；同理检查 `data/` / `out/` / `tmp/` 等条目。
-- **Windows 控制台默认 cp1252 → `print` 中文直接抛 `UnicodeEncodeError`** `[环境]`：报错看着像逻辑错，实际是编码错（**本地中文区域是 cp936，一切正常，所以极易漏到 CI 才炸**）。实测 GitHub 的 windows runner 因此让整个构建步骤失败。两头修：① 脚本入口 `sys.stdout.reconfigure(encoding="utf-8", errors="replace")`；② CI 设 `PYTHONUTF8=1`，并加一道「在 `PYTHONIOENCODING=cp1252` 下跑一遍」的守卫步骤。
-- **PowerShell 5.1 的 `Select-String` 默认按 ANSI 读文件** `[环境]`：拿它去匹配**无 BOM 的 UTF-8** 中文（如从 `site/index.html` 里抓体积标注）会乱码、静默匹配不到，下一步 `$Matches[0]` 直接索引越界失败。必须显式 `Get-Content -Raw -Encoding UTF8` + `[regex]::Match`。
-- **PyInstaller 的 `--add-data` 一旦配合 `--specpath`，相对路径会相对 spec 目录解析** `[环境]`：实测报 `Unable to find build/SKILL.md`。**一律传绝对路径**。
-- **打包产物里的资源是"快照"，自检只看"在不在"** `[环境]`：改了 `SKILL.md`/脚本忘重建，exe 外表无异常、启动自检照样 PASS，但用户导出的包里是过期方法论。**必须做内容级核验**（读产物归档、与仓库逐项比对 SHA-256）。
-- **⚠️ 文档口径漂移靠人眼 grep 必定会漏** `[环境]`：一次"已全面核对"的普查仍漏出 3 处——① PR 文案里的 Python 版本号比全库其余处**低两个次版本**（且那段是要公开发布的）；② 某文档把一条**已证伪**的判断当作现状（Release / Pages 其实本地 token 就能做完）；③ 另一文档把**已经发布上线**的事列为待办。**结论：凡是"文档里的数字/判断必须等于某处事实"的约束，都要写成机验脚本**（`scripts/check_doc_consistency.py`，CI 强制 + 变异自验），不要指望自查。
-- **同一件事在多个工作流里各内联一份实现，本身就是漂移源** `[环境]`：`ci.yml` 与 `pages.yml` 曾各写一份"官网自检"，加上脚本里的一份共三处——只要判据变一次就会有一处忘记改。**同一个判据只留一处实现，其余全部调它。**
-- **在 CI 里比对"站点标注的产物哈希"会制造假红线** `[环境]`：站点写的是**已发布的那一份**产物的 SHA-256，而 CI 重新打包得到的字节必然不同（PyInstaller 非可复现构建）。若在 CI 硬比，等于逼出"永远不许重建产物"。正确做法：CI 跳过该项（`--no-artifact`），**本地出包后**跑完整版核对，并在**发布后把资产下载回来复算哈希**。
 
 ---
 

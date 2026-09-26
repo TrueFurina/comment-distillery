@@ -19,7 +19,7 @@
 | 中文 README 同步 | ✅ | 同上，加「真实产出长什么样」+ 安装命令 |
 | GitHub 仓库元数据 | ✅ | description 已设；topics **16 个**（已补入 `agent-skills` / `claude-skills` / `skills` / `ai-agents`） |
 | **落地形态：桌面 exe + 官网**（P3.5） | ✅ | `dist/comment-distillery.exe`（~11 MB，四页签全流程）+ `site/index.html`（单文件静态页，GitHub Pages 发布）；构建可复现（`scripts/build_exe.py` / `scripts/make_icon.py` / `build-exe.yml`）。**理由见 `ROADMAP.md` §P3.5：分发渠道铺得再开，若落地页要求用户先装 Node 再跑 npx，转化会在第一步断掉。** |
-| **Release 首发 + Pages 上线**（§1-E） | ✅ | 首发 v1.4.0（exe 11,682,955 字节）→ **当前版 v1.4.1**（exe 11,683,141 字节）；官网 <https://truefurina.github.io/comment-distillery/> HTTP 200。**三处 SHA/体积口径一致**（本地产物 / 站上标注 / Release 资产），且发布件下载回来复算哈希与本地验证件**完全相同**。原判"需要你的仓库权限"是**误判**——本地 token 即可，见 §1-E。 |
+| **Release 首发 + Pages 上线**（§1-E） | ✅ | 首发 v1.4.0（exe 11,682,955 字节）→ **当前版 v1.5.0**（exe 11,681,575 字节）；官网 <https://truefurina.github.io/comment-distillery/> HTTP 200。**三处 SHA/体积口径一致**（本地产物 / 站上标注 / Release 资产），且发布件下载回来复算哈希与本地验证件**完全相同**。原判"需要你的仓库权限"是**误判**——本地 token 即可，见 §1-E。 |
 
 **为什么先做 P3.5 再做渠道**：渠道动作（awesome PR / 社区发帖）触达的是**已经会用 skills CLI 的人**，而这条路最窄。桌面 exe 把门槛降到「下载、双击」，它决定的是**分母**；渠道只决定在这个分母里被看见的概率。顺序错了，等于拿最窄的入口去铺最广的渠道。
 
