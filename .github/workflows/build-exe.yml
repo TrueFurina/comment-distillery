@@ -1,10 +1,13 @@
 name: Build Windows exe
 
-# 可复现的 exe 构建：在干净的 windows runner 上打包并跑完两道冒烟，
-# 再把产物挂到指定 Release。
+# 可复现的 exe 构建：在干净的 windows runner 上打包、核验随包资源、跑完三道冒烟。
+#
+# 两种触发，职责不同：
+#   - push tag v*  ：证明"干净环境里也能构建 + 跑通"，产物走 Artifact，**不动 Release**；
+#   - workflow_dispatch + 填 tag：把该次 CI 产物正式挂到指定 Release。
 #
 # v1.4.0 的发布资产是用同一条命令在本地 3.13 环境构建并冒烟验证的
-# （SHA-256 见 Release 说明）。本工作流供后续无人值守重建使用。
+# （SHA-256 见 Release 说明与官网）。
 #
 # 本地等价命令：
 #   python scripts/make_icon.py
@@ -97,13 +100,18 @@ jobs:
             dist/comment-distillery.exe
             dist/SHA256.txt
 
-      - name: 挂载到 Release
-        if: startsWith(github.ref, 'refs/tags/v') || inputs.tag != ''
+      - name: 挂载到 Release（仅手动触发且显式给了 tag 时）
+        # ⚠️ 打 tag 自动跑时**刻意不挂载**：发布资产是本地构建并逐项冒烟验证过的那一份，
+        #    其 SHA-256 已写进 Release 说明与官网。CI 重新打包得到的字节不同
+        #    （PyInstaller 非可复现构建），自动 --clobber 覆盖会让那两处声明当场失真。
+        #    所以 tag 触发的职责是"证明干净环境里也能构建+跑通"，产物走 Artifact；
+        #    要把某个 CI 产物正式发出去，用 workflow_dispatch 并显式填 tag。
+        if: inputs.tag != ''
         shell: pwsh
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          $tag = if ($env:GITHUB_REF -like 'refs/tags/*') { $env:GITHUB_REF -replace '^refs/tags/','' } else { "${{ inputs.tag }}" }
+          $tag = "${{ inputs.tag }}"
           gh release view $tag 2>$null
           if ($LASTEXITCODE -ne 0) { gh release create $tag --title $tag --notes "见仓库 CHANGELOG" }
           gh release upload $tag dist/comment-distillery.exe dist/SHA256.txt --clobber
