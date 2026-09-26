@@ -10,7 +10,7 @@
 | 1 | Reddit r/ClaudeAI | [`reddit-claudeai.md`](reddit-claudeai.md) | 北美上午（北京 20:00–24:00） | ⏳ 待你提交 |
 | 2 | Reddit r/LocalLLaMA | [`reddit-localllama.md`](reddit-localllama.md) | 同上，与 #1 **间隔 ≥1 天** | ⏳ 待你提交 |
 | 3 | 掘金 | [`juejin.md`](juejin.md) | 工作日 11:00 或 20:00 | ⏳ 待你提交 |
-| 4 | 知乎（专栏文章） | [`zhihu.md`](zhihu.md) | 任意，避开发帖高峰重叠 | ⏳ 待你提交 |
+| 4 | 知乎（专栏 + 可选投稿至问题 ×1） | [`zhihu.md`](zhihu.md) | 任意，避开发帖高峰重叠 | ⏳ 待你提交 |
 | 5 | 方法论长文（原 §1-D） | **已由 #3/#4 承担**，不再单独写 | — | ✅ 合并 |
 
 ## 提交步骤（每渠道 2 分钟）
@@ -21,6 +21,7 @@
 **掘金**：`juejin.cn` → 右上「写文章」→ 编辑器里直接粘贴 Markdown（掘金原生支持 MD）→ 选标签：`人工智能`、`Python`、`开源` → 封面可截图官网首屏（<https://truefurina.github.io/comment-distillery/>）→ 发布。
 
 **知乎**：`zhihu.com` → 创作中心 → 「写文章」→ 粘贴 Markdown（知乎编辑器支持 MD 粘贴，图片需手动补）→ 话题标签：`人工智能`、`数据挖掘`、`程序员` → 发布。
+**可选加分项**：按 [`zhihu.md`](zhihu.md) 顶部「要不要投稿至问题」一节，挑 1 个契合的现有问题投稿/回答（必须先改开头、仓库链接只留文末），冷启动曝光比纯专栏高一个量级。
 
 ## 发帖纪律（各稿都适用）
 
