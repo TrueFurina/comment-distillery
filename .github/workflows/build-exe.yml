@@ -39,6 +39,10 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # 必须拉全量 tag（同上：文档一致性机验要核对 Release tag 是否存在）。
+          # 这个工作流由 tag 推送触发，不加这一行时本地只有一个 tag，检查会误判。
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:

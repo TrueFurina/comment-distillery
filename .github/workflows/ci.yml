@@ -20,6 +20,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          # 必须拉全量 tag：文档一致性机验会核对「文档引用的 Release tag 是否真实存在」。
+          # 实测坑：checkout 默认只带被推送的那一个 ref，tag 推送时本地就只有一个 tag，
+          # 于是文档里对其他版本的引用会被误判为「引用了不存在的 tag」。
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:

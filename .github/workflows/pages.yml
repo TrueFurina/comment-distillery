@@ -28,6 +28,10 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          # 站点自检会跑文档一致性机验，其中一项要核对文档引用的 Release tag 是否存在。
+          # 不带全量 tag 时该项会退化为 SKIP（不报错，但也等于没验）。
+          fetch-depth: 0
 
       - name: 站点自检（单文件、无外链依赖、关键锚点齐全）
         # 判据统一走 scripts/check_doc_consistency.py，不在这里再写第三份内联实现——

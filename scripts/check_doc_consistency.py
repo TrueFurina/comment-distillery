@@ -161,11 +161,17 @@ def check_release_tags(root, tags=None):
     missing = []
     for p in _doc_files(root):
         for i, line in enumerate(p.read_text(encoding="utf-8").splitlines(), 1):
-            for m in pat.finditer(line):
-                if m.group(1) not in tags:
-                    missing.append(f"{_rel(root, p)}:{i} 引用了不存在的 tag {m.group(1)}")
+            hit = sorted(set(pat.findall(line)))          # 同一行出现多次只报一次
+            for t in hit:
+                if t not in tags:
+                    missing.append(f"{_rel(root, p)}:{i} 引用了不存在的 tag {t}")
     if missing:
-        return [("FAIL", "引用了未发布的 Release tag：\n    " + "\n    ".join(missing))]
+        return [("FAIL",
+                 "引用了未发布的 Release tag：\n    " + "\n    ".join(missing) +
+                 "\n    ⚠️ 若你确信这些 tag 存在，先怀疑**本地只同步了部分 tag**"
+                 "\n       （实测：`actions/checkout` 在 tag 推送时默认只带那一个 tag，"
+                 "\n        于是文档里对其他版本的引用会被误判为不存在）。"
+                 "\n       修法是给 checkout 加 `fetch-depth: 0`，而不是删掉文档里的链接。")]
     return [("OK", f"文档引用的 Release tag 全部真实存在（本地共 {len(tags)} 个 tag）")]
 
 
@@ -446,9 +452,23 @@ CASES = [
 ]
 
 
+def _selftest_tags(root):
+    """self-test 专用的 tag 集合 = 本地 tag ∪ 文档里出现的所有 tag。
+
+    为什么必须并上后者：CI 的 checkout 默认只带被推送的那一个 tag（甚至一个都不带），
+    此时「引用不存在的 tag」这一项会 SKIP，于是那个变异就成了**漏网变异**、self-test 假红。
+    self-test 要验的是**判据本身有效**，不该依赖运行环境的 tag 完整性；
+    真实检查（`check_release_tags`）仍然严格要求 tag 在本地存在。
+    """
+    tags = local_tags(root)
+    for p in _doc_files(root):
+        tags |= set(re.findall(r"releases/tag/(v[\w.\-]+)", p.read_text(encoding="utf-8")))
+    return tags
+
+
 def self_test(root):
     print("[self-test] 变异验证：故意改坏，每个变异都必须被**对应**的检查拦下\n")
-    tags = local_tags(root)
+    tags = _selftest_tags(root)
     ok = True
 
     with tempfile.TemporaryDirectory() as td:
