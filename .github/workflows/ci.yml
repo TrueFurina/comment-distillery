@@ -53,23 +53,15 @@ jobs:
           PYTHONIOENCODING=cp1252 python scripts/verify_citations.py examples/sample_guide.md examples/sample_corpus.csv
           echo "✅ cp1252 控制台下中文输出正常（降级替换而非抛异常）；图标生成可复现"
 
-      - name: 官网自检（单文件 / 无外链资源 / 锚点齐全）
-        run: |
-          python - <<'PY'
-          import re, pathlib, sys
-          html = pathlib.Path("site/index.html").read_text(encoding="utf-8")
-          bad = re.findall(r'(?:src|href)="https?://[^"]+\.(?:js|css|woff2?)"', html)
-          if bad:
-              print("发现外链资源：", bad); sys.exit(1)
-          ids = set(re.findall(r'\bid="([^"]+)"', html))
-          missing = sorted(set(re.findall(r'href="#([^"]+)"', html)) - ids)
-          if missing:
-              print("导航锚点无对应元素：", missing); sys.exit(1)
-          for tag in ("<html", "</html>", "<head>", "</head>", "<body>", "</body>"):
-              if tag not in html:
-                  print("缺少结构标签：", tag); sys.exit(1)
-          print(f"✅ 官网自检通过：{len(html)} 字符 / {len(ids)} 个锚点目标")
-          PY
+      - name: 文档一致性机验（版本口径 / Release tag / 站点数字 / 锚点 / 中英对等 / 已证伪表述）
+        # 为什么要有这一步：2026-09-26 一次普查漏出 3 处「文档落后于事实」
+        # （PR 文案写 Python 3.8+、distribution.md §E 的「需要你的仓库权限」已被证伪、
+        #  HANDOFF 里 Release 仍是待办）。**人眼 grep 会漏，机验不会。**
+        # 本步同时取代了原先单独的「官网自检」——同一件事只留一处实现，避免两份判据各自漂移。
+        run: python scripts/check_doc_consistency.py
+
+      - name: 文档一致性机验 —— 判据自身的变异验证
+        run: python scripts/check_doc_consistency.py --self-test
 
       - name: 回归测试（纯标准库 unittest）
         run: python -m unittest discover -s tests -v

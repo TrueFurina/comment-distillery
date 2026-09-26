@@ -30,28 +30,10 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: 站点自检（单文件、无外链依赖、关键锚点齐全）
-        run: |
-          set -e
-          test -f site/index.html || { echo "缺少 site/index.html"; exit 1; }
-          python3 - <<'PY'
-          import re, pathlib, sys
-          html = pathlib.Path("site/index.html").read_text(encoding="utf-8")
-          # 1) 不允许引用外部脚本/样式/字体（离线可开、无第三方追踪）
-          bad = re.findall(r'(?:src|href)="https?://[^"]+\.(?:js|css|woff2?)"', html)
-          if bad:
-              print("发现外链资源：", bad); sys.exit(1)
-          # 2) 导航锚点必须都能找到对应元素
-          ids = set(re.findall(r'\bid="([^"]+)"', html))
-          anchors = set(re.findall(r'href="#([^"]+)"', html))
-          missing = sorted(anchors - ids)
-          if missing:
-              print("导航锚点无对应元素：", missing); sys.exit(1)
-          # 3) 基本结构完整
-          for tag in ("<html", "</html>", "<head>", "</head>", "<body>", "</body>"):
-              if tag not in html:
-                  print("缺少结构标签：", tag); sys.exit(1)
-          print(f"OK 站点自检通过：{len(html)} 字符 / {len(ids)} 个锚点目标")
-          PY
+        # 判据统一走 scripts/check_doc_consistency.py，不在这里再写第三份内联实现——
+        # 同一件事三处各写一遍，改一处忘另两处就是漂移（本仓库最忌讳的那类问题）。
+        # 该脚本的第 4 项检查正是「官网结构」。
+        run: python3 scripts/check_doc_consistency.py
 
       - uses: actions/configure-pages@v5
 

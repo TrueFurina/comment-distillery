@@ -6,8 +6,8 @@ name: Build Windows exe
 #   - push tag v*  ：证明"干净环境里也能构建 + 跑通"，产物走 Artifact，**不动 Release**；
 #   - workflow_dispatch + 填 tag：把该次 CI 产物正式挂到指定 Release。
 #
-# v1.4.0 的发布资产是用同一条命令在本地 3.13 环境构建并冒烟验证的
-# （SHA-256 见 Release 说明与官网）。
+# v1.4.0 / v1.4.1 的发布资产都是本地构建、逐项冒烟验证后手动挂上去的
+# （SHA-256 见 Release 说明与官网）。本工作流供后续无人值守重建使用。
 #
 # 本地等价命令：
 #   python scripts/make_icon.py
@@ -19,7 +19,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "要挂载产物的 Release 标签（如 v1.4.0）。留空则只留 Artifact。"
+        description: "要挂载产物的 Release 标签（如 v1.4.1）。留空则只留 Artifact。"
         required: false
         default: ""
   push:
@@ -86,6 +86,16 @@ jobs:
           $p = Start-Process -FilePath "dist/comment-distillery.exe" -ArgumentList "--selftest-gui" -Wait -PassThru
           Write-Host "gui smoke exit=$($p.ExitCode)"
 
+      - name: 文档一致性机验（版本口径 / Release tag / 锚点 / 中英对等 / 已证伪表述）
+        # 用 --no-artifact 是**刻意**的：站点上记的是「已发布的那一份产物」的 SHA-256，
+        # 而这里现打包得到的字节必然不同（PyInstaller 非可复现构建）。
+        # 在 CI 里硬比 SHA 会逼出「永远不许重建产物」的假红线。
+        # 正确的核对时机是**本地出包后**跑不带该开关的版本（见脚本 docstring）。
+        run: python scripts/check_doc_consistency.py --no-artifact
+
+      - name: 文档一致性机验 —— 判据自身的变异验证
+        run: python scripts/check_doc_consistency.py --self-test
+
       - name: 记录产物哈希
         shell: pwsh
         run: |
@@ -93,18 +103,8 @@ jobs:
           $size = [math]::Round((Get-Item dist/comment-distillery.exe).Length / 1MB, 1)
           "SHA256=$h"  | Tee-Object -FilePath dist/SHA256.txt
           "SIZE_MB=$size" | Tee-Object -FilePath dist/SHA256.txt -Append
-          # 与站点上写的体积做一致性检查，防止文档漂移。
-          # ⚠️ 必须显式 -Encoding UTF8：PowerShell 5.1 的 Select-String 默认按 ANSI 读，
-          #    site/index.html 是无 BOM 的 UTF-8，中文会乱码 → 匹配不到 → 步骤报 IndexError 失败。
-          $html = Get-Content site/index.html -Raw -Encoding UTF8
-          $m = [regex]::Match($html, '下载 exe · ([\d.]+) MB')
-          if (-not $m.Success) {
-            Write-Error "站点里找不到体积标注（正则未命中），请检查 site/index.html"
-            exit 1
-          }
-          $claimed = $m.Groups[1].Value
-          Write-Host "站点标注 $claimed MB / 实际 $size MB"
-          if ($claimed -ne "$size") { Write-Warning "站点体积标注与实际产物不一致，请更新 site/index.html" }
+          Write-Host "本次 CI 构建产物：$size MB  SHA256=$h"
+          Write-Host "（与站点/Release 上已发布的哈希不同属正常——非可复现构建）"
 
       - uses: actions/upload-artifact@v4
         with:

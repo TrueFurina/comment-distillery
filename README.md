@@ -8,6 +8,14 @@
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Dependencies](https://img.shields.io/badge/dependencies-zero-success.svg)](#快速开始)
 
+**三条入口，按你的习惯挑一条：**
+
+| 你是 | 做什么 |
+|---|---|
+| 不想碰命令行 | **⬇ [下载 Windows 桌面工具](https://github.com/TrueFurina/comment-distillery/releases/latest)**（~11 MB · 免安装 · **连 Python 都不用装**） |
+| 已经在用 AI Agent | `npx skills add TrueFurina/comment-distillery`（Claude Code / Cursor / Codex / Copilot 等 40+ 家） |
+| 想看它到底产出什么 | **[🌐 官网](https://truefurina.github.io/comment-distillery/)** · 或直接读下面的[真实产出节选](#真实产出长什么样) |
+
 ---
 
 ## 这是什么
@@ -316,6 +324,7 @@ comment-distillery/
 │   ├── prep.py              # 预处理（零依赖）
 │   ├── verify_citations.py  # 引用真实性机验（强制质量门）
 │   ├── check_rule_tags.py   # 机验 SKILL.md 无「裸铁律」（带变异验证）
+│   ├── check_doc_consistency.py  # 文档一致性机验：版本口径 / Release tag / 站点数字 / 中英对等（带变异验证）
 │   ├── build_exe.py         # 打包桌面 exe（PyInstaller，仅构建期依赖）
 │   └── make_icon.py         # 标准库手写 ICO 生成器（不引入 Pillow）
 ├── golden/                  # 评估集：8 场景 / 4 类，判「改规则后是否变强」

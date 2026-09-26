@@ -37,6 +37,12 @@ python -m unittest discover -s tests -v
 python scripts/prep.py examples/sample_corpus.csv /tmp/cd-out
 python scripts/verify_citations.py examples/sample_guide.md examples/sample_corpus.csv
 
+# ★ 改了任何文档 / 站点 / 版本号后必跑（CI 也跑，含变异自验）
+python scripts/check_doc_consistency.py
+python scripts/check_doc_consistency.py --self-test
+#   出包后（存在 dist/*.exe）它会额外核对「站点标注的 SHA-256 / 体积 == 真实产物」
+#   在 CI 打包工作流里用 --no-artifact（站点记的是已发布产物，与现打包字节必然不同）
+
 # 桌面工具（GUI 需带 tkinter 的解释器；逻辑层 app/core.py 不依赖 GUI，可单独测）
 python -m unittest tests.test_app_core -v      # 逻辑层 16 个用例
 python app_main.py --selfcheck                 # 随包资源齐全性（--report <path> 落盘）
@@ -56,6 +62,7 @@ python scripts/build_exe.py --verify           # ★ 产物内资源与仓库是
 ### 提交前自检清单
 
 - [ ] `python -m unittest discover -s tests -v` 全绿
+- [ ] `python scripts/check_doc_consistency.py` 全绿（改过文档 / 站点 / 版本号就**必须**跑）
 - [ ] 新增行为**都**有对应测试用例（含边界与失败路径）
 - [ ] 没有引入第三方依赖
 - [ ] 没有提交真实数据 / 凭证

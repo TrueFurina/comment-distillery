@@ -1,8 +1,10 @@
 # 分发作战清单（Distribution Playbook）
 
-> 建立：2026-09-26（P3）
+> 建立：2026-09-26（P3）｜最后核对：2026-09-26（Release + Pages 已上线后）
 > 定位：**本文档是"谁来做"的清单，不是"做了什么"的报告。**
-> 分发里有一半动作**必须你本人执行**（需要 GitHub / Reddit 账号、涉及公开发言）。
+> 分发里**只剩公开发言类动作需要你本人执行**（awesome 列表 PR、社区发帖）——它们以你的身份对外发声，
+> 我不代发。其余「仓库权限 / 远端侧」的事（打 tag、建 Release、启用并核验 Pages、元数据）
+> 都是**本地 token 直连 API 就能做**的，已完成，见 §0。
 > 我能做的是把结构适配好、把文案写好，让你复制粘贴即可。
 
 ---
@@ -17,6 +19,7 @@
 | 中文 README 同步 | ✅ | 同上，加「真实产出长什么样」+ 安装命令 |
 | GitHub 仓库元数据 | ✅ | description 已设；topics **16 个**（已补入 `agent-skills` / `claude-skills` / `skills` / `ai-agents`） |
 | **落地形态：桌面 exe + 官网**（P3.5） | ✅ | `dist/comment-distillery.exe`（~11 MB，四页签全流程）+ `site/index.html`（单文件静态页，GitHub Pages 发布）；构建可复现（`scripts/build_exe.py` / `scripts/make_icon.py` / `build-exe.yml`）。**理由见 `ROADMAP.md` §P3.5：分发渠道铺得再开，若落地页要求用户先装 Node 再跑 npx，转化会在第一步断掉。** |
+| **Release 首发 + Pages 上线**（§1-E） | ✅ | 首发 v1.4.0（exe 11,682,955 字节）→ **当前版 v1.4.1**（exe 11,683,141 字节）；官网 <https://truefurina.github.io/comment-distillery/> HTTP 200。**三处 SHA/体积口径一致**（本地产物 / 站上标注 / Release 资产），且发布件下载回来复算哈希与本地验证件**完全相同**。原判"需要你的仓库权限"是**误判**——本地 token 即可，见 §1-E。 |
 
 **为什么先做 P3.5 再做渠道**：渠道动作（awesome PR / 社区发帖）触达的是**已经会用 skills CLI 的人**，而这条路最窄。桌面 exe 把门槛降到「下载、双击」，它决定的是**分母**；渠道只决定在这个分母里被看见的概率。顺序错了，等于拿最窄的入口去铺最广的渠道。
 
@@ -31,6 +34,10 @@
 ---
 
 ## 1. 需要你执行的动作（按 ROI 排序）
+
+> **现状：A 与 E 已由我完成**（本地 token 直连 API，无需你的账号）——原先把它们列进"需要你执行"是**误判**。
+> **真正需要你的只剩 B / C / D**：它们都以你的身份对外公开发言，我不代发。
+> 文案与命令均已成稿，直接复制即可。
 
 ### A. GitHub 仓库元数据 — ✅ **已完成，无需你执行**
 
@@ -98,7 +105,7 @@ blind-spot disclosure.
 - **Mandatory counter-examples.** Every consensus must be paired with the
   strongest opposing argument. In one run, reply threads overturned 3 conclusions
   that the top-level-only pass had produced.
-- **Zero dependencies, stdlib only.** No pip install, Python 3.8+.
+- **Zero dependencies, stdlib only.** No pip install, Python 3.10+.
 - **Platform-neutral.** Any agent that reads SKILL.md can use it.
 
 ## Install
@@ -164,21 +171,31 @@ Ask:   想要的是"有没有人也在做 L3 综合"的讨论，不是 star。
 **元论点（这篇文章真正值钱的地方）**：五次失效的共同点是**用代理指标代替真值**——
 点赞数↔认可度、文本长度↔思考深度、楼层深度↔观点完整性、ID 格式↔引用真实、行数↔语料规模。
 
-### E. Release 首发与 Pages 核验（需要你的仓库权限，5 分钟）
+### E. Release 首发与 Pages 核验 — ✅ **已完成（2026-09-26，无需你执行）**
 
-代码侧已全部就位，剩下两步**必须在推送到远端之后**做，本地验证不了：
+**原以为这一步"需要你的仓库权限"——判断错了。** 本地有 token，`git push` + REST API 足以完成全部三步，
+且比网页端更可核验（每步都留了可复算的证据）：
 
-1. **打 tag 并发 Release**（把 `dist/comment-distillery.exe` 挂上去，Release 正文附 SHA-256）：
-   ```bash
-   git tag -a v1.4.0 -m "v1.4.0 — 桌面工具 + 官网"
-   git push origin v1.4.0
-   gh release create v1.4.0 dist/comment-distillery.exe \
-     --title "v1.4.0 — Windows 桌面工具 + 官网" \
-     --notes-file <(sed -n '/## \[1.4.0\]/,/^---$/p' CHANGELOG.md)
-   ```
-   或用网页端 Releases → Draft a new release → 选 `v1.4.0` → 上传 exe。
-2. **核验 Pages 生效**：推送后到 Actions 看 `pages` 工作流。若失败，**最常见原因是仓库 Settings → Pages 的 Source 没切到 `GitHub Actions`**（默认是 `Deploy from a branch`，本仓库没有 `gh-pages` 分支，会 404）。
-3. **核验下载链路**：打开 <https://truefurina.github.io/comment-distillery/>，点「下载 exe」应落到 Release 页；确认 SmartScreen 提示属正常（未签名）。
+| 步 | 结果 | 证据 |
+|---|---|---|
+| 打 tag | ✅ `v1.4.0` → `0ba07ce`（修复后的提交，非首次失败的那个） | `git ls-remote --tags origin` |
+| 建 Release + 挂 exe | ✅ [releases/tag/v1.4.0](https://github.com/TrueFurina/comment-distillery/releases/tag/v1.4.0) | 资产 `comment-distillery.exe` **11,682,955 字节**（11.1 MB），正文含 SHA-256 |
+| 启用 Pages | ✅ `POST /repos/.../pages {"build_type":"workflow"}` | **首次部署失败的真因是 Pages 根本没启用**（`GET /pages` → 404），不是 Source 选错 |
+| 核验 Pages | ✅ <https://truefurina.github.io/comment-distillery/> HTTP 200 | 站上标注 SHA `9435e748…` / 11.1 MB，与本地产物、Release 资产**三处一致** |
+| 核验下载链路 | ✅ 下载回本地**复算 SHA-256 完全一致** | 证明「发布件 == 本地冒烟验证过的那一份」 |
+
+**三条工作流在 HEAD / tag 上全绿**（可复查 run id）：
+CI `36225711223`（main）· Deploy site `36225711371`（main）· Build Windows exe `36225715001`（v1.4.0）。
+
+**后续版本（v1.4.1 起）改用「发新版」而非移动 tag**：v1.4.0 发完后发现 `SKILL.md`（**随包资源**）
+新增了内容，`build_exe.py --verify` 当场报出「产物内 SKILL.md 与仓库不一致」。此时两条路——
+改写已发布的 v1.4.0 资产，或如实发一个补丁版。**选后者：Release 不可变，内容变了就发新版本。**
+（v1.4.0 当时移动 tag 是因为它**从未成功构建过**，CI 首跑即红，属"尚未成立"而非"已发布后又变"。）
+
+**顺手记下的两个坑**（已同步进 `SKILL.md` 环境事实）：
+- PyInstaller **不是可复现构建** → tag 触发的 CI 改为**只产出 Artifact、不自动覆盖 Release 资产**，
+  否则已写进官网与 Release 的 SHA-256 会被重新打包的字节当场打成假话。
+- exe 未签名 → SmartScreen 拦截属正常，README 与官网均已写明。
 
 ---
 
@@ -187,10 +204,15 @@ Ask:   想要的是"有没有人也在做 L3 综合"的讨论，不是 star。
 | 项 | 验收 | 停止条件 |
 |---|---|---|
 | npx 适配 | ✅ `--list` 能发现 1 个 skill | 无 |
-| 元数据 | `gh repo view` 能看到 description + topics | 无 |
+| 元数据 | ✅ `gh repo view` 能看到 description + topics | 无 |
+| 落地形态（exe + 官网） | ✅ exe 三项自检全 PASS；官网 HTML 自检 + 无头渲染核验通过 | 无 |
+| Release + Pages | ✅ Release 资产可下载且**复算哈希与本地件一致**；官网线上 HTTP 200 | 无 |
 | awesome PR | **至少 1 个合入** | **3 个月内 PR 全被拒且社区零反馈 → 回到定位重新评估**，不继续堆渠道动作 |
 | 社区发帖 | 各渠道发一轮 | 同上 |
 | 长文 | 发布并进入长尾搜索 | 无 deadline |
+
+> 上表**只剩两行未完成**（awesome PR / 社区发帖），且都属"以你身份公开发言"。
+> 其余全部已闭环并有可复算证据——不要因为文档没更新而重复劳动。
 
 **不把 star 当目标**，只当"分发是否奏效"的观测指标。
 

@@ -9,6 +9,14 @@
 
 **[中文文档](README.md)** · English
 
+**Three ways in — pick whichever fits you:**
+
+| If you are | Do this |
+|---|---|
+| Not a terminal person | **⬇ [Download the Windows desktop tool](https://github.com/TrueFurina/comment-distillery/releases/latest)** (~11 MB · no installer · **no Python needed**) |
+| Already using an AI agent | `npx skills add TrueFurina/comment-distillery` (Claude Code / Cursor / Codex / Copilot and 40+ others) |
+| Just want to see the output | **[🌐 Website](https://truefurina.github.io/comment-distillery/)** · or read the [sample output below](#what-the-output-actually-looks-like) |
+
 ---
 
 ## What it is
@@ -316,6 +324,7 @@ comment-distillery/
 │   ├── prep.py              # preprocessing (zero deps)
 │   ├── verify_citations.py  # citation verification (hard gate)
 │   ├── check_rule_tags.py   # no "bare rules" gate for SKILL.md (with mutation self-test)
+│   ├── check_doc_consistency.py  # doc-consistency gate: version / release tags / site numbers / zh-en parity (with mutation self-test)
 │   ├── build_exe.py         # package the desktop exe (PyInstaller; build-time only)
 │   └── make_icon.py         # hand-written ICO generator (stdlib only, no Pillow)
 ├── golden/                  # test set: 8 cases / 4 categories — did it actually get better?

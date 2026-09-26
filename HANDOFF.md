@@ -27,7 +27,7 @@
 E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 ├── .git/                                （HEAD 见 `git log -1`，remote: SSH）
 ├── .github/workflows/
-│   ├── ci.yml                           （3 个 Python 版本，**12 步**：compileall / 零依赖守卫 / 编码守卫 / 官网自检 / unittest / 无裸铁律 / 判据变异验证 / golden 变异 / golden 基线 / prep 冒烟 / 引用机验冒烟 / 冒烟产出展示）
+│   ├── ci.yml                           （3 个 Python 版本，**13 步**：compileall / 零依赖守卫 / 编码守卫 / 文档一致性机验 / 文档一致性变异验证 / unittest / 无裸铁律 / 判据变异验证 / golden 变异 / golden 基线 / prep 冒烟 / 引用机验冒烟 / 冒烟产出展示）
 │   ├── build-exe.yml                    （CI 上真跑 PyInstaller 打包 + 双冒烟，上传 artifact）
 │   └── pages.yml                        （官网发布到 GitHub Pages）
 ├── app_main.py                          （桌面工具入口：源码运行 / PyInstaller 共用；含 --selfcheck / --selftest-gui / --selftest-run）
@@ -39,6 +39,7 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 ├── scripts/prep.py                      （预处理：编码容错 → 去重 → 去噪 → 按赞降序 → 导出）
 ├── scripts/verify_citations.py          （引用幻觉机验，强制质量门）
 ├── scripts/check_rule_tags.py           （机验 SKILL.md 无「裸铁律」，含变异自验）
+├── scripts/check_doc_consistency.py     （文档一致性机验：版本口径 / Release tag / 站点数字 / 锚点 / 中英对等 / 已证伪表述，含变异自验；同时取代了原先三处重复的「官网自检」内联实现）
 ├── scripts/build_exe.py                 （PyInstaller 打包脚本，仅构建期依赖，不进运行期）
 ├── scripts/make_icon.py                 （标准库手写 ICO）
 ├── contrib/fetch_bilibili_comments.py   （纯标准库 WBI 签名抓取，含去重与退避）
@@ -50,7 +51,7 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 ├── tests/test_app_core.py               （16 个用例，桌面工具逻辑层）
 ├── docs/collecting.md                   （各社区采集工具 + 许可证 + 风险对照）
 ├── docs/retrospective.md                （七战沉淀：五次修正 / 7 条判据 / 质量门 G1–G7）
-├── docs/rule-provenance.md              （规则溯源：9 铁律 / 5 待复现 / 7 环境事实，附复现判据）
+├── docs/rule-provenance.md              （规则溯源：9 铁律 / 5 待复现 / 17 环境事实，附复现判据；计数由机验强制与 SKILL.md 对齐）
 ├── docs/overturned.md                   （被推翻结论台账 OT-1…OT-5，含"再次推翻的条件"）
 ├── docs/distribution.md                 （★ 分发作战清单：gh 命令 / awesome PR 文案 / 帖子骨架）
 ├── SKILL.md / README.md / README.en.md / CHANGELOG.md
@@ -169,10 +170,11 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 HEAD     见 `git log -1`（最后核验 2026-09-26 为 2cae432；**本文件每次提交后 hash 都会前进一格，属正常**——
          先前写法把 hash 写死，导致每次提交都要改一次，是自找的漂移源）
 origin   git@github.com:TrueFurina/comment-distillery.git   (SSH)
-CI       .github/workflows/ci.yml  **12 个质量门步骤**全绿
-         （compileall / 零依赖守卫 / 编码守卫 / 官网自检 / unittest 61 项 / 无裸铁律 / 判据变异验证 /
-          golden 变异 / golden 基线 / prep 冒烟 / 引用机验冒烟 / 冒烟产出展示）
-         另有 build-exe.yml（真打包 + --verify 资源核验 + 三道冒烟）与 pages.yml（官网发布）
+CI       .github/workflows/ci.yml  **13 个质量门步骤**全绿
+         （compileall / 零依赖守卫 / 编码守卫 / 文档一致性机验 / 文档一致性变异验证 / unittest 61 项 /
+          无裸铁律 / 判据变异验证 / golden 变异 / golden 基线 / prep 冒烟 / 引用机验冒烟 / 冒烟产出展示）
+         另有 build-exe.yml（真打包 + --verify 资源核验 + 三道冒烟 + 文档一致性）与
+         pages.yml（官网发布；站点自检已统一走 check_doc_consistency.py，不再内联第三份实现）
 安装     npx skills add TrueFurina/comment-distillery   （--list 实测 Found 1 skill）
 桌面     双击 dist/comment-distillery.exe（~11 MB 单文件，未签名 → SmartScreen 会提示，属正常）
 迁移     E:\Program\comment-distillery，cases/ 已 gitignore，仅本地留存
@@ -199,9 +201,9 @@ CI       .github/workflows/ci.yml  **12 个质量门步骤**全绿
 11. ✅ **LICENSE 保留 MIT**（2026-09-26 用户确认）：依据是 `docs/compliance.md` §0——"本项目可以 MIT 开源、可被企业采用"。**不适用**"原创项目一律不加 LICENSE"这条个人规则（它针对私有项目；公开仓库无 LICENSE = 保留所有权利，反而与分发目标矛盾）。
 12. ✅ **P3.5 交付形态**（2026-09-26）：Windows 桌面 exe（`app/` + `app_main.py`）+ 官网（`site/`）+ 可复现构建（`scripts/make_icon.py` / `scripts/build_exe.py` / `build-exe.yml` / `pages.yml`）。**exe 三项自检全 PASS**（资源齐全 / 真建窗口 / 端到端跑通预处理→打包→引用机验）。设计决策与回滚方式见 `ROADMAP.md` §P3.5。
 13. ✅ **顺带修掉两个真 bug**（2026-09-26）：① `verify_citations.py` 的 `--field` 参数一直被解析却从未传下去（形同虚设），已接通；② `crawl()` 的协作式停止钩子与 `_CallbackWriter` —— GUI 中途停止时已抓部分照常写出。
-14. ⏳ **GitHub Release + Pages 首发**：tag `v1.4.0` 与 exe 挂载需**推送到远端后**执行（本地无法验证 Pages 生效）。若首次 Pages 部署失败，最常见原因是仓库 Settings → Pages 的 Source 未切到 **GitHub Actions**。
+14. ✅ **GitHub Release + Pages 首发**（2026-09-26）：tag `v1.4.0` → `0ba07ce`（**已移到修复 CI 红之后的提交**——当时它**从未成功构建过**，属"尚未成立"而非"已发布后又变"；与后来 v1.4.1 的处理**不同**：已发布的内容变了就**发新版、不重写资产**）；Release 已挂 exe（**11,682,955 字节**）；官网 <https://truefurina.github.io/comment-distillery/> 线上 HTTP 200。**原判"需要你的仓库权限"是误判**——本地 token 直连 API 全做完。**Pages 首次部署失败的真因不是 Source 选错，是 Pages 根本没启用**（`GET /repos/.../pages` → 404）；一行 `POST /pages {"build_type":"workflow"}` 修好。发布件已下载回来复算 SHA-256，与本地冒烟验证件**完全一致**。三条工作流全绿：CI `36225711223` / Deploy site `36225711371` / Build exe `36225715001`。
 
-**当前状态（2026-09-26）**：P0 / P1 / P2 已闭环，P3 适配侧全部完成（含 topics 补齐），**P3.5 交付形态完成**，`cases/` 产物层已公开。**代码侧无待办。** 剩余只有两类「需要你本人账号 / 远端侧」的动作：① awesome PR ×3 与社区发帖（文案命令已就位，见 `docs/distribution.md`）；② Release 首发后核验 Pages 与下载链接生效。**P4 经拍板不做**（保留合成样例；原始语料明确无需备份）。**P5 为长线研究问题，不设 deadline**。
+**当前状态（2026-09-26）**：P0 / P1 / P2 已闭环，P3 适配侧全部完成（含 topics 补齐），**P3.5 交付形态完成并已发布上线**（当前版 Release **v1.4.1** + 官网），`cases/` 产物层已公开。**代码侧无待办，远端侧也无待办**——tag / Release / Pages 全部由本地 token 完成并逐项核验。剩余**只有一类**「需要你本人账号」的动作：**awesome PR ×3 与社区发帖**（以你的身份公开发言，我不代发；文案命令已就位，见 `docs/distribution.md` §1-B/C/D）。**P4 经拍板不做**（保留合成样例；原始语料明确无需备份）。**P5 为长线研究问题，不设 deadline**。
 
 ---
 
@@ -215,6 +217,29 @@ CI       .github/workflows/ci.yml  **12 个质量门步骤**全绿
 ```
 
 新增规则时先问：**这条被几战验证过？** 1 战 → 必须写进「待复现观察」章节并标 `[战N·待复现]`，同时在 `docs/rule-provenance.md` §2 补上"复现判据"（第二次遇到什么证据才算成立）。
+
+---
+
+## 七·补二、改文档 / 站点 / 版本号时的强制动作（2026-09-26 引入）
+
+**为什么会有这一节**：本仓库最忌讳「数字漂移」，但这类问题历来靠人眼 grep 把关，而人眼会漏——
+2026-09-26 一次普查就漏出 3 处：① PR 文案里的 Python 版本号比全库其余处**低两个次版本**（CI matrix 最低为 3.10）；
+② `docs/distribution.md` §E 把一条**已证伪**的判断当作现状（Release / Pages 其实本地 token 就能做完）；
+③ `HANDOFF.md` 里 Release 仍被列为待办（实际早已发布上线）。**靠自觉不如靠机验。**
+
+```bash
+"$PY" "$REPO/scripts/check_doc_consistency.py"             # 6 项检查（存在 dist/*.exe 时会核对站点 SHA/体积）
+"$PY" "$REPO/scripts/check_doc_consistency.py" --self-test # 判据自身有效（6/6 变异必须被拦截）
+# CI 的打包工作流用 --no-artifact：站点记的是**已发布产物**，与 CI 现打包的字节必然不同
+# （PyInstaller 非可复现），硬比会逼出「永远不许重建」的假红线。
+```
+
+被拦下的两类事：① **版本口径**（徽章 / 正文 / 各文档必须与 CI matrix 的最低版本一致）；
+② **已证伪表述**（黑名单在脚本 `REFUTED` 里，每条附「何时 / 被什么证伪」；
+说明「曾经这么以为」的句子含 `原以为 / 原判 / 误判` 等标记则放行）。
+
+**顺带消除的第三份实现**：`ci.yml` / `pages.yml` 原先各自内联了一份「官网自检」，
+加上脚本里的一份就是三处——改一处忘另两处就是漂移。现统一走 `check_doc_consistency.py` 的第 4 项检查。
 
 ---
 
