@@ -26,7 +26,7 @@
 ```
 E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 ├── .git/                                （HEAD 见 `git log -1`，remote: SSH）
-├── .github/workflows/ci.yml            （3 个 Python 版本，7 步：compileall/零依赖守卫/unittest/无裸铁律×2/golden×2/端到端冒烟）
+├── .github/workflows/ci.yml            （3 个 Python 版本，**9 步**：compileall / 零依赖守卫 / unittest / 无裸铁律 / 判据变异验证 / golden 变异 / golden 基线 / prep 冒烟 / 引用机验冒烟）
 ├── scripts/prep.py                      （预处理：编码容错 → 去重 → 去噪 → 按赞降序 → 导出）
 ├── scripts/verify_citations.py          （引用幻觉机验，强制质量门）
 ├── scripts/check_rule_tags.py           （机验 SKILL.md 无「裸铁律」，含变异自验）
@@ -43,18 +43,24 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 ├── docs/distribution.md                 （★ 分发作战清单：gh 命令 / awesome PR 文案 / 帖子骨架）
 ├── SKILL.md / README.md / README.en.md / CHANGELOG.md
 │
-└── cases/                               ← 实战档案（已在 .gitignore，仅本地留存）
-    ├── 01-ai-replace-programmer/        （1504 条 · 11 章指南 · 流水线首测）
-    ├── 02-mountain/                     （3425 条 · 8 章 · 两场核心争议专场）
-    ├── 03-qingbei-discouraged/          （5052 条 · 13 章 · 楼中楼捞出一级缺失的 7 个议题）
-    ├── 04-salary-age43/                 （8941 条 · 23 章 · 双视频合并 · 首次抓到幻觉引用）
-    ├── 05-mustwatch-math/               （21100 条 · 正卷 15 章 + 增补卷 10 章）
+└── cases/                               ← 实战档案（**产物层已公开进仓库**；原始语料/中间产物按 compliance §2 不公开）
+    ├── README.md                        （★ 先读：目录编号 ≠ 战次编号）
+    ├── 01-ai-replace-programmer/        （1504 条 · 11 章指南 · 流水线首测）        ✅ 指南已公开
+    ├── 02-mountain/                     （3425 条 · 8 章 · 两场核心争议专场）      ✅ 指南已公开
+    ├── 03-qingbei-discouraged/          （5052 条 · 13 章 · 楼中楼捞出一级缺失的 7 个议题）✅ 指南已公开
+    ├── 04-salary-age43/                 （8941 条 · 23 章 · 双视频合并 · 首次抓到幻觉引用）✅ 指南已公开
+    ├── 05-mustwatch-math/               （21100 条 · 正卷 15 章 + 增补卷 10 章）  ✅ 两卷均已公开
     └── notes/
-        ├── 评论指南Skill方案论述.md
-        ├── comment-distillery开源冲刺路线图.md
-        ├── memory-snapshot/            （上一会话工作记忆快照）
-        └── migrate_to_E.py             （迁移脚本，已完成；源侧 .git 副本已于 2026-09-26 清理，比对确认独有提交 0）
+        ├── 评论指南Skill方案论述.md      ✅ 已公开（设计留档）
+        ├── comment-distillery开源冲刺路线图.md ✅ 已公开（设计留档）
+        ├── memory-snapshot/            ❌ 不公开（会话记忆，非项目资产）
+        └── migrate_to_E.py             ❌ 不公开（一次性迁移脚本，含本机路径）
 ```
+
+**`cases/` 的公开口径（2026-09-26 用户拍板）**：只公开**产物层**（9 个 md / 277 KB）。
+`.gitignore` 用**扩展名白名单反向**实现（`/cases/**/*.{csv,txt,json,py,svg}` 全部忽略）——
+**不要改回 `/cases/` 整目录忽略**，也不要改回「全量公开」：原始语料再分发会推翻 `docs/compliance.md`
+§0/§2/§5 的三处声明（其中 §5 的「未复制或再分发原始数据」已被写进各战指南开头，公开语料会让它变成假话）。
 
 **Skill 副本仍在 `C:\Users\Lenovo\.workbuddy\skills\comment-distillery\`**（WorkBuddy 从这里加载，**不要移动**）。仓库是 source of truth，改完用脚本同步过去。
 
@@ -155,10 +161,11 @@ CI       .github/workflows/ci.yml  **9 个质量门步骤**全绿
 6. ✅ **七战沉淀件**：`docs/retrospective.md` —— 五次方法论修正 + 7 条量化判据 + 交付质量门 G1–G7 + 与 AGI-Distiller 对照 + 已知局限。
 7. ✅ **P1 golden 评估集**（2026-09-26）：8 场景 / 4 类，baseline 100.0，变异 31/31 拦截。
 8. 🆕 **P2 方法论去过拟合**（2026-09-26）：`docs/rule-provenance.md` + `docs/overturned.md` + `scripts/check_rule_tags.py`（CI 强制）。**读规则时注意：带 `[战N·待复现]` 的是假设，不是规律。**
-9. 🟡 **P3 分发**（2026-09-26）：`npx skills add` 适配 ✅（实测 Found 1 skill）+ README 真实产出片段 ✅ + **GitHub 元数据 ✅**（2026-09-26 实测：description 已设 / **12 个 topics** / license MIT）。**仅剩两项需要你的账号**——awesome 列表 PR（§1-B 有现成英文文案）/ 社区发帖（§1-C 有骨架）。我无账号、不代发公开内容。
-   - ⚠️ **topics 复核发现**：实际生效的是 `agentskills`（无连字符），而 `docs/distribution.md` §1-A 建议的是 `agent-skills` / `claude-skills`——**两者不等价，前者几乎不会被搜到**。建议补上连字符版本（见 `docs/distribution.md` §1-A）。
+9. 🟡 **P3 分发**（2026-09-26）：`npx skills add` 适配 ✅（实测 Found 1 skill）+ README 真实产出片段 ✅ + GitHub 元数据 ✅ + **topics 已补齐 ✅**（16 个，补入 `agent-skills` / `claude-skills` / `skills` / `ai-agents`——**由本地 token 直接调 API 执行，不需用户操作**）。**仅剩两项需要你的账号**——awesome 列表 PR（§1-B 有现成英文文案）/ 社区发帖（§1-C 有骨架）。我无账号、不代发公开内容。
+10. ✅ **`cases/` 产物层公开**（2026-09-26 用户拍板）：9 个 md / **277 KB** 进仓库（各战指南 + 设计留档）；原始语料与中间产物按 `docs/compliance.md` §2 **保持不公开**。实现与红线见 §二 的「公开口径」。
+11. ✅ **LICENSE 保留 MIT**（2026-09-26 用户确认）：依据是 `docs/compliance.md` §0——"本项目可以 MIT 开源、可被企业采用"。**不适用**"原创项目一律不加 LICENSE"这条个人规则（它针对私有项目；公开仓库无 LICENSE = 保留所有权利，反而与分发目标矛盾）。
 
-**当前状态（2026-09-26）**：P0 / P1 / P2 已闭环，P3 适配侧已完成，**代码侧无待办**。剩余全部是「需要你本人账号」的公开动作（awesome PR ×3 / 社区发帖），文案与命令已就位，见 `docs/distribution.md`。**P4 经你拍板不做**（真实语料脱敏风险 > 收益，保留合成样例）。**P5 为长线研究问题，不设 deadline**。
+**当前状态（2026-09-26）**：P0 / P1 / P2 已闭环，P3 适配侧全部完成（含 topics 补齐），`cases/` 产物层已公开。**代码侧无待办。** 剩余只有「需要你本人账号」的两项公开动作（awesome PR ×3 / 社区发帖），文案与命令已就位，见 `docs/distribution.md`。**P4 经拍板不做**（保留合成样例；原始语料明确无需备份）。**P5 为长线研究问题，不设 deadline**。
 
 ---
 

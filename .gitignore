@@ -9,9 +9,18 @@ out/
 output/
 distill/
 *.corpus.csv
-# 实战档案目录（各战语料 + 深度指南 + 中间产物），仅本地留存
-# ⚠️ 必须锚定仓库根：写成 `cases/` 会连带忽略任意层级的同名目录（实测吞掉了 golden/cases/）
-/cases/
+# ── 实战档案 cases/：只公开「产物层」（各战指南 + 设计文档），原始语料不公开 ──
+# 依据 docs/compliance.md §2「不得二次分发原始语料」——顶部那条约束在此具体化。
+# ⚠️ 曾用 `/cases/` 整目录忽略；现改为「按扩展名只放行 .md」，故规则必须锚定 /cases/** 前缀。
+#    （另注意：不带前导斜杠的 `cases/` 会连带忽略任意层级的同名目录，实测吞过 golden/cases/）
+/cases/**/*.csv
+/cases/**/*.txt
+/cases/**/*.json
+/cases/**/*.py
+/cases/**/*.svg
+/cases/**/distill/
+/cases/**/distill_full/
+/cases/**/memory-snapshot/
 
 # ── 凭证：绝不提交 ──
 .env

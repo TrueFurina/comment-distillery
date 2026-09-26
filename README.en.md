@@ -298,8 +298,17 @@ comment-distillery/
 │   └── fetch_bilibili_comments.py
 ├── examples/
 │   └── sample_corpus.csv    # synthetic example (no real user data)
+├── cases/                   # ★ seven real-world runs (artifacts only)
+│   ├── README.md            # read first: directory numbering ≠ run numbering
+│   ├── 01…04/               # runs 1–4: real corpus → deep-dive guide
+│   ├── 05-mustwatch-math/   # runs 6+7: 15-chapter guide + 10-chapter addendum (3 claims corrected)
+│   └── notes/               # design notes: rationale / open-source sprint roadmap
 └── tests/                   # regression tests (run in CI)
 ```
+
+> `cases/` ships **artifacts only** (the guides + design docs, 9 md files / 277 KB).
+> Raw corpora and pipeline intermediates are **not published**, per [`docs/compliance.md`](docs/compliance.md) §2
+> ("do not redistribute raw corpora").
 
 ---
 

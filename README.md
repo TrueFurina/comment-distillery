@@ -298,8 +298,16 @@ comment-distillery/
 │   └── fetch_bilibili_comments.py
 ├── examples/
 │   └── sample_corpus.csv    # 合成示例语料（不含任何真实用户数据）
+├── cases/                   # ★ 七战实战档案（**仅产物层**）
+│   ├── README.md            # 先读这个：目录编号 ≠ 战次编号
+│   ├── 01…04/               # 第 1–4 战：真实语料 → 深度指南
+│   ├── 05-mustwatch-math/   # 第 6+7 战：正卷 15 章 + 增补卷 10 章（含 3 处结论修正）
+│   └── notes/               # 设计留档：方案论述 / 开源冲刺路线图
 └── tests/                   # 回归测试（CI 自动跑）
 ```
+
+> `cases/` **只放产出**（各战指南 + 设计文档，共 9 个 md / 277 KB）。
+> 原始语料与流水线中间产物按 [`docs/compliance.md`](docs/compliance.md) §2「不得二次分发原始语料」**不公开**。
 
 ---
 

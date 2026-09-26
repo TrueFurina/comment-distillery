@@ -14,7 +14,11 @@
 - **P3 分发（进行中）** — `docs/distribution.md` 作战清单：可直接复制的 GitHub metadata 命令、awesome 列表英文 PR 文案、Reddit/中文社区帖子骨架、方法论长文大纲。
   - 已完成：`npx skills add TrueFurina/comment-distillery` 适配（`--list` 实测 **Found 1 skill**）；SKILL.md frontmatter 改为**触发式 description** + `metadata.version`；中英文 README 第一屏新增**真实产出片段**（引用溯源 / 反例对冲 / 行动清单 / 自曝盲区四段）。
   - ⚠️ 适配规范要点：仓库根 `SKILL.md` 即构成单 skill 仓库、无需 manifest；**绝不能在其旁边再建 `skills/` 目录**（根 SKILL.md 会短路 CLI 发现）。
-  - 需仓库所有者执行的部分（GitHub metadata / awesome PR / 社区发帖）已在清单中标注。
+  - 已完成（2026-09-26）：GitHub 元数据 —— description 已设、topics **12 → 16**（补入 `agent-skills` / `claude-skills` / `skills` / `ai-agents`）。**复核发现原 `agentskills` 无连字符，与生态流通检索词 `agent-skills` 不等价，等于白加。**
+  - 仅剩需仓库所有者执行的：awesome 列表 PR（3 个已核实仓库）/ 社区发帖。文案已就位。
+- **`cases/` 实战档案公开（产物层）** — 七战的最终产物首次进仓库：**9 个 md / 277 KB**，含 6 份各战深度指南 + 设计留档（方案论述 / 开源冲刺路线图）+ 导读 README。
+  - **只公开产物层**：原始评论 CSV 与流水线中间产物（`all_comments.txt` / `id_map.json` / `stats.json`）**不公开**，依据 `docs/compliance.md` §2「不得二次分发原始语料」。实现方式为 `.gitignore` 按扩展名反向白名单（`/cases/**/*.{csv,txt,json,py,svg}` 全忽略）。
+  - `cases/README.md` 导读明确两件易错事：**目录编号 ≠ 战次编号**（`05-mustwatch-math` 实为第 6+7 战；第 5 战是回归测试、在 `examples/`）；第 6 战增补卷与正卷的**结论冲突是有意保留**的真实痕迹，非文档错误。
 - **P2 方法论去过拟合** — SKILL.md 里多数规则只被 1 战验证过，个案被写成铁律会误导后续使用者。现在每条规则带溯源标记，且**机验强制**：
   - `docs/rule-provenance.md` — 规则溯源台账：**9 条铁律**（≥2 战独立验证）/ **5 条待复现**（仅 1 战）/ 7 条环境事实。每条待复现项附**复现判据**（第二次遇到什么证据才算成立）。
   - `docs/overturned.md` — 被推翻结论台账 OT-1…OT-5，每条写明「曾经相信 / 被什么打穿 / 现在怎么做 / **再次推翻的条件**」。附元观察：五次失效的共同点是**用代理指标代替真值**（点赞数↔认可度、文本长度↔思考深度、楼层深度↔观点完整性、ID 格式↔引用真实、行数↔语料规模）。
