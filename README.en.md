@@ -193,19 +193,20 @@ So read in **two passes**: top-down through the head to anchor the emotional ton
 
 ---
 
-## Supported corpora
+## Corpus applicability (by verification status)
 
-Same pipeline, different input:
+Same pipeline, different input. **Note: "applies" means the format can be ingested — it does not mean empirically validated.** Every real run so far has been on **Bilibili comment corpora** (seven runs); the other domains have not been exercised even once.
 
-| Domain | Typical sources |
-|---|---|
-| Community comments | Bilibili, YouTube, Reddit, Zhihu, Xiaohongshu, Weibo |
-| User research | Open-ended survey answers, interview transcripts, focus groups |
-| Product feedback | App store reviews, NPS feedback, support tickets |
-| Open source | GitHub issue / PR threads, Discourse |
-| Team collaboration | Meeting notes, group-chat logs, retrospectives |
-| Qualitative research | Open questionnaires, field notes, secondary text |
-| Live chat / danmaku | Bullet-chat streams, live comments |
+| Domain | Typical sources | Verification |
+|---|---|---|
+| Community comments · **Bilibili** | Bilibili top-level comments + nested replies | ✅ **Validated** (all seven runs) |
+| Community comments · other platforms | YouTube, Reddit, Zhihu, Xiaohongshu, Weibo | ⚠️ Unvalidated |
+| User research | Open-ended survey answers, interview transcripts, focus groups | ⚠️ Unvalidated |
+| Product feedback | App store reviews, NPS feedback, support tickets | ⚠️ Unvalidated |
+| Open source | GitHub issue / PR threads, Discourse | ⚠️ Unvalidated |
+| Team collaboration | Meeting notes, group-chat logs, retrospectives | ⚠️ Unvalidated |
+| Qualitative research | Open questionnaires, field notes, secondary text | ⚠️ Unvalidated |
+| Live chat / danmaku | Bullet-chat streams, live comments | ⚠️ Unvalidated |
 
 **Shared abstraction**: an unstructured collection of text produced by many people around one topic (or one stimulus). If it fits, the pipeline applies. If it doesn't (a single person's diary, purely objective data), don't force it.
 

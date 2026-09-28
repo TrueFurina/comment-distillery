@@ -183,6 +183,11 @@ CI       .github/workflows/ci.yml  **13 个质量门步骤**全绿
 
 **已确认（2026-09-26 核验）**：迁移后 CI 重跑通过；源侧 `.git` 副本已清理（比对确认独有提交 0）；`git fsck --full` 干净。
 
+**⚠️ 产物滞后（2026-09-29，务必知悉）**：`SKILL.md` 的「语料域」表述已按验证状态降档（B站=已验证 / 其余=未验证），
+但**未重建 exe**。因此 `dist/comment-distillery.exe`（v1.5.0）内置的 `SKILL.md` **落后于仓库当前版本**。
+后果：此时跑 `build_exe.py --verify` 会报资源不一致（属预期，非缺陷）。**下次发版时重建即可消解**。
+（`ci.yml` 不打包，故当前 push 不会红；只有 `build-exe.yml` 的 `--verify` 步骤会红。）
+
 ---
 
 ## 七、下一步（Open Items）
