@@ -71,7 +71,7 @@
 
 | 文件 | 内容 |
 |---|---|
-| `docs/rule-provenance.md` | 规则溯源台账：9 条铁律（≥2 战）/ 5 条待复现（仅 1 战）/ 6 条环境事实（蒸馏侧）/ 13 条工程坑（维护侧），每条附**复现判据** |
+| `docs/rule-provenance.md` | 规则溯源台账：9 条铁律（≥2 战）/ 5 条待复现（仅 1 战）/ 8 条环境事实（蒸馏侧）/ 13 条工程坑（维护侧），每条附**复现判据** |
 | `docs/overturned.md` | 被推翻结论台账：OT-1…OT-5 每条写明"曾经相信 / 被什么打穿 / 现在怎么做 / **再次推翻的条件**" |
 | `scripts/check_rule_tags.py` | 机验 SKILL.md 无裸铁律，带 `--self-test` 变异验证 |
 | `tests/test_rule_tags.py` | 6 个用例；CI 新增两步 |

@@ -15,7 +15,7 @@
 - 做 **L3 建设性综合**
 
 **仓库**：https://github.com/TrueFurina/comment-distillery （public / MIT）
-**状态**：七战实战验证完毕，P0/P1/P2 已闭环、P3 适配部分完成，CI 全绿（`bbda7d0` success，3 个 Python 版本）。
+**状态**：**十战**实战验证完毕（第 8/9/10 战于 2026-09-29 完成并入库），P0/P1/P2 已闭环、P3 适配部分完成，CI 全绿（`bbda7d0` success，3 个 Python 版本）。
 
 **冷启动读这三份**：`HANDOFF.md`（本文，接手）→ [`ROADMAP.md`](ROADMAP.md)（下一步做什么）→ [`docs/retrospective.md`](docs/retrospective.md)（七战方法论沉淀与量化判据）。
 
@@ -51,7 +51,7 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 ├── tests/test_app_core.py               （16 个用例，桌面工具逻辑层）
 ├── docs/collecting.md                   （各社区采集工具 + 许可证 + 风险对照）
 ├── docs/retrospective.md                （七战沉淀：五次修正 / 7 条判据 / 质量门 G1–G7）
-├── docs/rule-provenance.md              （规则溯源：9 铁律 / 5 待复现 / 6 环境事实 / 13 工程坑，附复现判据；计数由机验强制与 SKILL.md + docs/engineering-pitfalls.md 对齐）
+├── docs/rule-provenance.md              （规则溯源：9 铁律 / 5 待复现 / 8 环境事实 / 13 工程坑，附复现判据；计数由机验强制与 SKILL.md + docs/engineering-pitfalls.md 对齐）
 ├── docs/engineering-pitfalls.md         （维护/构建类踩坑 13 条；★ **不进打包产物**——改它不必重发 exe）
 ├── docs/overturned.md                   （被推翻结论台账 OT-1…OT-5，含"再次推翻的条件"）
 ├── docs/distribution.md                 （★ 分发作战清单：gh 命令 / awesome PR 文案 / 帖子骨架）
@@ -183,8 +183,10 @@ CI       .github/workflows/ci.yml  **13 个质量门步骤**全绿
 
 **已确认（2026-09-26 核验）**：迁移后 CI 重跑通过；源侧 `.git` 副本已清理（比对确认独有提交 0）；`git fsck --full` 干净。
 
-**⚠️ 产物滞后（2026-09-29，务必知悉）**：`SKILL.md` 的「语料域」表述已按验证状态降档（B站=已验证 / 其余=未验证），
-但**未重建 exe**。因此 `dist/comment-distillery.exe`（v1.5.0）内置的 `SKILL.md` **落后于仓库当前版本**。
+**⚠️ 产物滞后（2026-09-29，两次累积，务必知悉）**：`SKILL.md` 已改两轮——① 「语料域」表述按验证状态降档
+（B站=已验证 / 其余=未验证）；② 战绩表七战 → **十战**（补战 8/9/10）+ 环境坑新增 2 条（跨语料混引、示例
+引用标记被误判），蒸馏侧环境事实 6 → **8**。但**两轮都未重建 exe**。
+因此 `dist/comment-distillery.exe`（v1.5.0）内置的 `SKILL.md` **落后于仓库当前版本**。
 后果：此时跑 `build_exe.py --verify` 会报资源不一致（属预期，非缺陷）。**下次发版时重建即可消解**。
 （`ci.yml` 不打包，故当前 push 不会红；只有 `build-exe.yml` 的 `--verify` 步骤会红。）
 
