@@ -67,8 +67,11 @@ SKIP_DIR_PARTS = {"cases", "results", ".git", "build", "dist", "node_modules"}
 #    ② 同行带上 原以为 / 原判 / 误判 / 已证伪 等 CORRECTION_MARKERS 标记。
 #    这与 verify_citations.py 的已知误报同源：**"提及"与"断言"在纯文本里无法区分**。
 REFUTED = [
-    ("Python 3.8", "版本口径漂移（2026-09-26）：CI matrix 最低为 3.10，全库其余处已统一"),
-    ("需要你的仓库权限", "已被证伪（2026-09-26）：tag / Release / Pages 本地 token 即可完成，无需用户操作"),
+    ("Python 3.8", "版本口径漂移（2026-09-26）：CI matrix 最低为 3.10，全库其余处已统一", ()),
+    ("需要你的仓库权限", "已被证伪（2026-09-26）：tag / Release / Pages 本地 token 即可完成，无需用户操作", ()),
+    # 战次：已达**十战**。第三项是豁免子串——「第七战」这类**具体战次**是历史事实，不能误伤。
+    # ⚠️ 描述本次漂移时不要复现字面量，改说「战次 7 → 10」（否则会拦下解释这段文字本身，见上方说明）。
+    ("七战", "战次口径漂移（2026-09-29）：实战已达十战，全库应写「十战」", ("第七战",)),
 ]
 CORRECTION_MARKERS = ("原以为", "原判", "误判", "判断错", "曾经", "已证伪", "修正为")
 
@@ -262,8 +265,9 @@ def check_refuted(root):
         for i, line in enumerate(p.read_text(encoding="utf-8").splitlines(), 1):
             if any(mk in line for mk in CORRECTION_MARKERS):
                 continue    # 「曾经这么以为」的句子是合法的自我纠正，不算违规
-            for phrase, why in REFUTED:
-                if phrase in line:
+            for phrase, why, *rest in REFUTED:
+                exempt = rest[0] if rest else ()
+                if phrase in line and not any(x in line for x in exempt):
                     hits.append(f"{_rel(root, p)}:{i} 「{phrase}」—— {why}")
     if hits:
         return [("FAIL", "文档里还留着已证伪的表述：\n    " + "\n    ".join(hits))]
@@ -477,6 +481,18 @@ def _mut_refuted(st):
     return None
 
 
+def _mut_battle_count(st):
+    """把战次写回「七战」（实战已达十战）→ 已证伪表述检查必须报错。
+
+    反向一侧由正常检查覆盖：仓库里大量合法的「第七战」（**具体**战次）在正常跑时不报错，
+    证明 `REFUTED` 第三项的豁免没有过度豁免、也没有误伤历史表述。
+    """
+    f = st / "HANDOFF.md"
+    f.write_text(f.read_text(encoding="utf-8") + "\n本项目已完成七战实战验证。\n",
+                 encoding="utf-8")
+    return None
+
+
 def _mut_badge(st):
     """只删英文 README 的一个徽章 → 中英对等检查必须报错"""
     f = st / "README.en.md"
@@ -554,6 +570,7 @@ CASES = [
     ("引用不存在的 Release tag", "Release tag 引用", _mut_tag),
     ("站点 SHA 与产物不符", "官网数字 == 产物", _mut_site_sha),
     ("写回已证伪表述", "已证伪表述", _mut_refuted),
+    ("战次写回「七战」", "已证伪表述", _mut_battle_count),
     ("只删英文 README 的一个徽章", "中英 README 对等", _mut_badge),
     ("站点加了无对应元素的锚点", "官网结构", _mut_anchor),
     ("台账 §3.1 少记一条（蒸馏侧）", "规则计数一致", _mut_table_a),
