@@ -6,7 +6,7 @@
 3.10+）、`docs/distribution.md` §E 的「需要你的仓库权限」（已被证伪——本地 token 就够了）、
 `HANDOFF.md` 的 Release 待办（实际早已发布）。**靠自觉不如靠机验。**
 
-机验的七件事（全部零依赖、不联网、可离线复现）：
+机验的八件事（全部零依赖、不联网、可离线复现）：
 
 | # | 检查 | 拦的是什么 |
 |---|---|---|
@@ -17,6 +17,7 @@
 | 5 | 中英 README 徽章集合一致 | 只改了其中一边 |
 | 6 | 规则计数四方一致（SKILL.md / 维护侧文档 / 溯源台账 §3.1+§3.2 / 文档里的计数声明） | 「加了条目不进台账」「拆了表没同步声明」——长期静默缺口的成因 |
 | 7 | 已证伪表述不再出现 | 被推翻的判断留在文档里误导后来人 |
+| 8 | 语料总量 == 各战分项之和 == 对外声明 | **总量靠人算就会漂移**——旧基线把战 7 的楼中楼数了两次，多算 6,724 |
 
 **第 6 项的四方是**（2026-09-26 环境坑按读者拆表后确定）：`SKILL.md`「环境坑」（蒸馏侧，随打包产物分发）
 ↔ 台账 §3.1；`docs/engineering-pitfalls.md`（维护侧，**不进打包产物**）↔ 台账 §3.2；
@@ -72,6 +73,10 @@ REFUTED = [
     # 战次：已达**十战**。第三项是豁免子串——「第七战」这类**具体战次**是历史事实，不能误伤。
     # ⚠️ 描述本次漂移时不要复现字面量，改说「战次 7 → 10」（否则会拦下解释这段文字本身，见上方说明）。
     ("七战", "战次口径漂移（2026-09-29）：实战已达十战，全库应写「十战」", ("第七战",)),
+    # 语料总量：旧基线把战 7 的楼中楼 6,724 数了两次（它已含在 21,100 里）。
+    ("49,660", "语料总量漂移（2026-09-29）：旧基线延续了重复计数，正确为 42,936", ()),
+    ("46,746", "语料总量漂移（2026-09-29）：该基线本身重复计入战 7 楼中楼，正确为 42,936", ()),
+    ("4.7 万", "语料总量口径（2026-09-29）：42,936 ≈ 4.3 万，不再用 4.7 万", ()),
 ]
 CORRECTION_MARKERS = ("原以为", "原判", "误判", "判断错", "曾经", "已证伪", "修正为")
 
@@ -274,6 +279,46 @@ def check_refuted(root):
     return [("OK", f"无已证伪表述（黑名单 {len(REFUTED)} 条）")]
 
 
+# ── 8. 语料总量 == 各战分项之和 == 四处对外声明 ─────────────────────────────
+# 为什么必须有机验：**总量历来靠人算，而人算必漂移**。2026-09-29 查出旧基线把战 7 的
+# 楼中楼 6,724 数了两次（它已经含在 21,100 里），多算 6,724；同一批数字散在 4 个对外
+# 文件 + 2 份发帖素材里，人眼 grep 补一处漏一处。**总量不许人算，只允许机器从分项求和。**
+CORPUS_SOURCE = "docs/retrospective.md"
+CORPUS_DECL_FILES = ["README.md", "README.en.md", "ROADMAP.md", "docs/distribution.md"]
+
+
+def check_corpus_total(root):
+    src = root / CORPUS_SOURCE
+    if not src.exists():
+        return [("SKIP", f"缺少 {CORPUS_SOURCE}，跳过总量校验")]
+    m = re.search(r"CORPUS_TOTAL:\s*([0-9,]+)\s*\|\s*ITEMS:\s*([0-9,]+)",
+                  src.read_text(encoding="utf-8"))
+    if not m:
+        return [("FAIL", f"{CORPUS_SOURCE} 缺少 `CORPUS_TOTAL` 真值源注释——总量不许人算")]
+    total = int(m.group(1).replace(",", ""))
+    items = [int(x) for x in m.group(2).split(",") if x.strip()]
+    s = sum(items)
+    if s != total:
+        return [("FAIL", f"总量自相矛盾：CORPUS_TOTAL={total:,}，但 {len(items)} 个分项之和={s:,}"
+                         f"（差 {s - total:+,}）")]
+    bad = []
+    for rel in CORPUS_DECL_FILES:
+        p = root / rel
+        if p.exists() and f"{total:,}" not in p.read_text(encoding="utf-8"):
+            bad.append(f"{rel} 未声明 {total:,}")
+    wan = f"{total / 10000:.1f}"
+    sub = root / "docs" / "submittables"
+    for p in sorted(sub.glob("*.md")) if sub.is_dir() else []:
+        for i, line in enumerate(p.read_text(encoding="utf-8").splitlines(), 1):
+            for mm in re.finditer(r"(\d+\.\d)\s*万条", line):
+                if mm.group(1) != wan:
+                    bad.append(f"docs/submittables/{p.name}:{i} 「{mm.group(1)} 万条」≠ {wan} 万条")
+    if bad:
+        return [("FAIL", f"语料总量应统一为 {total:,}（≈{wan} 万）：\n    " + "\n    ".join(bad))]
+    return [("OK", f"语料总量一致：{total:,}（{len(items)} 个分项求和自洽，"
+                   f"{len(CORPUS_DECL_FILES)} 处对外声明齐全）")]
+
+
 # ── 7. 规则计数：SKILL.md 的条目数 == 溯源台账的行数 == HANDOFF 的声明数 ──────
 def _section(text, header):
     m = re.search(rf"^{re.escape(header)}.*?(?=\n## |\Z)", text, re.S | re.M)
@@ -398,6 +443,7 @@ CHECKS = [
     ("中英 README 对等", check_readme_parity),
     ("规则计数一致", check_rule_counts),
     ("已证伪表述", check_refuted),
+    ("语料总量一致", check_corpus_total),
 ]
 
 
@@ -565,6 +611,35 @@ def _mut_legacy_statement(st):
     return None
 
 
+def _mut_corpus_item(st):
+    """改掉分项里的一个数（21,100→21,101）→ 分项之和 != CORPUS_TOTAL，必须报错。
+
+    为什么单独造：**只禁旧数字挡不住新数字写错**——下次改总量照样会被人写成一个新的错值。
+    这里的判据是「总和必须等于分项之和」，与具体数值无关，所以换任何错值都拦得住。
+    """
+    f = st / CORPUS_SOURCE
+    t = f.read_text(encoding="utf-8")
+    out = t.replace("21100,2190", "21101,2190")
+    if out == t:
+        return "CORPUS_TOTAL 注释里的分项写法变了，变异未生效"
+    f.write_text(out, encoding="utf-8")
+    return None
+
+
+def _mut_corpus_decl(st):
+    """只改对外声明里的总量（42,936→42,937），不动真值源 → 必须报错。
+
+    这是最典型的漂移方式：真值源是对的，散落各处的副本没跟着改，
+    而副本正是别人（和发帖素材）实际读到的东西。
+    """
+    f = st / "ROADMAP.md"
+    t = f.read_text(encoding="utf-8")
+    if "42,936" not in t:
+        return "ROADMAP.md 里找不到 42,936，变异未生效"
+    f.write_text(t.replace("42,936", "42,937"), encoding="utf-8")
+    return None
+
+
 CASES = [
     ("Python 版本写错（3.10→3.8）", "Python 版本口径", _mut_python),
     ("引用不存在的 Release tag", "Release tag 引用", _mut_tag),
@@ -578,6 +653,8 @@ CASES = [
     ("计数声明里的数字改错", "规则计数一致", _mut_count_statement),
     ("HANDOFF 的计数声明整行被删", "规则计数一致", _mut_stmt_gone),
     ("别处写回旧的三段式声明", "规则计数一致", _mut_legacy_statement),
+    ("总量分项改一个数（和不再等于总量）", "语料总量一致", _mut_corpus_item),
+    ("对外声明改总量（真值源没跟着改）", "语料总量一致", _mut_corpus_decl),
 ]
 
 
