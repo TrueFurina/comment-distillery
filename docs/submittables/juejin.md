@@ -80,7 +80,7 @@
 - **桌面工具**：[Release](https://github.com/TrueFurina/comment-distillery/releases/latest) 单文件 exe（11 MB，免安装，无需 Python、无需 API Key）——只做采集/预处理/导出"蒸馏包"（语料 + 方法论 + 可粘贴提示词），蒸馏交给你自己的模型
 - **零依赖**：运行期纯标准库（`urllib`/`csv`/`json`），61 项测试覆盖 Python 3.10–3.13
 
-方法论细节见仓库 `docs/retrospective.md`（七战复盘）与 `docs/overturned.md`（被推翻结论台账，每条附"什么证据会再次推翻它"）。
+方法论细节见仓库 `docs/retrospective.md`（十战复盘）与 `docs/overturned.md`（被推翻结论台账，每条附"什么证据会再次推翻它"）。
 
 欢迎讨论：你们处理"引用真实但结论错误"这个层级的质量问题，用了什么办法？
 ````

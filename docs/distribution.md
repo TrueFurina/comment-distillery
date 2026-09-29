@@ -168,7 +168,7 @@ Ask:   想要的是"有没有人也在做 L3 综合"的讨论，不是 star。
 不再单独成文：掘金稿承担工程管道视角（`docs/submittables/juejin.md`），知乎稿承担「代理指标替代真值」的思辨复盘（`docs/submittables/zhihu.md`）。原标题方向与素材清单留档如下：
 
 标题方向：**"Why comment sections are the most underrated dataset"** 或
-「为什么"高赞"是最差的信号：我们在 4.7 万条评论（46,746 实算）上被数据打穿了五次」
+「为什么"高赞"是最差的信号：我们在 5.0 万条评论（49,660 实算）上被数据打穿了五次」
 
 素材全部现成（`docs/retrospective.md` + `docs/overturned.md`）：
 

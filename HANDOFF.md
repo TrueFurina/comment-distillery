@@ -17,7 +17,7 @@
 **仓库**：https://github.com/TrueFurina/comment-distillery （public / MIT）
 **状态**：**十战**实战验证完毕（第 8/9/10 战于 2026-09-29 完成并入库），P0/P1/P2 已闭环、P3 适配部分完成，CI 全绿（`bbda7d0` success，3 个 Python 版本）。
 
-**冷启动读这三份**：`HANDOFF.md`（本文，接手）→ [`ROADMAP.md`](ROADMAP.md)（下一步做什么）→ [`docs/retrospective.md`](docs/retrospective.md)（七战方法论沉淀与量化判据）。
+**冷启动读这三份**：`HANDOFF.md`（本文，接手）→ [`ROADMAP.md`](ROADMAP.md)（下一步做什么）→ [`docs/retrospective.md`](docs/retrospective.md)（十战方法论沉淀与量化判据）。
 
 ---
 
@@ -50,7 +50,7 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 ├── tests/test_rule_tags.py              （6 个用例）
 ├── tests/test_app_core.py               （16 个用例，桌面工具逻辑层）
 ├── docs/collecting.md                   （各社区采集工具 + 许可证 + 风险对照）
-├── docs/retrospective.md                （七战沉淀：五次修正 / 7 条判据 / 质量门 G1–G7）
+├── docs/retrospective.md                （十战沉淀：五次修正 / 7 条判据 / 质量门 G1–G7）
 ├── docs/rule-provenance.md              （规则溯源：9 铁律 / 5 待复现 / 8 环境事实 / 13 工程坑，附复现判据；计数由机验强制与 SKILL.md + docs/engineering-pitfalls.md 对齐）
 ├── docs/engineering-pitfalls.md         （维护/构建类踩坑 13 条；★ **不进打包产物**——改它不必重发 exe）
 ├── docs/overturned.md                   （被推翻结论台账 OT-1…OT-5，含"再次推翻的条件"）
@@ -99,7 +99,7 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 
 ---
 
-## 三、七战档案索引
+## 三、十战档案索引
 
 | # | 规模 | 语料 | 产出 | 关键验证 |
 |---|---|---|---|---|
@@ -201,7 +201,7 @@ CI       .github/workflows/ci.yml  **13 个质量门步骤**全绿
 3. ⏸ **`docs/collecting.md` 扩充**：可补"输出 → CCF 字段映射"的完整示例。优先级低于 P3。
 4. ⏸ **真·人工校验 loop**：列入 P5。现状澄清——现有 7 道门（见 `docs/retrospective.md` §4）**只卡形式与引用真实性，不检验推断质量**。
 5. ✅ **反例开采 vs 深度解析开采**：已拆开，且**已标为 `[战7·待复现]`**——单战证据，移入 SKILL.md「待复现观察」章节，不再是铁律。
-6. ✅ **七战沉淀件**：`docs/retrospective.md` —— 五次方法论修正 + 7 条量化判据 + 交付质量门 G1–G7 + 与 AGI-Distiller 对照 + 已知局限。
+6. ✅ **十战沉淀件**：`docs/retrospective.md` —— 五次方法论修正 + 7 条量化判据 + 交付质量门 G1–G7 + 与 AGI-Distiller 对照 + 已知局限。
 7. ✅ **P1 golden 评估集**（2026-09-26）：8 场景 / 4 类，baseline 100.0，变异 31/31 拦截。
 8. 🆕 **P2 方法论去过拟合**（2026-09-26）：`docs/rule-provenance.md` + `docs/overturned.md` + `scripts/check_rule_tags.py`（CI 强制）。**读规则时注意：带 `[战N·待复现]` 的是假设，不是规律。**
 9. 🟡 **P3 分发**（2026-09-26）：`npx skills add` 适配 ✅（实测 Found 1 skill）+ README 真实产出片段 ✅ + GitHub 元数据 ✅ + **topics 已补齐 ✅**（16 个，补入 `agent-skills` / `claude-skills` / `skills` / `ai-agents`——**由本地 token 直接调 API 执行，不需用户操作**）。**awesome PR 已提交 2 个**（[ComposioHQ#2002](https://github.com/ComposioHQ/awesome-claude-skills/pull/2002) / [m-fyi#2](https://github.com/m-fyi/awesome-claude-skills/pull/2)，同日用 token 提交；VoltAgent 按其"不接受全新 skill"规则缓发）。**仅剩社区发帖需要你的账号**（§1-C 有骨架）——公开发言不代发。

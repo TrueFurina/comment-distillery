@@ -195,11 +195,11 @@ So read in **two passes**: top-down through the head to anchor the emotional ton
 
 ## Corpus applicability (by verification status)
 
-Same pipeline, different input. **Note: "applies" means the format can be ingested — it does not mean empirically validated.** Every real run so far has been on **Bilibili comment corpora** (seven runs); the other domains have not been exercised even once.
+Same pipeline, different input. **Note: "applies" means the format can be ingested — it does not mean empirically validated.** Every real run so far has been on **Bilibili comment corpora** (ten runs); the other domains have not been exercised even once.
 
 | Domain | Typical sources | Verification |
 |---|---|---|
-| Community comments · **Bilibili** | Bilibili top-level comments + nested replies | ✅ **Validated** (all seven runs) |
+| Community comments · **Bilibili** | Bilibili top-level comments + nested replies | ✅ **Validated** (all ten runs) |
 | Community comments · other platforms | YouTube, Reddit, Zhihu, Xiaohongshu, Weibo | ⚠️ Unvalidated |
 | User research | Open-ended survey answers, interview transcripts, focus groups | ⚠️ Unvalidated |
 | Product feedback | App store reviews, NPS feedback, support tickets | ⚠️ Unvalidated |
@@ -316,7 +316,7 @@ comment-distillery/
 │   ├── collecting.md        # where corpora come from: per-platform tools
 │   ├── domains.md           # adaptation guide per domain
 │   ├── pipeline.md          # pipeline in detail
-│   ├── retrospective.md     # ★ 7-run retrospective: 5 corrections, quantified heuristics, gates
+│   ├── retrospective.md     # ★ 10-run retrospective: 5 corrections, quantified heuristics, gates
 │   ├── rule-provenance.md   # ★ provenance: which run validated which rule; 1-run evidence = "pending"
 │   ├── overturned.md        # ★ overturned claims log (incl. what would overturn them again)
 │   ├── engineering-pitfalls.md  # pitfalls only when maintaining/building this repo (not shipped)
@@ -340,7 +340,7 @@ comment-distillery/
 │   └── fetch_bilibili_comments.py
 ├── examples/
 │   └── sample_corpus.csv    # synthetic example (no real user data)
-├── cases/                   # ★ seven real-world runs (artifacts only)
+├── cases/                   # ★ ten real-world runs (artifacts only)
 │   ├── README.md            # read first: directory numbering ≠ run numbering
 │   ├── 01…04/               # runs 1–4: real corpus → deep-dive guide
 │   ├── 05-mustwatch-math/   # runs 6+7: 15-chapter guide + 10-chapter addendum (3 claims corrected)
@@ -373,7 +373,7 @@ See [`docs/compliance.md`](docs/compliance.md).
 
 - [x] **v1** — 6-step pipeline, deep-by-default, provenance, counter-examples, blind spots, citation gate
 - [x] **v1.1** — domain generalization: from "comments" to "any crowd text"; Canonical Corpus Format
-- [x] **field validation** (7 runs / 46,746 items) — the reply-layer (nested comments) study: 21,100 items on one video, and the supplement volume corrected 3 conclusions of the main guide
+- [x] **field validation** (10 runs / 49,660 items) — the reply-layer (nested comments) study: 21,100 items on one video, and the supplement volume corrected 3 conclusions of the main guide
 - [x] **v1.3** — golden test set: 8 cases / 4 categories, baseline scores 100, and 31 mutants prove the grader actually deducts (see [`golden/README.md`](golden/README.md))
 - [x] **v1.4** — delivery: Windows desktop exe (collect → prep → export pack → verify) + website (`site/`)
 - [ ] **v2** — adaptation examples for more domains (surveys / interviews / tickets)
@@ -381,7 +381,7 @@ See [`docs/compliance.md`](docs/compliance.md).
 - [ ] **v2** — real human-in-the-loop verification
 
 Full plan with exit criteria: [`ROADMAP.md`](ROADMAP.md).
-Methodology distilled from 7 runs: [`docs/retrospective.md`](docs/retrospective.md).
+Methodology distilled from 10 runs: [`docs/retrospective.md`](docs/retrospective.md).
 
 ---
 

@@ -77,6 +77,6 @@
 
 | 文档 | 内容 |
 |---|---|
-| [`../docs/retrospective.md`](../docs/retrospective.md) | 七战沉淀：**5 次方法论被数据打穿**的全过程 + 7 条量化判据 + 交付质量门 G1–G7 |
+| [`../docs/retrospective.md`](../docs/retrospective.md) | 十战沉淀：**5 次方法论被数据打穿**的全过程 + 7 条量化判据 + 交付质量门 G1–G7 |
 | [`../docs/rule-provenance.md`](../docs/rule-provenance.md) | 每条规则的**验证战次**——哪条是 ≥2 战成立的铁律，哪条只是 1 战观察（标「待复现」） |
 | [`../docs/overturned.md`](../docs/overturned.md) | 被推翻的结论台账，每条写明**什么证据会再次推翻它** |
