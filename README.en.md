@@ -314,7 +314,7 @@ comment-distillery/
 ├── docs/
 │   ├── canonical-format.md  # corpus format + full alias table
 │   ├── collecting.md        # where corpora come from: per-platform tools
-│   ├── domains.md           # adaptation guide per domain
+│   ├── domains.md           # adaptation guide per domain (⚠️ only Bilibili verified)
 │   ├── pipeline.md          # pipeline in detail
 │   ├── retrospective.md     # ★ 10-run retrospective: 5 corrections, quantified heuristics, gates
 │   ├── rule-provenance.md   # ★ provenance: which run validated which rule; 1-run evidence = "pending"

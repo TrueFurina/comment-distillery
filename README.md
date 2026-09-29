@@ -314,7 +314,7 @@ comment-distillery/
 ├── docs/
 │   ├── canonical-format.md  # 统一语料格式 + 字段别名全表
 │   ├── collecting.md        # 语料从哪来：各平台现成采集工具对照
-│   ├── domains.md           # 各语料域的适配指南
+│   ├── domains.md           # 各语料域的适配指南（⚠️ 除 B 站外均为未验证外推）
 │   ├── pipeline.md          # 6 步流水线详解
 │   ├── retrospective.md     # ★ 十战沉淀：五次方法论修正 + 量化判据 + 交付质量门
 │   ├── rule-provenance.md   # ★ 规则溯源：每条规则的验证战次，单战证据标「待复现」

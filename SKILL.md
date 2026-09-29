@@ -14,7 +14,7 @@ agent_created: true
 - **开源仓库**：<https://github.com/TrueFurina/comment-distillery>（MIT，零依赖）
 - **官网**：<https://truefurina.github.io/comment-distillery/>
 - **桌面工具（Windows）**：`dist/comment-distillery.exe`（约 11 MB 单文件免安装）—— 采集 → 预处理 → 导出蒸馏包 → 引用校验。**不内置 LLM**：它只负责把语料和本文件打包好，蒸馏那一步交给你自己的 AI，因此零 API Key、零成本，方法论也永远跟本文件一致。
-- **详细文档**：`docs/` —— 格式规范 `canonical-format.md` / **语料从哪来 `collecting.md`** / 语料域适配 `domains.md` / 流水线 `pipeline.md` / 合规 `compliance.md`
+- **详细文档**：`docs/` —— 格式规范 `canonical-format.md` / **语料从哪来 `collecting.md`** / 语料域适配 `domains.md`（⚠️ 除 B 站外均为**未验证外推**） / 流水线 `pipeline.md` / 合规 `compliance.md`
 - **规则溯源**：`docs/rule-provenance.md`（每条规则的验证战次；**单战证据标「待复现」，不是铁律**）· `docs/overturned.md`（被推翻结论台账）
 - **人读说明**：`README.md`（中文）、`README.en.md`（English）
 - **可选采集桥接**：`contrib/`（非核心、无支持；合规责任自负）
