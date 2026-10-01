@@ -80,11 +80,11 @@ id,text,parent_id,is_reply,score,reply_count,created_at,author_id,source
 ### 语料域适用性（按验证状态分档）
 
 > **先钉死边界**：下表的"适用"指**格式可接入**——任一语料只要归一成上面的 CCF（`id` + `text`），下游 6 步完全一致。它**不等于"我们跑过并验证有效"**。
-> 本流水线的实战验证**迄今只在 B 站评论语料上完成**（十战全部语料）。其余域**未经任何一战验证**；跨平台的回复结构差异（YouTube 嵌套回复、Reddit 投票排序、知乎折叠机制）会不会让既有读法失效，见 `docs/retrospective.md` 的局限章节。
+> 本流水线的实战验证**迄今只在 B 站评论语料上完成**（十一战全部语料）。其余域**未经任何一战验证**；跨平台的回复结构差异（YouTube 嵌套回复、Reddit 投票排序、知乎折叠机制）会不会让既有读法失效，见 `docs/retrospective.md` 的局限章节。
 
 | 域 | 典型来源 | 采集方式（用户自备） | 验证状态 |
 |---|---|---|---|
-| **社区评论区 · B站** | B站一级评论 + 楼中楼 | BilibiliCrawler、`contrib/` 脚本、MediaCrawler | ✅ **已验证**（十战全部语料） |
+| **社区评论区 · B站** | B站一级评论 + 楼中楼 | BilibiliCrawler、`contrib/` 脚本、MediaCrawler | ✅ **已验证**（十一战全部语料） |
 | 社区评论区 · 其他平台 | YouTube、Reddit、知乎、小红书、微博 | 见 `docs/collecting.md` | ⚠️ 未验证 |
 | 用户研究 | 问卷开放题、访谈逐字稿、焦点小组 | 问卷星/腾讯问卷导出、飞书妙记、Otter | ⚠️ 未验证 |
 | 产品反馈 | 应用商店评论、NPS 反馈、客服工单 | App Store/Google Play 导出、客服系统 | ⚠️ 未验证 |
@@ -150,7 +150,7 @@ id,text,parent_id,is_reply,score,reply_count,created_at,author_id,source
 
 ## 首测数据集（跨话题泛化已验证）
 
-已跑通十战，证明流水线跨话题、跨规模、跨语料形态泛化成立：
+已跑通十一战，证明流水线跨话题、跨规模、跨语料形态泛化成立：
 
 | # | 规模 | 语料 | 产出 | 额外验证 |
 |---|---|---|---|---|

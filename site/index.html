@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>comment-distillery · 评论蒸馏器 — 把一堆群体文本炼成一份有据可查的行动指南</title>
-<meta name="description" content="comment-distillery：Agent Skill + 零依赖工具链。把评论区 / 问卷开放题 / 访谈逐字稿 / 工单讨论蒸馏成带认知框架、共识与争议、反例对冲、引用溯源、行动清单与盲区说明的厚指南。十战实战验证，61 项自动化测试，零第三方依赖。">
+<meta name="description" content="comment-distillery：Agent Skill + 零依赖工具链。把评论区 / 问卷开放题 / 访谈逐字稿 / 工单讨论蒸馏成带认知框架、共识与争议、反例对冲、引用溯源、行动清单与盲区说明的厚指南。十一战实战验证，61 项自动化测试，零第三方依赖。">
 <meta property="og:title" content="comment-distillery · 评论蒸馏器">
 <meta property="og:description" content="反例对冲 · 引用溯源 · 盲区诚实说明 —— 现有工具停在「告诉你大家什么情绪」，我们补的是 L3 建设性综合。">
 <meta property="og:type" content="website">
@@ -165,7 +165,7 @@ footer{border-top:1px solid var(--line);padding:44px 0 52px;margin-top:40px}
 <!-- HERO -->
 <header class="hero">
   <div class="container hero-in">
-    <span class="eyebrow"><span class="pulse"></span>Agent Skill · 零第三方依赖 · MIT · 十战实战验证</span>
+    <span class="eyebrow"><span class="pulse"></span>Agent Skill · 零第三方依赖 · MIT · 十一战实战验证</span>
     <h1>comment-<em class="g">distillery</em></h1>
     <p class="sub">把一群人对同一议题的<b>自发文本</b>，蒸馏成一份<b>有据可查的行动指南</b><br>
       评论区导出 · 问卷开放题 · 访谈逐字稿 · 产品反馈 · Issue 讨论 · 弹幕</p>
@@ -204,8 +204,8 @@ footer{border-top:1px solid var(--line);padding:44px 0 52px;margin-top:40px}
       （以 <a href="https://github.com/TrueFurina/comment-distillery/releases">Releases</a> 页与实际产物为准）。</div>
 
     <div class="stats">
-      <div class="stat"><div class="num">7</div><div class="lbl">战实战跑通</div></div>
-      <div class="stat"><div class="num">6</div><div class="lbl">份深度指南</div></div>
+      <div class="stat"><div class="num">11</div><div class="lbl">战实战跑通</div></div>
+      <div class="stat"><div class="num">10</div><div class="lbl">份深度指南</div></div>
       <div class="stat"><div class="num">61</div><div class="lbl">项自动化测试</div></div>
       <div class="stat"><div class="num">0</div><div class="lbl">第三方依赖</div></div>
     </div>
@@ -308,7 +308,7 @@ BilibiliCrawler       高频主题 / 几句金句    + 反例对冲 + 引用溯�
   <div class="container">
     <div class="sh">
       <div class="idx">03 · EVIDENCE</div>
-      <h2>十战实测：方法论是被数据打出来的，不是想出来的</h2>
+      <h2>十一战实测：方法论是被数据打出来的，不是想出来的</h2>
       <p>下面每个数字都能在仓库里指到出处：<code>cases/</code>（原始档案）、<code>docs/retrospective.md</code>（沉淀）、<code>docs/rule-provenance.md</code>（规则溯源）。</p>
     </div>
 
@@ -330,7 +330,7 @@ BilibiliCrawler       高频主题 / 几句金句    + 反例对冲 + 引用溯�
       </div>
     </div>
 
-    <h3 style="margin:52px 0 6px;font-size:20px">十战档案</h3>
+    <h3 style="margin:52px 0 6px;font-size:20px">十一战档案</h3>
     <p style="color:var(--muted);font-size:14px;margin-bottom:6px">⚠️ 目录编号 ≠ 战次编号 —— <code>05-mustwatch-math/</code> 实际含第 6 + 7 战（同一视频，先抓一级、后全量补抓楼中楼）。</p>
     <table class="tbl">
       <thead><tr><th>战次</th><th>规模</th><th>语料</th><th>该战验证了什么</th></tr></thead>
@@ -340,6 +340,10 @@ BilibiliCrawler       高频主题 / 几句金句    + 反例对冲 + 引用溯�
         <tr><td>第 3 战</td><td class="mono">5,052</td><td>B站「清北 discouraged」</td><td>楼中楼捞出一级评论缺失的 <b>7 个议题</b>，其中 4 条直接对冲前文结论</td></tr>
         <tr><td>第 4 战</td><td class="mono">8,941</td><td>薪资 903 + 43 岁被裁 8,038</td><td>多语料合并产出单语料看不到的洞察；<b>引用机验首次抓到幻觉引用</b></td></tr>
         <tr><td>第 6 + 7 战</td><td class="mono">21,100</td><td>B站「入站必刷·火柴人 VS 数学」</td><td>抓到并修复 22% 重复行缺陷；补抓 <b>6,724 条楼中楼</b>后<b>修正正卷 3 条结论</b></td></tr>
+        <tr><td>第 8 战</td><td class="mono">2,190</td><td>B站「你到底该不该吃早餐」</td><td>高赞(2,063)=零信息量"省流"；三条最高信号权重仅 <b>3 / 0 / 0</b></td></tr>
+        <tr><td>第 9 战</td><td class="mono">489</td><td>B站「锐评 27 届计算机秋招」</td><td><b>85% 内容在楼中楼</b>：一级仅 73 条 —— 只看热评等于没看</td></tr>
+        <tr><td>第 10 战</td><td class="mono">235</td><td>B站「26 届硕士投 2k 简历」</td><td><b>语料内自带水军质疑</b>（首次出现）—— 语料可信度第一次成为议题本身</td></tr>
+        <tr><td>第 11 战</td><td class="mono">2,697</td><td>B站「学历仍是最好的敲门砖」+「你信命吗」（双视频合并）</td><td><b>首次记录"AI 总结机器人"刷屏</b>（33 条召回帖 / 2.8%，其中 24 条零赞）；跨视频对照只作定性</td></tr>
       </tbody>
     </table>
 
@@ -435,7 +439,7 @@ python scripts/verify_citations.py \
     </div>
 
     <div class="note warn">
-      <b>还有一条元观察</b>：十战里方法论被数据打穿了 5 次，共同点是
+      <b>还有一条元观察</b>：十一战里方法论被数据打穿了 5 次，共同点是
       <b>「用代理指标代替真值」</b> ——
       点赞数↔认可度、文本长度↔思考深度、楼层深度↔观点完整性、ID 格式↔引用真实、行数↔语料规模。
       完整复盘见 <a href="https://github.com/TrueFurina/comment-distillery/blob/main/docs/retrospective.md">docs/retrospective.md</a>，
