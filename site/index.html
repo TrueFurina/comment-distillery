@@ -4,10 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>comment-distillery · 评论蒸馏器 — 把一堆群体文本炼成一份有据可查的行动指南</title>
-<meta name="description" content="comment-distillery：Agent Skill + 零依赖工具链。把评论区 / 问卷开放题 / 访谈逐字稿 / 工单讨论蒸馏成带认知框架、共识与争议、反例对冲、引用溯源、行动清单与盲区说明的厚指南。十一战实战验证，61 项自动化测试，零第三方依赖。">
+<meta name="description" content="comment-distillery：Agent Skill + 零依赖工具链。把评论区 / 问卷开放题 / 访谈逐字稿 / 工单讨论蒸馏成带认知框架、共识与争议、反例对冲、引用溯源、行动清单与盲区说明的厚指南。十一战实战验证，99 项自动化测试，零第三方依赖。">
 <meta property="og:title" content="comment-distillery · 评论蒸馏器">
 <meta property="og:description" content="反例对冲 · 引用溯源 · 盲区诚实说明 —— 现有工具停在「告诉你大家什么情绪」，我们补的是 L3 建设性综合。">
 <meta property="og:type" content="website">
+<!-- canonical： GitHub Pages 同一份内容可通过多个 URL 到达（项目页 / Pages 域），
+     不指定规范地址会让引用方把权重分散到不同 URL 上。og:url 与之保持一致同理。 -->
+<link rel="canonical" href="https://truefurina.github.io/comment-distillery/">
+<meta property="og:url" content="https://truefurina.github.io/comment-distillery/">
+<meta name="twitter:card" content="summary">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23070b16'/><path d='M50 22 L78 50 L50 78 L22 50 Z' fill='%2300e59b'/></svg>">
 <style>
 :root{
@@ -78,6 +83,10 @@ section{position:relative;padding:96px 0}
 .btn-ghost{background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--ink);font-size:13.5px;padding:10px 18px;margin-top:8px}
 .btn-ghost:hover{border-color:var(--blue);transform:translateY(-2px);text-decoration:none;color:var(--ink)}
 .dl-meta{color:var(--dim);font-size:13px;margin-top:14px}
+.sample-cta{margin:22px auto 0;max-width:920px;background:var(--panel);border:1px solid var(--line-strong);border-radius:16px;padding:16px 22px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 18px;text-align:left;backdrop-filter:blur(8px)}
+.sample-cta a{font-weight:800;font-size:15px;white-space:nowrap}
+.sample-cta span{color:var(--muted);font-size:13.5px;flex:1;min-width:240px}
+.sample-cta b{color:var(--acc)}
 @media(max-width:760px){.dl-grid{grid-template-columns:1fr;max-width:400px}}
 
 /* stats band */
@@ -145,6 +154,108 @@ section{position:relative;padding:96px 0}
 
 footer{border-top:1px solid var(--line);padding:44px 0 52px;margin-top:40px}
 </style>
+
+<!--
+  结构化数据（JSON-LD）—— AI 检索可见性的工程基线。
+
+  为什么所选载体是**静态内联**的 JSON-LD（直接写在 head 里）而不是 JS 注入：
+  多数 AI 检索抓取器**不执行 JS**，注入进去等于不存在，静态内联才是它们读得到的形态。
+  （上面这句刻意不把标签字面量写出来：注释里若出现字面标签，某些用正则提取结构化数据的
+  第三方校验器会认错起点，白白浪费别人的调试时间。）
+
+  为什么要有 FAQPage：AI 回答倾向于直接取用问答对。把答案写成可引用的完整句、
+  并让它与页面上人能看到的 06 · FAQ 区块**逐问对应**，等于把"官网页 grab 到什么"
+  变成一件可控的事，而不是交给摘要算法猜。
+
+  ⚠️ 维护约定：下面没有写死任何**会随时间变化的数字**（语料总量、测试项数、
+  规则条数之类都刻意回避）。唯一的例外是全库统一口径的「十一战」，
+  它由 scripts/check_doc_consistency.py 监管，改错会被拦下。
+  新增数字前先问一句：README / docs 改了，这里会不会忘记同步？答不上来就别写死。
+-->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "name": "comment-distillery",
+      "alternateName": ["评论蒸馏器"],
+      "description": "把一群人对同一议题的自发文本（评论区、问卷开放题、访谈逐字稿、客服工单、Issue 讨论、弹幕）蒸馏成带引用溯源、反例对冲与盲区说明的行动指南。",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Windows, macOS, Linux",
+      "runtimePlatform": "Python 3.10+",
+      "programmingLanguage": "Python",
+      "license": "https://opensource.org/licenses/MIT",
+      "isAccessibleForFree": true,
+      "url": "https://truefurina.github.io/comment-distillery/",
+      "codeRepository": "https://github.com/TrueFurina/comment-distillery",
+      "keywords": "评论分析, 群体文本蒸馏, 引用溯源, 认知框架, 反例对冲, Agent Skill, 质性分析, 零第三方依赖",
+      "featureList": [
+        "引用溯源：每条结论附带语料条目 ID，可被 verify_citations.py 做差集机验",
+        "反例对冲：每条共识强制配反方论据，不输出一边倒的结论",
+        "盲区诚实说明：强制披露幸存者偏差、平台偏差、权重算法偏差、时间切片偏差",
+        "幻觉引用机验：指南内引用 ID 与语料全集做差集，非空即不允许交付",
+        "零第三方依赖：纯 Python 标准库实现，无需 pip install",
+        "平台中立：统一语料格式 CCF，覆盖评论区 / 问卷 / 访谈 / 工单等八类语料域",
+        "不内置 LLM：蒸馏步骤交还使用者自选的 AI，因此不需要任何 API Key"
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "comment-distillery 是做什么的？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "它把一群人对同一议题产生的自发文本（评论区、问卷开放题、访谈逐字稿、客服工单、Issue 讨论、弹幕），蒸馏成一份厚 Markdown 指南：认知框架、共识与争议、反例对冲、引用溯源、行动清单，以及主动交代可能出错在哪的盲区说明。它明确不是爬虫、不是情感饼图、不是词云或舆情仪表盘。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "comment-distillery 和其他评论分析工具的区别是什么？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "现有工具大多停在 L1 采集与 L2 统计摘要，输出情感分布、词云、高频主题；comment-distillery 补的是 L3 建设性综合：抽出认知框架、区分共识与争议、为每条共识强制配反方论据、让每条结论可溯源到具体语料条目 ID，并强制披露四类偏差。区别在于它回答的是「我接下来该做什么」和「我可能会错在哪」，而不是「大家什么情绪」。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "引用溯源机制能防住 AI 幻觉吗？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "不能完全防止，但可以把幻觉挡在交付之前。项目提供 verify_citations.py，把指南里出现的所有引用 ID 与语料全集做差集比对，差集非空就判不合格。这套机制在真实产出中抓到过格式完全正确、但语料里根本不存在的条目 ID。项目认可的降级方式是减少引用条数，而不是保留一个看起来正确的 ID。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "使用 comment-distillery 需要 API Key 吗？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "不需要。这是刻意的设计：工具本身不内置 LLM，只负责采集、预处理与引用校验，真正的蒸馏步骤交给使用者自己选定的 AI 完成。好处是零密钥、零调用成本，且方法论永远跟随使用者手上那一份 SKILL.md，不会随着二进制产物固化过期。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "目前哪些语料类型被真实验证过？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "只有 B 站评论语料，实战已跑完十一战。问卷开放题、访谈逐字稿、产品反馈、开源社区讨论、团队协作记录、学术质性文本、直播弹幕这七类虽然格式可接入，但都还没有实战跑过一战，在文档中一律标注为未验证。这种区分是刻意的：格式能接入不等于效果已验证。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "为什么它在自检里写了很多局限？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "因为这类工具的失效模式是安静的：读者读到的结论看起来有出处、有逻辑，却不知道它建立在幸存者偏差、平台人群偏差、点赞权重偏差或某个时间切片之上。项目把已知局限、发版线约束与产品参数都写进可机验的文档里，而不是藏起来，是因为误读比不信更危险。"
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
 </head>
 <body>
 
@@ -157,6 +268,7 @@ footer{border-top:1px solid var(--line);padding:44px 0 52px;margin-top:40px}
       <a href="#pipeline">方法</a>
       <a href="#evidence" class="hide">实测证据</a>
       <a href="#limits" class="hide">局限</a>
+      <a href="#faq" class="hide">FAQ</a>
       <a href="#download" class="cta">下载 v1.5.0</a>
     </div>
   </div>
@@ -194,19 +306,25 @@ footer{border-top:1px solid var(--line);padding:44px 0 52px;margin-top:40px}
         <p>把方法论装进你的 agent，让它按 <code>SKILL.md</code> 处理你自己的语料。</p>
       </div>
       <div class="dl-card">
-        <div class="os">源码<small>纯标准库 · Python 3.10+</small></div>
-        <a class="btn btn-ghost" href="https://github.com/TrueFurina/comment-distillery">查看仓库 →</a>
-        <p>不需要 <code>pip install</code>。CI 在 3.10 / 3.12 / 3.13 上跑 61 项测试。</p>
+        <div class="os">macOS / Linux<small>python -m app --web</small></div>
+        <a class="btn btn-ghost" href="https://github.com/TrueFurina/comment-distillery#二本地-web-界面跨平台免打包">本地 Web 界面 →</a>
+        <p>不用 Windows 也有图形界面：纯标准库，只监听 127.0.0.1，不联网。</p>
       </div>
     </div>
     <div class="dl-meta">exe 未做代码签名，首次运行 Windows SmartScreen 会拦截 —— 属正常现象。
       v1.5.0 的 SHA-256：<code>3ced7a5d333002d7d92c7aadaa9f9c46021193202b8ce551f41737df95d71b14</code>
       （以 <a href="https://github.com/TrueFurina/comment-distillery/releases">Releases</a> 页与实际产物为准）。</div>
 
+    <div class="sample-cta">
+      <a href="samples/sample-guide.html">先看一份成品 →</a>
+      <span>自包含 HTML 指南：<b>点正文里的「源」角标，跳到附录原句</b>，再点「返回正文」跳回。
+        机验 <b>9 条引用 / 差集 0</b>。—— 交付物是可以转发、可打印成 PDF 的页面，不是一个躺在文件夹里的 .md。</span>
+    </div>
+
     <div class="stats">
       <div class="stat"><div class="num">11</div><div class="lbl">战实战跑通</div></div>
       <div class="stat"><div class="num">10</div><div class="lbl">份深度指南</div></div>
-      <div class="stat"><div class="num">61</div><div class="lbl">项自动化测试</div></div>
+      <div class="stat"><div class="num">99</div><div class="lbl">项自动化测试</div></div>
       <div class="stat"><div class="num">0</div><div class="lbl">第三方依赖</div></div>
     </div>
   </div>
@@ -292,7 +410,8 @@ BilibiliCrawler       高频主题 / 几句金句    + 反例对冲 + 引用溯�
       <div class="arch-arrow">▼</div>
       <div class="arch-row"><div class="n">5</div>
         <div class="l">结构化输出<small>Emit</small></div>
-        <div class="r">深度版（默认）/ 标准版 / 极简版三档。深度版含：多章正文 + 共识 vs 争议 + 反例对冲 + 引用溯源 + 行动清单 + 精华句 + 元方法论 + 方法与边界。</div>
+        <div class="r">深度版（默认）/ 标准版 / 极简版三档。深度版含：多章正文 + 共识 vs 争议 + 反例对冲 + 引用溯源 + 行动清单 + 精华句 + 元方法论 + 方法与边界。<br>
+          <b>再跑 <code>emit_html.py</code></b> 把指南转成自包含 HTML 报告——引用角标可点击跳到附录原句，页首写明「N 条引用 · 机验通过 · 差集 0」。</div>
       </div>
       <div class="arch-arrow">▼</div>
       <div class="arch-row"><div class="n">6</div>
@@ -369,7 +488,7 @@ BilibiliCrawler       高频主题 / 几句金句    + 反例对冲 + 引用溯�
       <div class="card">
         <div class="circle" style="background:var(--acc)">1</div>
         <h3>桌面工具（有链接）</h3>
-        <p>下载 exe → ① 采集 → ② 预处理 → ③ 导出蒸馏包 → ④ 引用校验。
+        <p>下载 exe → ① 采集 → ② 预处理 → ③ 导出蒸馏包 → ④ 引用校验 → ⑤ 出 HTML 报告。
           第 ③ 步产出一个文件夹，里面既有给 AI 读的语料与方法论，也有可直接粘贴的提示词。</p>
       </div>
       <div class="card">
@@ -386,8 +505,11 @@ BilibiliCrawler       高频主题 / 几句金句    + 反例对冲 + 引用溯�
         <pre style="text-align:left;font-size:12px;margin-top:8px"><code>python scripts/prep.py \
   corpus.csv out/
 python scripts/verify_citations.py \
-  guide.md corpus.csv</code></pre>
-        <p>纯标准库，可以直接塞进你自己的 CI 或批量管线。</p>
+  guide.md corpus.csv
+python scripts/emit_html.py \
+  guide.md --corpus corpus.csv</code></pre>
+        <p>纯标准库，可以直接塞进你自己的 CI 或批量管线。
+          最后一条把指南变成<b>可转发、可打印的 HTML 报告</b>。</p>
       </div>
     </div>
 
@@ -444,6 +566,66 @@ python scripts/verify_citations.py \
       点赞数↔认可度、文本长度↔思考深度、楼层深度↔观点完整性、ID 格式↔引用真实、行数↔语料规模。
       完整复盘见 <a href="https://github.com/TrueFurina/comment-distillery/blob/main/docs/retrospective.md">docs/retrospective.md</a>，
       被推翻结论台账见 <a href="https://github.com/TrueFurina/comment-distillery/blob/main/docs/overturned.md">docs/overturned.md</a>。
+    </div>
+  </div>
+</section>
+
+<!-- 06 FAQ -->
+<section id="faq">
+  <div class="container">
+    <div class="sh">
+      <div class="idx">06 · FAQ</div>
+      <h2>常见问题：它做什么、不做什么、会错在哪</h2>
+      <p>按问答写成，让人查得快。同一批问答同时以结构化数据的形式写在页面里，让 AI 检索读到的是完整答案，而不是被摘要算法猜出来的版本。</p>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>它是做什么的？</h3>
+        <p>把一群人对同一议题的自发文本 —— 评论区、问卷开放题、访谈逐字稿、客服工单、Issue 讨论、弹幕 ——
+          蒸馏成一份厚指南：认知框架、共识与争议、反例对冲、引用溯源、行动清单，以及主动交代可能错在哪的盲区说明。
+          <b>它明确不是</b>爬虫、情感饼图、词云或舆情仪表盘。</p>
+      </div>
+      <div class="card">
+        <h3>和其他评论分析工具的区别？</h3>
+        <p>现有工具大多停在 L1 采集与 L2 统计摘要 —— 输出情感分布、词云、高频主题。
+          本项目补的是 <b>L3 建设性综合</b>：抽认知框架、区分共识与争议、每条共识强制配反方论据、
+          每条结论可溯源到具体条目 ID、强制披露四类偏差。它回答的是「我接下来该做什么」「我可能会错在哪」，
+          而不是「大家什么情绪」。</p>
+      </div>
+      <div class="card">
+        <h3>引用溯源能防住 AI 幻觉吗？</h3>
+        <p>防不住生成环节，但能把幻觉挡在<b>交付之前</b>：<code>verify_citations.py</code>
+          把指南里出现的所有引用 ID 与语料全集做差集比对，<b>差集非空即不合格</b>。
+          这套机制在真实产出中抓到过格式完全正确、语料里却不存在的条目 ID。
+          认可的降级方式是<b>减少引用条数</b>，而不是保留一个看起来正确的 ID。</p>
+      </div>
+      <div class="card">
+        <h3>需要 API Key 吗？</h3>
+        <p>不需要，这是刻意的设计。工具<b>不内置 LLM</b>：采集、预处理、引用校验自己做完，
+          蒸馏那一步交还给你自己选定的 AI。代价是多一次粘贴，收益是零密钥、零调用成本，
+          且方法论永远跟随你手上那一份 <code>SKILL.md</code>，不会随着二进制产物固化过期。</p>
+      </div>
+      <div class="card">
+        <h3>哪些语料类型真被验证过？</h3>
+        <p><b>只有 B 站评论语料</b>，实战已跑完十一战。问卷开放题、访谈逐字稿、产品反馈、
+          开源社区讨论、团队协作记录、学术质性文本、直播弹幕这七类<b>格式可接入但尚未跑过一战</b>，
+          文档中一律标注「未验证」。这个区分是刻意的 —— 格式能接入不等于效果已验证。</p>
+      </div>
+      <div class="card">
+        <h3>为什么这页到处在讲局限？</h3>
+        <p>因为这类工具的失效模式是安静的：结论看起来有出处、有逻辑，你却不知道它建立在
+          幸存者偏差、平台人群偏差、点赞权重偏差或某个时间切片之上。<b>误读比不信更危险</b>，
+          所以已知局限、发版线约束与产品参数都写进可被机器校验的文档里，而不是藏起来。</p>
+      </div>
+    </div>
+
+    <div class="note warn">
+      <b>关于这一节的诚实说明</b>：FAQ 是按<b>我们最想被问到的问题</b>整理的，不是热度统计出来的提问。
+      它覆盖不了你没想到的方向 —— 有争议、想挑刺时，去
+      <a href="https://github.com/TrueFurina/comment-distillery/issues">开 Issue</a>，
+      或者直接读 <a href="https://github.com/TrueFurina/comment-distillery/blob/main/docs/overturned.md">被推翻结论台账</a>，
+      那里记的是我们自己被数据打穿的地方。
     </div>
   </div>
 </section>

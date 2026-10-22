@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>示例指南：某 CLI 工具用户讨论的蒸馏产出（节选）</title>
+<style>
+:root{color-scheme:light;--paper:#fff;--canvas:#f2f5f7;--ink:#3c4650;--heading:#20272e;
+--muted:#6b7683;--accent:#0f6e56;--accent-wash:#e7f4ef;--line:#e6eaee;--warn:#a32d2d;
+--warn-wash:#fbe9e9;--code:#f5f7f9}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:20px}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--canvas);color:var(--ink);
+font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",
+"Segoe UI",sans-serif;font-size:17px;line-height:1.85;-webkit-font-smoothing:antialiased}
+.paper{max-width:860px;margin:24px auto;padding:44px 46px 28px;background:var(--paper);
+border-radius:8px;box-shadow:0 8px 30px rgba(37,56,75,.05);overflow-wrap:anywhere}
+h1{font-size:32px;line-height:1.45;font-weight:700;color:var(--heading);margin:0 0 6px}
+h2{font-size:24px;line-height:1.55;font-weight:700;color:var(--heading);
+margin:44px 0 18px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+h3{font-size:19px;line-height:1.6;font-weight:700;color:var(--heading);margin:30px 0 10px}
+h4{font-size:17px;font-weight:700;color:var(--heading);margin:22px 0 8px}
+p{margin:0 0 16px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+strong{font-weight:700;color:var(--heading)}
+code{font-family:ui-monospace,Consolas,"Cascadia Code",monospace;font-size:.86em;
+background:var(--code);border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:8px;
+padding:14px 16px;overflow-x:auto;margin:0 0 18px}
+pre code{background:none;border:none;padding:0}
+blockquote{margin:0 0 16px;padding:2px 0 2px 18px;border-left:3px solid var(--accent);
+color:var(--ink)}
+ul,ol{margin:0 0 16px;padding-left:26px}
+li{margin:4px 0}
+table{width:100%;border-collapse:collapse;font-size:15px;line-height:1.7;margin:0 0 20px}
+th,td{border-bottom:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}
+th{background:var(--accent-wash);color:var(--heading);font-weight:700}
+hr{border:none;border-top:1px solid var(--line);margin:32px 0}
+.brand{font-size:12px;letter-spacing:2px;color:var(--muted);font-weight:700;margin-bottom:14px}
+.subtitle{font-size:20px;color:var(--muted);margin:0 0 14px}
+.lead{font-size:17px;line-height:1.9;margin:0 0 12px}
+.meta{font-size:12.5px;color:var(--muted);margin:0;line-height:1.7}
+.trustbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:22px 0 4px;
+padding:12px 16px;border-radius:8px;font-size:13.5px;font-weight:700;
+background:var(--accent-wash);border:1px solid var(--accent);color:var(--accent)}
+.trustbar.bad{background:var(--warn-wash);border-color:var(--warn);color:var(--warn)}
+.trustbar.warn{background:#fdf6e6;border-color:#c99a2e;color:#8a6412}
+.trustbar .n{font-size:17px;font-variant-numeric:tabular-nums}
+.cite{display:inline-block;font-size:11px;font-weight:700;line-height:1.5;vertical-align:2px;
+margin:0 1px;padding:0 5px;border-radius:4px;background:var(--accent-wash);
+border:1px solid var(--accent);color:var(--accent);white-space:nowrap}
+.cite:hover{background:var(--accent);color:#fff;text-decoration:none}
+.toc{background:#f7f9fa;border:1px solid var(--line);border-radius:8px;padding:16px 20px;
+margin:26px 0 4px}
+.toc h4{margin:0 0 8px;font-size:13px;letter-spacing:1px;color:var(--muted)}
+.toc ol{margin:0;padding-left:20px;font-size:14.5px}
+.toc li{margin:3px 0}
+.src-list{list-style:none;margin:0 0 18px;padding:0}
+.src-list li{border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin:0 0 10px;
+background:#fcfdfd;scroll-margin-top:20px}
+.src-list li:target{border-color:var(--accent);background:var(--accent-wash)}
+.src-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;margin-bottom:4px}
+.src-id{font-family:ui-monospace,Consolas,monospace;font-size:13px;font-weight:700;
+color:var(--accent)}
+.src-meta{font-size:12px;color:var(--muted)}
+.src-back{font-size:12px;margin-left:auto}
+.src-text{margin:0;font-size:15.5px;line-height:1.75;color:var(--ink)}
+.src-miss{color:var(--warn);font-weight:700}
+footer{border-top:1px solid var(--line);margin-top:40px;padding-top:16px;font-size:12.5px;
+color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 12px;justify-content:space-between}
+@media(max-width:720px){.paper{margin:0;border-radius:0;padding:28px 20px 20px}
+body{font-size:16.5px}h1{font-size:26px}h2{font-size:21px}}
+@media print{body{background:#fff}.paper{margin:0 auto;box-shadow:none;max-width:none}
+.toc,.src-back{display:none}
+h2,h3{break-after:avoid}blockquote,.src-list li,table{break-inside:avoid}}
+</style>
+</head>
+<body>
+<main class="paper">
+<header class="intro">
+<div class="brand">COMMENT-DISTILLERY</div>
+<h1>示例指南：某 CLI 工具用户讨论的蒸馏产出（节选）</h1>
+<p class="subtitle">点正文里的「源」角标，跳到附录原句——每一条结论都能倒推回具体条目</p>
+
+<p class="meta">来源：<code>sample_guide.md</code> · 语料 26 条 · 生成于 2026-10-23</p>
+</header>
+<div class="trustbar "><span class="n">9</span> 条引用 · 机验通过 · 差集 <span class="n">0</span><span style="font-weight:400">（语料 ID 全集 26）</span></div>
+<nav class="toc"><h4>目录</h4><ol><li><a href="#h2-1">一、数据底座</a></li><li><a href="#h2-2">二、核心议题：这场讨论其实在吵两件事</a></li><li><a href="#h2-3">三、被忽略的实操层</a></li><li><a href="#h2-4">四、行动清单</a></li><li><a href="#h2-5">五、方法与边界（诚实说明）</a></li></ol></nav>
+<article>
+<blockquote><strong>这是一份格式示例，用于演示 comment-distillery 的输出形态与引用规范。</strong><br>输入：<code>examples/sample_corpus.csv</code>（26 条合成语料 → 去噪后 23 条）。<br>本文件同时是 CI 的一环：<code>verify_citations.py</code> 会校验其中所有引用是否真实存在于语料。</blockquote>
+<hr>
+<h2 id="h2-1">一、数据底座</h2>
+<ul><li>语料 23 条（一级 14 / 回复 9），时间跨度约 4 小时，23 位独立作者（无刷屏）。</li><li>去噪 3 条：广告 1、纯链接 1、过短 1。</li><li>权重最高 842，最低 0（长尾明显）。</li></ul>
+<h2 id="h2-2">二、核心议题：这场讨论其实在吵两件事</h2>
+<h3>议题 A：学习成本是不是设计缺陷</h3>
+<p><strong>共识侧</strong>（认为门槛有问题）：</p>
+<blockquote>「新手要先理解三个抽象概念才能跑起来第一条命令，这个门槛对非专业用户是劝退级别的」<a class="cite" id="cite-c1006" href="#src-c1006" title="c1006 · 权重7 · 一级">源</a></blockquote>
+<p><strong>反例对冲</strong>（认为不是缺陷）：</p>
+<blockquote>「门槛高不等于设计差，很多专业工具的复杂度是被真实需求逼出来的。把复杂度藏起来只是推给用户更晚发现，而不是真的消失了」<a class="cite" id="cite-c1010" href="#src-c1010" title="c1010 · 权重58 · 回复">源</a></blockquote>
+<p><strong>冲突的真正原因</strong>（元层面观察，本议题最有价值的一条）：</p>
+<blockquote>「说它不好用的大部分在讲学习成本，说它好的大部分在讲功能强。这两拨人其实在回答两个不同的问题……除非有人先把问题界定清楚——到底是问值不值得学，还是问值不值得换」<a class="cite" id="cite-c1020" href="#src-c1020" title="c1020 · 权重2 · 一级">源</a></blockquote>
+<blockquote>💡 注意：这条最关键的框架只有 <strong>2 分</strong>，而权重最高（842）的是「前排打卡哈哈哈」。<strong>这正是"高权重 ≠ 高信号"的现场证据。</strong></blockquote>
+<h3>议题 B：该不该迁移</h3>
+<p><strong>支持迁移</strong>：</p>
+<blockquote>「前期确实痛苦，前两周效率是下降的。但第三周开始反超，现在是原来的两倍效率」<a class="cite" id="cite-c1023" href="#src-c1023" title="c1023 · 权重9 · 一级">源</a></blockquote>
+<p><strong>反对 / 保留</strong>：</p>
+<blockquote>「我们公司去年做过一次评估，最后放弃了。原因是维护者只有一个人，而且过去的 issue 响应周期平均在三周以上」<a class="cite" id="cite-c1012" href="#src-c1012" title="c1012 · 权重4 · 一级">源</a></blockquote>
+<p><strong>对"迁移成本论"的反驳</strong>：</p>
+<blockquote>「任何工具迁移都有成本，如果只比较迁移成本那什么都别换了。关键是收益能不能覆盖成本，以及成本是一次性的还是持续的」<a class="cite" id="cite-c1019" href="#src-c1019" title="c1019 · 权重19 · 回复">源</a></blockquote>
+<p><strong>对"维护者风险论"的反驳</strong>：</p>
+<blockquote>「我查了一下最近半年的提交频率，其实是比前两年更活跃的。建议不要只看历史印象」<a class="cite" id="cite-c1025" href="#src-c1025" title="c1025 · 权重33 · 回复">源</a></blockquote>
+<h2 id="h2-3">三、被忽略的实操层</h2>
+<blockquote>「我们是把它包了一层内部封装再给业务方使用的，把那些复杂概念收敛成三个最常用的场景，结果接受度从三成涨到八成」<a class="cite" id="cite-c1017" href="#src-c1017" title="c1017 · 权重3 · 一级">源</a></blockquote>
+<blockquote>「它的配置文件格式和主流的不兼容……这种细节往往才是真正决定团队采不采纳的原因」<a class="cite" id="cite-c1015" href="#src-c1015" title="c1015 · 权重5 · 一级">源</a></blockquote>
+<h2 id="h2-4">四、行动清单</h2>
+<table><thead><tr><th>时间</th><th>行动</th></tr></thead><tbody><tr><td>本周</td><td>先明确你要回答的是"值不值得学"还是"值不值得换"——两个问题的答案可以完全相反 <a class="cite" id="cite-c1020-2" href="#src-c1020" title="c1020 · 权重2 · 一级">源2</a></td></tr><tr><td>本周</td><td>若团队要落地，先做一层内部封装、收敛常用场景 <a class="cite" id="cite-c1017-2" href="#src-c1017" title="c1017 · 权重3 · 一级">源2</a></td></tr><tr><td>本月</td><td>评估维护者可持续性（响应周期、提交频率趋势），别只看功能表 <a class="cite" id="cite-c1012-2" href="#src-c1012" title="c1012 · 权重4 · 一级">源2</a> <a class="cite" id="cite-c1025-2" href="#src-c1025" title="c1025 · 权重33 · 回复">源2</a></td></tr><tr><td>长期</td><td>把配置格式兼容性纳入迁移成本核算 <a class="cite" id="cite-c1015-2" href="#src-c1015" title="c1015 · 权重5 · 一级">源2</a></td></tr></tbody></table>
+<h2 id="h2-5">五、方法与边界（诚实说明）</h2>
+<ul><li><strong>未逐条读完</strong>：本语料仅 23 条，已全量阅读，无抽样缺口。</li><li><strong>权重偏差</strong>：权重=最易被点赞的表达，不是最多人认同的立场。本语料中最高分条目为零信息量内容。</li><li><strong>规模偏差</strong>：23 条样本不构成任何统计意义上的代表性；结论仅供形式演示。</li><li><strong>数据性质</strong>：<strong>合成数据</strong>，不含任何真实用户内容。</li></ul>
+<blockquote>关键结论建议人工核对，尤其是权重最低但被我们判定为"最重要"的那几条（<code>c1020</code>、<code>c1017</code>）——它们是本指南的核心，也是最容易被误读的部分。</blockquote>
+</article>
+<h2 id="sources">引用溯源</h2><p class="meta">点击正文中的「源」角标可跳到这里；点「返回正文」跳回原处。共 9 个被引用条目。</p><ol class="src-list"><li id="src-c1006"><div class="src-head"><span class="src-id">c1006</span><span class="src-meta">权重 7 · 一级</span><a class="src-back" href="#cite-c1006">返回正文</a></div><p class="src-text">说实话这个工具的概念还是太多了。新手要先理解三个抽象概念才能跑起来第一条命令，这个门槛对非专业用户是劝退级别的。我做技术选型的时候宁愿选一个功能少但五分钟能上手的方案，因为团队里不是每个人都有耐心读完整本手册。功能强和专业门槛高其实是两件事，很多人把这两件事混在一起讨论，最后谁也说服不了谁，因为大家衡量的标准根本不一样</p></li><li id="src-c1010"><div class="src-head"><span class="src-id">c1010</span><span class="src-meta">权重 58 · 回复</span><a class="src-back" href="#cite-c1010">返回正文</a></div><p class="src-text">我不同意上面的说法。门槛高不等于设计差，很多专业工具的复杂度是被真实需求逼出来的。把复杂度藏起来只是推给用户更晚发现，而不是真的消失了。这个问题上我更认同保留概念完整性</p></li><li id="src-c1020"><div class="src-head"><span class="src-id">c1020</span><span class="src-meta">权重 2 · 一级</span><a class="src-back" href="#cite-c1020">返回正文</a></div><p class="src-text">看完评论区发现一个现象：说它不好用的大部分在讲学习成本，说它好的大部分在讲功能强。这两拨人其实在回答两个不同的问题，压根没在同一个频道上对话。所以这场争论大概率不会有结论，除非有人先把问题界定清楚——到底是问值不值得学，还是问值不值得换，这两个问题的答案可以完全相反</p></li><li id="src-c1023"><div class="src-head"><span class="src-id">c1023</span><span class="src-meta">权重 9 · 一级</span><a class="src-back" href="#cite-c1023">返回正文</a></div><p class="src-text">三个月前从别的工具迁过来的，说一下真实感受。前期确实痛苦，前两周效率是下降的。但第三周开始反超，现在是原来的两倍效率。所以如果只是短期项目不建议迁，长期项目值得。不过我要补充一点，这个反超成立的前提是团队规模足够小，人多了之后协调成本会把收益吃掉一部分，我们五个人的时候效果最好，扩到二十人之后就没那么明显了</p></li><li id="src-c1012"><div class="src-head"><span class="src-id">c1012</span><span class="src-meta">权重 4 · 一级</span><a class="src-back" href="#cite-c1012">返回正文</a></div><p class="src-text">我们公司去年做过一次评估，最后放弃了。原因是维护者只有一个人，而且过去的 issue 响应周期平均在三周以上。对于要进生产链的工具来说，这个可持续性风险不可接受。工具本身质量没问题，但选型要看的是未来三年的维护能力而不是当下的功能表。个人项目做得很好的例子很多，但它们大多死在没有第二个维护者这件事上，而不是死于技术</p></li><li id="src-c1019"><div class="src-head"><span class="src-id">c1019</span><span class="src-meta">权重 19 · 回复</span><a class="src-back" href="#cite-c1019">返回正文</a></div><p class="src-text">迁移成本这个说法我持保留意见。任何工具迁移都有成本，如果只比较迁移成本那什么都别换了。关键是收益能不能覆盖成本，以及成本是一次性的还是持续的</p></li><li id="src-c1025"><div class="src-head"><span class="src-id">c1025</span><span class="src-meta">权重 33 · 回复</span><a class="src-back" href="#cite-c1025">返回正文</a></div><p class="src-text">楼上说维护者风险的那位，我查了一下最近半年的提交频率，其实是比前两年更活跃的。建议不要只看历史印象</p></li><li id="src-c1017"><div class="src-head"><span class="src-id">c1017</span><span class="src-meta">权重 3 · 一级</span><a class="src-back" href="#cite-c1017">返回正文</a></div><p class="src-text">分享一个我的实践。我们是把它包了一层内部封装再给业务方使用的，把那些复杂概念收敛成三个最常用的场景，结果接受度从三成涨到八成。所以概念多本身不是问题，问题是没有给不同层级的用户提供不同的入口。专业用户需要完整的抽象能力，而业务方只需要三条能跑通的路径，这两类需求放在同一个文档里必然互相拖累</p></li><li id="src-c1015"><div class="src-head"><span class="src-id">c1015</span><span class="src-meta">权重 5 · 一级</span><a class="src-back" href="#cite-c1015">返回正文</a></div><p class="src-text">一个没人提的点是它的配置文件格式和主流的不兼容。这意味你没法复用手头已有的配置，所有东西都要重写一遍。这种细节往往才是真正决定团队采不采纳的原因，因为它不会被写进任何评估报告的对比表里，却会在真正落地时消耗掉你两周时间</p></li></ol>
+<footer>
+<span>comment-distillery · 带引用溯源的群体文本蒸馏</span>
+<a href="https://github.com/TrueFurina/comment-distillery">github.com/TrueFurina/comment-distillery</a>
+</footer>
+</main>
+</body>
+</html>

@@ -1,0 +1,83 @@
+# robots.txt — comment-distillery 官网
+#
+# 立场：本站内容以 MIT 协议开放，**主动邀请**包括 AI 检索与问答在内的抓取。
+#
+# 为什么要专门写这个文件：
+#   第三方平台把 AI 挡在门外是它们的商业选择，不是我们的默认值。
+#   对照：知乎 robots.txt 的尾部是 `User-Agent: * → Disallow: /`，且 `Google-Extended`
+#   同样被 Disallow —— 也就是说发在知乎上的内容，主流 AI 检索按规则是抓不到的。
+#   自有域名是唯一一个我们能明确写「允许」的地方，而 GitHub Pages 不提供默认
+#   robots.txt（缺失时等效全 Allow，但那是默认值，不是声明）。把它显式写出来，
+#   AI 可见性才算是有意为之，而不是碰巧。
+#
+# 维护约定（改动前请读）：
+#   ① 本站是单页静态站（site/index.html）。将来若新增子目录（如 /samples/）
+#      且**不想**被收录，必须来这里显式 Disallow —— 否则下面的 `Allow: /`
+#      会把它们一并放开。新增却忘了拦，是最容易发生的一类失误。
+#   ② 点名 AI 爬虫这一段只是消除各家实现差异带来的歧义，`User-agent: *`
+#      一段才是兜底。新增爬虫 UA 前请确认该 UA 真实存在，不要凭印象编。
+#
+# 边界：robots.txt 只对**自愿遵守**的抓取方有效。它不是访问控制手段，
+#       既拦不住恶意抓取，也不影响任何授权范围内的数据使用。
+
+# ── 默认：全站开放 ──────────────────────────────────────────────────────────
+User-agent: *
+Allow: /
+
+# ── AI 检索 / 问答 / 训练（显式点名，避免厂商解读差异）─────────────────────
+# OpenAI
+User-agent: GPTBot
+Allow: /
+User-agent: OAI-SearchBot
+Allow: /
+User-agent: ChatGPT-User
+Allow: /
+
+# Anthropic
+User-agent: ClaudeBot
+Allow: /
+User-agent: Claude-User
+Allow: /
+User-agent: Claude-SearchBot
+Allow: /
+
+# Google（Google-Extended 控制 Gemini / Vertex grounding 用途）
+User-agent: Google-Extended
+Allow: /
+
+# Perplexity
+User-agent: PerplexityBot
+Allow: /
+
+# Apple
+User-agent: Applebot
+Allow: /
+User-agent: Applebot-Extended
+Allow: /
+
+# Meta
+User-agent: Meta-ExternalAgent
+Allow: /
+
+# ByteDance / Amazon / Mistral / Cohere / You.com / DuckDuckGo
+User-agent: Bytespider
+Allow: /
+User-agent: Amazonbot
+Allow: /
+User-agent: MistralAI-User
+Allow: /
+User-agent: cohere-ai
+Allow: /
+User-agent: YouBot
+Allow: /
+User-agent: DuckAssistBot
+Allow: /
+
+# 公共语料库（训练数据的主要来源之一，允许收录）
+User-agent: CCBot
+Allow: /
+User-agent: Diffbot
+Allow: /
+
+# ── 站点地图 ────────────────────────────────────────────────────────────────
+Sitemap: https://truefurina.github.io/comment-distillery/sitemap.xml

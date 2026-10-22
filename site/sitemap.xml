@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  sitemap.xml — comment-distillery 官网
+
+  本站是**单文件静态页**（site/index.html），所有内容都在 https://truefurina.github.io/comment-distillery/ 这一个 URL 上，
+  其余都是页内锚点（#about / #pipeline / #evidence / #download / #limits / #faq）。
+  锚点不是独立页面，按 sitemap 规范不应作为独立 <url> 列出 —— 列了会让抓取器把同一个页面重复收录。
+
+  维护约定：将来若真的产出独立页面（例如 /samples/xxx.html 的真实成品样例页），
+  必须回来在这里补一条 <url>，否则新页面只能靠 robots.txt 的 Allow 被动等待发现。
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://truefurina.github.io/comment-distillery/</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <!-- 2026-10-23 补：真实成品样例页（由 examples/sample_guide.md 生成）。
+       它够格作为独立页面列出 —— 既有完整内容，又自带可点击的引用溯源，
+       是"怎么证明这套方法真的有效"最直观的一份材料。 -->
+  <url>
+    <loc>https://truefurina.github.io/comment-distillery/samples/sample-guide.html</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>
