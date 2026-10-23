@@ -209,7 +209,10 @@ class TestSecurity(WebUIBase):
         self.assertNotIn(b"403", buf[:64])
 
     def test_path_traversal_rejected(self):
-        for bad in ("C:/Windows/System32", "/etc", str(ROOT.parent / ".." / "..")):
+        # 注意：允许根含用户家目录，故「仓库两级之上」未必越权（仓库在家目录下时两级之上仍在家里）。
+        # 改用「家目录两级之上」作为必定越权的动态用例，跨平台稳健，不依赖仓库摆放位置。
+        above_home = str(Path.home().parent.parent)
+        for bad in ("C:/Windows/System32", "/etc", above_home):
             with self.assertRaises(urllib.error.HTTPError) as c:
                 self.getj("/api/fs?path=" + urllib.parse.quote(bad))
             self.assertEqual(c.exception.code, 403, f"应拦截：{bad}")
