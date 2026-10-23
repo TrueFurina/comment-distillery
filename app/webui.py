@@ -773,6 +773,8 @@ def main(argv=None):
     for r in args.allow_root:
         add_root(r)
 
+    if args.public and args.lan:
+        print("⚠️ --public 与 --lan 互斥，同时给出时按公开模式处理（沙箱 + 禁用文件选择器）")
     if args.public:
         if not args.token:
             print("⚠️ 公开模式必须提供 --token，否则任何人都无法访问本服务")
