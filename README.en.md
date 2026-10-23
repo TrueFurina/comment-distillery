@@ -14,7 +14,7 @@
 | If you are | Do this |
 |---|---|
 | Just want to see the output first | **[📄 Open a finished HTML guide](https://truefurina.github.io/comment-distillery/samples/sample-guide.html)** — click any 「源」 badge to jump to the source quote in the appendix |
-| Not a terminal person | **⬇ [Download the Windows desktop tool](https://github.com/TrueFurina/comment-distillery/releases/latest)** (~11 MB · no installer · **no Python needed**) |
+| Not a terminal person | **⬇ [Download the Windows desktop tool](https://github.com/TrueFurina/comment-distillery/releases/latest)** (~12 MB · no installer · **no Python needed**) |
 | Not on Windows / no .exe | **`python -m app --web`** — full flow in your browser (stdlib-only, **cross-platform**, no packaging, see below) |
 | Using ChatGPT / Claude in a browser | **⬇ [Download the Skill ZIP](https://github.com/TrueFurina/comment-distillery/releases/latest)** (~69 KB) — unzip and drop the folder into the chat, or paste `PROMPT.md` |
 | Already using an AI agent | `npx skills add TrueFurina/comment-distillery` (Claude Code / Cursor / Codex / Copilot and 40+ others) |
@@ -125,7 +125,7 @@ These separate this project from "yet another summarizer" — **never to be cut*
 
 If you'd rather not touch a terminal:
 
-**[⬇ Download comment-distillery.exe](https://github.com/TrueFurina/comment-distillery/releases/latest)** — ~11 MB, single file, no installer.
+**[⬇ Download comment-distillery.exe](https://github.com/TrueFurina/comment-distillery/releases/latest)** — ~12 MB, single file, no installer.
 
 Four tabs, in order:
 

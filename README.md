@@ -13,7 +13,7 @@
 | 你是 | 做什么 |
 |---|---|
 | 想先看看它到底产出什么 | **[📄 直接打开一份成品 HTML 指南](https://truefurina.github.io/comment-distillery/samples/sample-guide.html)** —— 点正文里的「源」角标可跳到附录原句 |
-| 不想碰命令行 | **⬇ [下载 Windows 桌面工具](https://github.com/TrueFurina/comment-distillery/releases/latest)**（~11 MB · 免安装 · **连 Python 都不用装**） |
+| 不想碰命令行 | **⬇ [下载 Windows 桌面工具](https://github.com/TrueFurina/comment-distillery/releases/latest)**（~12 MB · 免安装 · **连 Python 都不用装**） |
 | 不用 Windows / 不想装 exe | **`python -m app --web`** —— 浏览器里走完全流程（纯标准库，**跨平台**，免打包免签名，见下） |
 | 在用 ChatGPT / Claude 网页版 | **⬇ [下载 Skill ZIP](https://github.com/TrueFurina/comment-distillery/releases/latest)**（约 69 KB）—— 解压后整个文件夹拖进对话，或把 `PROMPT.md` 粘进去 |
 | 已经在用 AI Agent | `npx skills add TrueFurina/comment-distillery`（Claude Code / Cursor / Codex / Copilot 等 40+ 家） |
@@ -122,7 +122,7 @@ bbc-skill            …然后就没有然后了      + 行动清单 + 盲区说
 
 不想碰命令行就用这个：
 
-**[⬇ 下载 comment-distillery.exe](https://github.com/TrueFurina/comment-distillery/releases/latest)** —— 约 11 MB，单文件免安装。
+**[⬇ 下载 comment-distillery.exe](https://github.com/TrueFurina/comment-distillery/releases/latest)** —— 约 12 MB，单文件免安装。
 
 四个页签依次走完：
 
