@@ -234,8 +234,9 @@ CI       .github/workflows/ci.yml  **16 个质量门步骤**全绿
 重建产物在 build-exe CI 里跑 `--verify`「产物内资源与仓库逐项一致」**绿**；`SKILL.md` v1.6.0（五轮变更全含）与
 `emit_html.py` / `app/webui*.py` 均已进包。以下三段保留为历史记录，不再反映当前状态。
 
-**下次发版顺带（刻意未随本轮改）**：`SKILL.md` 下载入口行「约 11 MB」→「约 12 MB」——`SKILL.md` 是随包资源，
-改一个字即触发 v1.6.0 产物 `--verify` 报红、重开一轮滞后；为一处 MB 数字开第六轮不成比例，攒到下轮一起。
+**✅ 上条「下次发版顺带」已于 2026-10-24 由 [v1.7.0](https://github.com/TrueFurina/comment-distillery/releases/tag/v1.7.0) 消费**：
+`SKILL.md` 下载入口行已改「约 11 MB」→「约 12 MB」，同轮重建产物 → `--verify` 绿，**无新增滞后**。
+（原判断成立：为一处 MB 数字单独开一轮发版不成比例，攒着一起是对的。）
 
 **形态扩展（2026-10-23，晚）：Web 界面的两种托管模式 + 本地启动器**（本批**未动 `SKILL.md`**，产物滞后不新增，仍为五轮）：
 - **公开托管模式** `python -m app --web --public --token <rand>`：绑 `0.0.0.0` + 令牌鉴权 +
@@ -251,6 +252,12 @@ CI       .github/workflows/ci.yml  **16 个质量门步骤**全绿
 已发布（exe **12,611,650 字节 / 12.0 MB**，SHA-256 `d06e4daa…45818`；技能包 ZIP 与两份哈希文件一并挂载，
 四资产下载复算全 MATCH）。build-exe 的「核验产物内资源与仓库逐项一致」步骤绿 → **上述五轮滞后全部消解**；
 本文件同日 20:5x 记录的 CI 假红事故（坑清单 C8）亦已由 `b3a1b41` 修复回绿。
+
+**✅ v1.7.0 已发（2026-10-24）**：tag `v1.7.0` → [Release](https://github.com/TrueFurina/comment-distillery/releases/tag/v1.7.0)
+四资产已挂载并**下载复算全 MATCH** —— exe **12,612,733 字节 / 12.0 MB**（SHA-256 `aac6b9be…9275`）、
+技能包 ZIP 70,209 B、两份哈希文件。本轮随包资源变更（`SKILL.md` 版本与体积行、`app/gui.py` 接入
+「导出 HTML 报告」出口）已由重建消解，build-exe 的「核验产物内资源与仓库逐项一致」绿 →
+**当前无产物滞后**。
 
 ---
 
@@ -273,7 +280,7 @@ CI       .github/workflows/ci.yml  **16 个质量门步骤**全绿
 13. ✅ **顺带修掉两个真 bug**（2026-09-26）：① `verify_citations.py` 的 `--field` 参数一直被解析却从未传下去（形同虚设），已接通；② `crawl()` 的协作式停止钩子与 `_CallbackWriter` —— GUI 中途停止时已抓部分照常写出。
 14. ✅ **GitHub Release + Pages 首发**（2026-09-26）：tag `v1.4.0` → `0ba07ce`（**已移到修复 CI 红之后的提交**——当时它**从未成功构建过**，属"尚未成立"而非"已发布后又变"；与后来 v1.4.1 的处理**不同**：已发布的内容变了就**发新版、不重写资产**）；Release 已挂 exe（**11,682,955 字节**）；官网 <https://truefurina.github.io/comment-distillery/> 线上 HTTP 200。**原判"需要你的仓库权限"是误判**——本地 token 直连 API 全做完。**Pages 首次部署失败的真因不是 Source 选错，是 Pages 根本没启用**（`GET /repos/.../pages` → 404）；一行 `POST /pages {"build_type":"workflow"}` 修好。发布件已下载回来复算 SHA-256，与本地冒烟验证件**完全一致**。三条工作流全绿：CI `36225711223` / Deploy site `36225711371` / Build exe `36225715001`。
 
-**当前状态（2026-09-26 立项；2026-10-23 更新至 v1.6.0）**：P0 / P1 / P2 已闭环，P3 适配侧全部完成（含 topics 补齐），**P3.5 交付形态完成并已发布上线**（当前版 Release **[v1.6.0](https://github.com/TrueFurina/comment-distillery/releases/tag/v1.6.0)**：exe 12,611,650 字节 / 12.0 MB，含 HTML 报告 / 技能包 ZIP / Web 界面三模式；+ 官网），`cases/` 产物层已公开。**awesome PR 已提交 2 个待审**（ComposioHQ#2002 / m-fyi#2；VoltAgent 缓发）。**代码侧无待办，远端侧也无待办**。剩余**只有两项**需要你本人：**社区发帖**（以你的身份公开发言，我不代发；骨架在 `docs/distribution.md` §1-C）与 **publish.py 发布器 Cookie 实测**（配置模板已就绪）。**P4 经拍板不做**（保留合成样例；原始语料明确无需备份）。**P5 为长线研究问题，不设 deadline**。
+**当前状态（2026-09-26 立项；2026-10-24 更新至 v1.7.0）**：P0 / P1 / P2 已闭环，P3 适配侧全部完成（含 topics 补齐），**P3.5 交付形态完成并已发布上线**（当前版 Release **[v1.7.0](https://github.com/TrueFurina/comment-distillery/releases/tag/v1.7.0)**：exe 12,612,733 字节 / 12.0 MB，含 HTML 报告 / 技能包 ZIP / Web 界面三模式；+ 官网），`cases/` 产物层已公开。**awesome PR 已提交 2 个待审**（ComposioHQ#2002 / m-fyi#2；VoltAgent 缓发）。**代码侧无待办，远端侧也无待办**。剩余**只有两项**需要你本人：**社区发帖**（以你的身份公开发言，我不代发；骨架在 `docs/distribution.md` §1-C）与 **publish.py 发布器 Cookie 实测**（配置模板已就绪）。**P4 经拍板不做**（保留合成样例；原始语料明确无需备份）。**P5 为长线研究问题，不设 deadline**。
 
 ---
 

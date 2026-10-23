@@ -98,7 +98,7 @@
 | P1 | GitHub 仓库元数据（description + topics） | `gh repo view` 可见 | ✅ **已完成**（description 已设 / MIT / topics **16 个**） |
 | P1 | topics 检索词补齐 | 搜索可命中 | ✅ **已完成**（2026-09-26 补入 `agent-skills` / `claude-skills` / `skills` / `ai-agents`，12 → 16） |
 | P2 | `cases/` 产物层公开 | 外部能看到真实案例 | ✅ **已完成**（9 md / 277 KB；原始语料按合规约束不公开） |
-| P1 | **Release 首发 + 官网上线** | 有可下载产物与可打开落地页 | ✅ **已完成**（当前版 Release [v1.6.0](https://github.com/TrueFurina/comment-distillery/releases/tag/v1.6.0) 挂 exe / 官网线上 HTTP 200；**原判"需你执行"是误判**，本地 token 即可，见 `docs/distribution.md` §1-E） |
+| P1 | **Release 首发 + 官网上线** | 有可下载产物与可打开落地页 | ✅ **已完成**（当前版 Release [v1.7.0](https://github.com/TrueFurina/comment-distillery/releases/tag/v1.7.0) 挂 exe / 官网线上 HTTP 200；**原判"需你执行"是误判**，本地 token 即可，见 `docs/distribution.md` §1-E） |
 | P1 | awesome 列表 PR（ComposioHQ / m-fyi / VoltAgent） | 至少 1 个合入 | 🟡 **2 个已提交待审**（[ComposioHQ#2002](https://github.com/ComposioHQ/awesome-claude-skills/pull/2002) / [m-fyi#2](https://github.com/m-fyi/awesome-claude-skills/pull/2)，2026-09-26）；VoltAgent 按其"不接受全新 skill"规则**缓发**，等有真实安装量再提。<br>**2026-10-24 实况复查**：两个仍 open、维护者零回应 —— ComposioHQ#2002 的 `validate` 与 Socket Security 检查**全 success**，`mergeable_state=blocked` 只差审批（该仓 7.8 万 star、1,852 open issues、默认分支最近提交停在 2026-07-24，积压大）；m-fyi 仓仅 3 star、**自 2026-08-03 起未推送**，且我们是其唯一 PR —— 合入概率低。<br>**结论**：awesome 列表按「发了就忘」处理，**不把分发指望放在它身上**，杠杆仍在社区发帖。 |
 | P2 | Reddit `r/ClaudeAI` / `r/LocalLLaMA` Show & Tell + 中文社区同步 | 各发一轮 | ⏳ **需你执行**（§1-C 有骨架） |
 | P3 | 方法论长文（"Why comment sections are the most underrated dataset"） | 长尾搜索流量 | ⏳ 素材已就位（§1-D） |
@@ -130,7 +130,7 @@
 - `--selftest-run` 端到端真跑「预处理 → 打包 → 引用机验」PASS；
 - `--verify` 逐项比对产物内随包资源与仓库当前版本 SHA-256：**10/10 一致**；
 - 官网 Chrome 无头渲染核验：外链资源 0、锚点 0 缺失、整页 1400×6900 无布局塌陷；
-- **已发布上线**：当前版 Release [v1.6.0](https://github.com/TrueFurina/comment-distillery/releases/tag/v1.6.0)（exe **12,611,650 字节**，四资产下载复算全 MATCH）+ 官网 <https://truefurina.github.io/comment-distillery/> 线上 HTTP 200。
+- **已发布上线**：当前版 Release [v1.7.0](https://github.com/TrueFurina/comment-distillery/releases/tag/v1.7.0)（exe **12,612,733 字节**，四资产下载复算全 MATCH）+ 官网 <https://truefurina.github.io/comment-distillery/> 线上 HTTP 200。
   （v1.5.0 时期验收快照：exe 11,681,575 字节 / 11.1 MB / SHA `3ced7a5d…`，三处口径一致。）
   （v1.4.0 为首发版；v1.4.1 因 `SKILL.md` 随包内容变更而重发；v1.5.0 因把维护类环境事实移出 `SKILL.md` 而重发；v1.6.0 因五轮 `SKILL.md` 变更 + emit_html / ZIP / Web 界面三模式 / publish.py 而重发——**Release 不可变，内容变了就发新版**。）
 
