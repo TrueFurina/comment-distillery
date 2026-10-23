@@ -58,6 +58,7 @@ class WebUIBase(unittest.TestCase):
         webui._PUBLIC = False
         webui._ACCESS_TOKEN = ""
         webui._SANDBOX = None
+        webui._LAN = False
         cls.srv, cls.url = webui.serve(port=0, open_browser=False, quiet=True)
         cls.port = cls.srv.server_address[1]
         cls.base = f"http://127.0.0.1:{cls.port}"
@@ -385,6 +386,82 @@ class TestPublicMode(unittest.TestCase):
         with urllib.request.urlopen(req, timeout=10) as r:
             d = json.loads(r.read())
         self.assertEqual(d["mode"], "public")
+        self.assertTrue(d["outdir"])
+
+
+# ────────────────────────────── 局域网模式 ──────────────────────────────
+
+class TestLanMode(unittest.TestCase):
+    """局域网模式：令牌鉴权 + 私网 Host 白名单 + **保留文件选择器/完整文件系统**。
+
+    与公开模式的关键区别：_api_fs 不 403、allowed_roots 给默认全量（不是沙箱）。
+    本类在定义序里最后一组，setUpClass 开局域网模式、tearDownClass 复位，
+    不污染前面几组（它们跑在本地/公开模式）。
+    """
+
+    TOKEN = "lan-test-token-xyz"
+
+    @classmethod
+    def setUpClass(cls):
+        webui.set_lan(cls.TOKEN)
+        cls.srv, cls.url = webui.serve(port=0, open_browser=False, quiet=True, host="127.0.0.1")
+        cls.port = cls.srv.server_address[1]
+        cls.base = f"http://127.0.0.1:{cls.port}"
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.srv.shutdown()
+        webui._LAN = False                    # 直接复位（set_lan 永远置 True，不能用于复位）
+        webui._ACCESS_TOKEN = ""
+        webui._SANDBOX = None
+
+    def _raw(self, auth, host="127.0.0.1"):
+        head = (b"GET / HTTP/1.1\r\nHost: " + host.encode() + b"\r\n"
+                + (b"Authorization: Bearer " + auth.encode() + b"\r\n" if auth else b"")
+                + b"Connection: close\r\n\r\n")
+        return _raw(self.port, head)
+
+    def test_page_without_token_rejected(self):
+        self.assertIn(b"401", self._raw("")[:64], "局域网模式无令牌必须 401")
+
+    def test_wrong_token_rejected(self):
+        self.assertIn(b"401", self._raw("wrong")[:64], "错误令牌必须 401")
+
+    def test_page_with_token_allowed(self):
+        self.assertIn(b"200", self._raw(self.TOKEN)[:64], "正确令牌应放行")
+
+    def test_fs_enabled_in_lan(self):
+        # 关键区别：局域网模式保留文件选择器（公开模式这里应 403）
+        q = "/api/fs?path=" + urllib.parse.quote(str(ROOT / "examples"))
+        req = urllib.request.Request(
+            self.base + q, headers={"Authorization": "Bearer " + self.TOKEN})
+        with urllib.request.urlopen(req, timeout=10) as r:
+            d = json.loads(r.read())
+        self.assertIn("entries", d)
+        self.assertIn("sample_corpus.csv", [e["name"] for e in d["entries"]])
+
+    def test_full_roots_accessible(self):
+        # 局域网模式不收沙箱：仓库示例语料可达（公开模式下这里会 OutsideRoot）
+        p = webui.safe_path(str(ROOT / "examples" / "sample_corpus.csv"))
+        self.assertTrue(p.exists())
+
+    def test_private_host_accepted(self):
+        # 用私网 IP 作 Host 应被接受（证明同网段设备能用 IP 访问）
+        self.assertIn(b"200", self._raw(self.TOKEN, host="172.16.222.99")[:64],
+                      "私网 Host 必须放行")
+
+    def test_foreign_host_rejected(self):
+        # 外域 Host 仍要挡（DNS-rebinding / 跨站）
+        self.assertIn(b"403", self._raw(self.TOKEN, host="evil.example.com")[:64],
+                      "外域 Host 必须被拒")
+
+    def test_hello_reports_lan_mode(self):
+        req = urllib.request.Request(
+            self.base + "/api/hello",
+            headers={"Authorization": "Bearer " + self.TOKEN})
+        with urllib.request.urlopen(req, timeout=10) as r:
+            d = json.loads(r.read())
+        self.assertEqual(d["mode"], "lan")
         self.assertTrue(d["outdir"])
 
 

@@ -446,9 +446,9 @@ def check_rule_counts(root):
 TEST_COUNT_PAT = re.compile(
     r"测试\s*(?:（[^）]*）)?\s*,?\s*(\d+)\s*项"             # 「回归测试 73 项（CI 自动跑）」
     r"|(\d+)\s*(?:<[^>]*>\s*)*项(?:自动化)?测试"             # 「73 项自动化测试」
-    r"|unittest\s*(\d+)\s*项"                               # HANDOFF：「unittest 137 项」
-    r"|(\d+)\s*tests\s*OK"                                  # ROADMAP：「137 tests OK」
-    r"|(\d+)\s*cases\s*\(run in CI\)"                       # README.en：「137 cases (run in CI)」
+    r"|unittest\s*(\d+)\s*项"                               # HANDOFF：「unittest 145 项」
+    r"|(\d+)\s*tests\s*OK"                                  # ROADMAP：「145 tests OK」
+    r"|(\d+)\s*cases\s*\(run in CI\)"                       # README.en：「145 cases (run in CI)」
 )
 
 # 为什么五个分支都要认：README 那处数字跟在「测试」**后面**，官网 stat 那处却在**前面**
@@ -732,45 +732,45 @@ def _mut_test_count(st):
 
 
 def _mut_test_count_handoff(st):
-    """HANDOFF 的 `unittest 137 项` 改错（137→136）→ 必须报错。
+    """HANDOFF 的 `unittest 145 项` 改错（145→144）→ 必须报错。
 
     专门验「unittest … 项」这个新分支真的被扫到——否则 HANDOFF 里的测试数写错
     仍会漏检（正是 2026-10-23 那次假绿的盲区）。
     """
     f = st / "HANDOFF.md"
     t = f.read_text(encoding="utf-8")
-    out = t.replace("unittest 137 项", "unittest 136 项")
+    out = t.replace("unittest 145 项", "unittest 144 项")
     if out == t:
-        return "HANDOFF.md 里找不到「unittest 137 项」，变异未生效"
+        return "HANDOFF.md 里找不到「unittest 145 项」，变异未生效"
     f.write_text(out, encoding="utf-8")
     return None
 
 
 def _mut_test_count_roadmap(st):
-    """ROADMAP 的 `137 tests OK` 改错（137→136）→ 必须报错。
+    """ROADMAP 的 `145 tests OK` 改错（145→144）→ 必须报错。
 
     验「N tests OK」英文分支真的被扫到。
     """
     f = st / "ROADMAP.md"
     t = f.read_text(encoding="utf-8")
-    out = t.replace("137 tests OK", "136 tests OK")
+    out = t.replace("145 tests OK", "144 tests OK")
     if out == t:
-        return "ROADMAP.md 里找不到「137 tests OK」，变异未生效"
+        return "ROADMAP.md 里找不到「145 tests OK」，变异未生效"
     f.write_text(out, encoding="utf-8")
     return None
 
 
 def _mut_test_count_en(st):
-    """README.en 的 `137 cases (run in CI)` 改错（137→136）→ 必须报错。
+    """README.en 的 `145 cases (run in CI)` 改错（145→144）→ 必须报错。
 
     验「N cases (run in CI)」英文分支真的被扫到；同时证明该窄匹配不会误伤
     同文件里的「golden test set: 8 cases」。
     """
     f = st / "README.en.md"
     t = f.read_text(encoding="utf-8")
-    out = t.replace("137 cases (run in CI)", "136 cases (run in CI)")
+    out = t.replace("145 cases (run in CI)", "144 cases (run in CI)")
     if out == t:
-        return "README.en.md 里找不到「137 cases (run in CI)」，变异未生效"
+        return "README.en.md 里找不到「145 cases (run in CI)」，变异未生效"
     f.write_text(out, encoding="utf-8")
     return None
 

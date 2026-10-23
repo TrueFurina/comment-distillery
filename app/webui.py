@@ -13,18 +13,24 @@
 不联网、不上传任何数据——所有计算都在本进程内，语料从不离开本机。
 
 安全边界（本地工具也要有边界，别因为"只是本地"就裸奔）：
-    · 只监听 127.0.0.1
+    · 默认只监听 127.0.0.1；--lan / --public 时才改绑 0.0.0.0
     · Host / Origin 校验（挡 DNS-rebinding 与跨站表单）
+    · 局域网/公开模式改用令牌鉴权（替代本机校验）+ 私网 Host 白名单
     · 路径白名单 + resolve（挡路径穿越与整个磁盘可读）
+    · 公开模式额外把文件系统收进单一沙箱并禁用文件选择器
     · 预览页 CSP + sandbox（报告是渲染产物，不当可信脚本执行）
 
 用法：
     python -m app.webui [--port 8756] [--no-browser] [--allow-root DIR]
+                        [--lan --token X]    # 局域网：同网段设备可用，功能全开
+                        [--public --token X] # 公网部署：收进沙箱，需令牌
 """
 
+import ipaddress
 import json
 import mimetypes
 import os
+import socket
 import tempfile
 import threading
 import time
@@ -39,6 +45,26 @@ from app.webui_page import PAGE_HTML
 DEFAULT_PORT = 8756
 _LOCAL_HOSTS = {"127.0.0.1", "localhost", "::1"}
 
+# 私网 Host 白名单：局域网模式（--lan）下，Host / Origin 必须落在这类地址上，
+# 既放开「用服务器私网 IP 访问」，又守住 DNS-rebinding（拒绝 evil.com 之类外域 Host）。
+try:
+    _HOSTNAME = socket.gethostname().lower()
+except Exception:
+    _HOSTNAME = ""
+
+def _host_allowed(h):
+    if not h:
+        return False
+    if h in _LOCAL_HOSTS:
+        return True
+    if _HOSTNAME and h == _HOSTNAME:
+        return True
+    try:
+        ip = ipaddress.ip_address(h)
+    except ValueError:
+        return False
+    return ip.is_private or ip.is_loopback or ip.is_link_local
+
 # ── 公开托管模式 ──────────────────────────────────────────────────────
 # 默认关闭。开启后：绑定 0.0.0.0 + 令牌鉴权（替代本机 Host/Origin 校验）+
 # 文件系统收进单一沙箱（并禁用文件选择器），使本工具可被部署成"粘贴链接就能用"的
@@ -47,6 +73,7 @@ _LOCAL_HOSTS = {"127.0.0.1", "localhost", "::1"}
 _PUBLIC = False
 _ACCESS_TOKEN = ""
 _SANDBOX = None
+_LAN = False
 
 
 def set_public(token, sandbox):
@@ -57,6 +84,18 @@ def set_public(token, sandbox):
     _SANDBOX = (Path(sandbox).resolve() if sandbox
                 else (Path.cwd() / "out" / "public").resolve())
     _SANDBOX.mkdir(parents=True, exist_ok=True)
+
+
+def set_lan(token):
+    """进入局域网模式：绑定 0.0.0.0 + 令牌鉴权 + 私网 Host 白名单。
+
+    与公开模式的关键区别：**保留文件选择器与完整文件系统**（不收进沙箱），
+    让可信内网里的任意设备能走完整闭环（含把 AI 成品导回 ④ 引用机验 / ⑤ 出报告）。
+    铁律不变：不内置 LLM，蒸馏仍 BYO-AI。
+    """
+    global _LAN, _ACCESS_TOKEN
+    _LAN = True
+    _ACCESS_TOKEN = token or ""
 
 # 前端动作 -> 是否需要语料白名单校验的入参键
 _EXTRA_ROOTS = set()
@@ -504,13 +543,41 @@ class Handler(BaseHTTPRequestHandler):
         return (q.get("token") or [""])[0]
 
     def _gate(self):
-        """公开模式用令牌鉴权；本地模式用本机 Host/Origin 校验。"""
-        if not _PUBLIC:
-            return self._local_only()
+        """三种模式统一入口：
+        本地模式 -> 本机 Host/Origin 校验；公开模式 -> 令牌；局域网模式 -> 私网 Host + 令牌。"""
+        if _PUBLIC:
+            return self._token_gate("公开模式需要访问令牌")
+        if _LAN:
+            return self._lan_only()
+        return self._local_only()
+
+    def _token_gate(self, msg):
         tok = self._request_token()
         if tok != _ACCESS_TOKEN:
-            self._err(401, "公开模式需要访问令牌")
+            self._err(401, msg)
             return False
+        return True
+
+    def _lan_only(self):
+        """局域网模式：Host/Origin 必须落私网/回环，且必须带正确令牌。"""
+        host = (self.headers.get("Host") or "").strip()
+        h = host.rsplit(":", 1)[0].strip("[]").lower()
+        if not _host_allowed(h):
+            self._err(403, f"拒绝非私网访问：{host}（局域网模式只接受私网/回环地址）")
+            return False
+        tok = self._request_token()
+        if tok != _ACCESS_TOKEN:
+            self._err(401, "局域网模式需要访问令牌")
+            return False
+        origin = self.headers.get("Origin")
+        if origin:
+            try:
+                oh = urllib.parse.urlsplit(origin).hostname or ""
+            except Exception:
+                oh = ""
+            if not _host_allowed(oh.lower()):
+                self._err(403, "跨站请求被拒绝")
+                return False
         return True
 
     # ── 路由 ──
@@ -535,8 +602,8 @@ class Handler(BaseHTTPRequestHandler):
             sample_guide = root / "examples" / "sample_guide.md"
             self._json({
                 "ok": True, "version": core.APP_VERSION,
-                "mode": "public" if _PUBLIC else "local",
-                "outdir": str(_SANDBOX) if _PUBLIC else str(Path.home() / "comment-distillery-output"),
+                "mode": ("public" if _PUBLIC else ("lan" if _LAN else "local")),
+                "outdir": (str(_SANDBOX) if _PUBLIC else str(Path.home() / "comment-distillery-output")),
                 "roots": [str(r) for r in allowed_roots()],
                 "selfcheck": {"ok": ok, "msgs": [list(m) for m in msgs]},
                 "sample_corpus": str(sample_corpus) if sample_corpus.exists() else "",
@@ -695,8 +762,10 @@ def main(argv=None):
                     help="监听地址（默认 127.0.0.1；公开模式会自动改 0.0.0.0）")
     ap.add_argument("--public", action="store_true",
                     help="公开托管模式：绑定 0.0.0.0 + 令牌鉴权（替代本机校验），文件限制在沙箱")
+    ap.add_argument("--lan", action="store_true",
+                    help="局域网模式：绑定 0.0.0.0 + 令牌鉴权 + 私网 Host 白名单，保留文件选择器（功能全开）")
     ap.add_argument("--token", default="",
-                    help="公开模式访问令牌（建议长随机串；必须配合 --public）")
+                    help="公开/局域网模式访问令牌（建议长随机串；必须配合 --public 或 --lan）")
     ap.add_argument("--public-dir", default="",
                     help="公开模式文件系统沙箱目录（默认 <cwd>/out/public）")
     args = ap.parse_args(argv)
@@ -709,6 +778,11 @@ def main(argv=None):
             print("⚠️ 公开模式必须提供 --token，否则任何人都无法访问本服务")
         set_public(args.token, args.public_dir or None)
         args.host = "0.0.0.0"
+    elif args.lan:
+        if not args.token:
+            print("⚠️ 局域网模式必须提供 --token，否则同网段任何人都能直接用本服务")
+        set_lan(args.token)
+        args.host = "0.0.0.0"
 
     ok, msgs = core.selfcheck()
     for good, m in msgs:
@@ -717,7 +791,9 @@ def main(argv=None):
         print("\n自检未通过：缺少随包资源，界面里对应功能会失败。")
     if args.host not in ("127.0.0.1", "localhost", "::1"):
         if _PUBLIC:
-            print(f"\n🔓 公开模式：监听 {args.host}，能访问该端口者凭 --token 即可使用本服务。")
+            print(f"\n🔓 公开模式：监听 {args.host}，能访问该端口者凭 --token 即可使用（文件限制在沙箱）。")
+        elif _LAN:
+            print(f"\n🌐 局域网模式：监听 {args.host}，同网段设备凭 --token 即可访问（保留文件选择器，功能全开）。")
         else:
             print(f"\n⚠️ 监听 {args.host} 会把本服务暴露到网络，且 Host 校验将拒绝外部请求。")
 

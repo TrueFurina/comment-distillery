@@ -591,6 +591,9 @@ async function boot(){
     if (h.mode === "public"){
       const lb = document.querySelector(".local");
       if (lb){ lb.textContent = "🔓 公开（令牌）"; lb.title = "公开托管模式：需令牌访问，文件限制在沙箱内"; }
+    } else if (h.mode === "lan"){
+      const lb = document.querySelector(".local");
+      if (lb){ lb.textContent = "🌐 局域网（令牌）"; lb.title = "局域网模式：同网段设备凭令牌访问，文件选择器可用，功能全开"; }
     }
     $$('input[id$="_out"]').forEach(i => { if (!i.value) i.value = h.outdir; });
     $$('input[id$="_in"]').forEach(i => { if (!i.value) i.value = ""; });
