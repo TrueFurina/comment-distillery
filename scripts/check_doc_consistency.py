@@ -739,9 +739,9 @@ def _mut_test_count_handoff(st):
     """
     f = st / "HANDOFF.md"
     t = f.read_text(encoding="utf-8")
-    out = t.replace("unittest 130 项", "unittest 129 项")
+    out = t.replace("unittest 131 项", "unittest 130 项")
     if out == t:
-        return "HANDOFF.md 里找不到「unittest 130 项」，变异未生效"
+        return "HANDOFF.md 里找不到「unittest 131 项」，变异未生效"
     f.write_text(out, encoding="utf-8")
     return None
 
@@ -753,9 +753,9 @@ def _mut_test_count_roadmap(st):
     """
     f = st / "ROADMAP.md"
     t = f.read_text(encoding="utf-8")
-    out = t.replace("130 tests OK", "129 tests OK")
+    out = t.replace("131 tests OK", "130 tests OK")
     if out == t:
-        return "ROADMAP.md 里找不到「130 tests OK」，变异未生效"
+        return "ROADMAP.md 里找不到「131 tests OK」，变异未生效"
     f.write_text(out, encoding="utf-8")
     return None
 
@@ -768,9 +768,9 @@ def _mut_test_count_en(st):
     """
     f = st / "README.en.md"
     t = f.read_text(encoding="utf-8")
-    out = t.replace("130 cases (run in CI)", "129 cases (run in CI)")
+    out = t.replace("131 cases (run in CI)", "130 cases (run in CI)")
     if out == t:
-        return "README.en.md 里找不到「130 cases (run in CI)」，变异未生效"
+        return "README.en.md 里找不到「131 cases (run in CI)」，变异未生效"
     f.write_text(out, encoding="utf-8")
     return None
 

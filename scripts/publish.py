@@ -90,13 +90,16 @@ emit_html = _load_emit()
 
 # ── 合规护栏 ──────────────────────────────────────────────────────────
 def _guard_no_csv(guide, corpora):
-    """发布链路绝不外传原始语料文件：任何要上传的是 .md 指南，不是 .csv。"""
-    paths = [Path(guide)] + [Path(c) for c in (corpora or [])]
-    for p in paths:
-        if p.suffix.lower() == ".csv":
-            raise SystemExit(
-                f"[合规拦截] 发布只接受指南 .md，绝不直接上传语料 {p.name}。"
-                f"CSV 仅用于本地渲染挂载「引用溯源」附录，不会离开本机。")
+    """合规护栏：发布对象（指南）必须是 .md，绝不把原始语料 .csv 当作发布目标上传。
+
+    corpora 是本地渲染「引用溯源」附录用的，本就不离开本机，且必然就是 .csv ——
+    所以护栏只查 guide，不查 corpora，否则会误杀文件头示例里的
+    `--corpus cases/.../*.csv` 这条正常用法（已实测：原实现会直接 SystemExit）。
+    """
+    if Path(guide).suffix.lower() == ".csv":
+        raise SystemExit(
+            f"[合规拦截] 发布只接受指南 .md，绝不直接上传语料 {Path(guide).name}。"
+            f"CSV 仅用于本地渲染挂载「引用溯源」附录，不会离开本机。")
 
 
 # ── 文章模型 ──────────────────────────────────────────────────────────

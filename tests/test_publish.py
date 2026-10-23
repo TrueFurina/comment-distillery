@@ -72,6 +72,15 @@ class TestCompliance(unittest.TestCase):
         # 不应抛异常
         publish._guard_no_csv(str(SAMPLE), None)
 
+    def test_guard_allows_csv_corpus(self):
+        # 文档示例用法：`--corpus cases/.../*.csv`，corpus 是 .csv 但属正常本地输入，
+        # 护栏只查 guide，绝不应误杀这条路径（原实现会直接 SystemExit）。
+        csv_path = next((p for p in (ROOT / "cases").rglob("*.csv")), None)
+        if csv_path is None:
+            self.skipTest("仓库无现成 csv 可供 corpus 护栏复验")
+        # 不应抛异常（guide 仍是 .md）
+        publish._guard_no_csv(str(SAMPLE), [str(csv_path)])
+
 
 class TestBuildArticle(unittest.TestCase):
     def test_render(self):
