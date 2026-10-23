@@ -53,6 +53,11 @@ def _raw(port, raw: bytes, timeout=6):
 class WebUIBase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        # 强制关公开模式：unittest 按类名字母序加载，TestPublicMode 可能先于本类运行，
+        # 若其复位不彻底会泄漏 _PUBLIC=True 进来。这里兜底。
+        webui._PUBLIC = False
+        webui._ACCESS_TOKEN = ""
+        webui._SANDBOX = None
         cls.srv, cls.url = webui.serve(port=0, open_browser=False, quiet=True)
         cls.port = cls.srv.server_address[1]
         cls.base = f"http://127.0.0.1:{cls.port}"
@@ -315,6 +320,72 @@ class TestPipeline(WebUIBase):
         # 无语料 -> 没跑机验 -> 必须告警，不能假装通过
         self.assertEqual(job["result"]["cls"], "warn")
         self.assertIn("未跑机验", job["result"]["verdict"])
+
+
+# ────────────────────────────── 公开托管模式 ──────────────────────────────
+
+class TestPublicMode(unittest.TestCase):
+    """公开模式的安全边界必须钉死——这是"部署成在线平台"的前提。
+
+    公开模式：令牌鉴权（替代本机 Host/Origin）+ 文件限制在沙箱 + 关文件选择器。
+    本类是定义顺序里的最后一组，setUpClass 开公开模式、tearDownClass 复位，
+    不污染 TestRoutes/TestSecurity/TestPipeline（它们跑在本地模式）。
+    """
+
+    TOKEN = "public-test-token-xyz"
+
+    @classmethod
+    def setUpClass(cls):
+        cls.sandbox = tempfile.mkdtemp(prefix="cd-pub-")
+        webui.set_public(cls.TOKEN, cls.sandbox)
+        cls.srv, cls.url = webui.serve(port=0, open_browser=False, quiet=True, host="127.0.0.1")
+        cls.port = cls.srv.server_address[1]
+        cls.base = f"http://127.0.0.1:{cls.port}"
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.srv.shutdown()
+        webui._PUBLIC = False               # 直接复位（set_public 永远置 True，不能用于复位）
+        webui._ACCESS_TOKEN = ""
+        webui._SANDBOX = None
+        shutil.rmtree(cls.sandbox, ignore_errors=True)
+
+    def _raw_auth(self, auth):
+        head = (b"GET / HTTP/1.1\r\nHost: 127.0.0.1\r\n"
+                + (b"Authorization: Bearer " + auth.encode() + b"\r\n" if auth else b"")
+                + b"Connection: close\r\n\r\n")
+        return _raw(self.port, head)
+
+    def test_page_without_token_rejected(self):
+        self.assertIn(b"401", self._raw_auth("")[:64], "公开模式无令牌必须 401")
+
+    def test_wrong_token_rejected(self):
+        self.assertIn(b"401", self._raw_auth("wrong")[:64], "错误令牌必须 401")
+
+    def test_page_with_token_allowed(self):
+        self.assertIn(b"200", self._raw_auth(self.TOKEN)[:64], "正确令牌应放行")
+
+    def test_fs_disabled_in_public(self):
+        req = urllib.request.Request(
+            self.base + "/api/fs",
+            headers={"Authorization": "Bearer " + self.TOKEN})
+        with self.assertRaises(urllib.error.HTTPError) as c:
+            urllib.request.urlopen(req, timeout=10)
+        self.assertEqual(c.exception.code, 403, "公开模式必须禁用文件选择器")
+
+    def test_only_sandbox_accessible(self):
+        # 公开模式 allowed_roots 只有沙箱；仓库示例语料不在沙箱内 -> OutsideRoot
+        with self.assertRaises(webui.OutsideRoot):
+            webui.safe_path(str(ROOT / "examples" / "sample_corpus.csv"))
+
+    def test_hello_reports_public_mode(self):
+        req = urllib.request.Request(
+            self.base + "/api/hello",
+            headers={"Authorization": "Bearer " + self.TOKEN})
+        with urllib.request.urlopen(req, timeout=10) as r:
+            d = json.loads(r.read())
+        self.assertEqual(d["mode"], "public")
+        self.assertTrue(d["outdir"])
 
 
 if __name__ == "__main__":

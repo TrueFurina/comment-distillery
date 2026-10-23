@@ -172,7 +172,7 @@ HEAD     见 `git log -1`（最后核验 2026-09-26 为 2cae432；**本文件每
          先前写法把 hash 写死，导致每次提交都要改一次，是自找的漂移源）
 origin   git@github.com:TrueFurina/comment-distillery.git   (SSH)
 CI       .github/workflows/ci.yml  **16 个质量门步骤**全绿
-         （compileall / 零依赖守卫 / 编码守卫 / 文档一致性机验 / 文档一致性变异验证 / unittest 131 项 /
+         （compileall / 零依赖守卫 / 编码守卫 / 文档一致性机验 / 文档一致性变异验证 / unittest 137 项 /
           无裸铁律 / 判据变异验证 / golden 变异 / golden 基线 / prep 冒烟 / 引用机验冒烟 /
           HTML 报告冒烟 / Web 界面冒烟 / **技能包 ZIP 冒烟** / 冒烟产出展示）
          另有 build-exe.yml（真打包 + --verify 资源核验 + 三道冒烟 + 文档一致性）与

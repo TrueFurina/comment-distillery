@@ -361,7 +361,18 @@ function buildTabs(){
 }
 
 /* ── 接口 ── */
+const TOKEN = new URLSearchParams(location.search).get("token") || "";
+function authHeaders(extra){
+  const h = extra || {};
+  if (TOKEN) h["Authorization"] = "Bearer " + TOKEN;
+  return h;
+}
+function tokParam(){
+  return TOKEN ? ("&token=" + encodeURIComponent(TOKEN)) : "";
+}
 async function api(url, opt){
+  opt = opt || {};
+  opt.headers = authHeaders(opt.headers);
   const r = await fetch(url, opt);
   if (!r.ok) throw new Error("HTTP " + r.status);
   return r.json();
@@ -538,9 +549,9 @@ const RENDER = {
     let s = '<div class="steps">' + d.verdict + "</div>";
     if (d.out){
       s += '<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">' +
-        '<a href="/preview?path=' + encodeURIComponent(d.out) + '" target="_blank" ' +
+        '<a href="/preview?path=' + encodeURIComponent(d.out) + tokParam() + '" target="_blank" ' +
         'style="background:var(--acc);color:#fff;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:550">↗ 打开报告</a>' +
-        '<a href="/download?path=' + encodeURIComponent(d.out) + '" ' +
+        '<a href="/download?path=' + encodeURIComponent(d.out) + tokParam() + '" ' +
         'style="border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:13px">⬇ 下载 HTML</a>' +
         "</div>";
     }
@@ -555,7 +566,7 @@ function kv(o){
 function files(fs){
   if (!fs || !fs.length) return "";
   return '<div class="files">' + fs.map(f =>
-    '<a href="/download?path=' + encodeURIComponent(f.path) + '" target="_blank">' +
+    '<a href="/download?path=' + encodeURIComponent(f.path) + tokParam() + '" target="_blank">' +
     esc(f.name) + "</a>").join("") + "</div>";
 }
 
@@ -577,6 +588,10 @@ async function boot(){
     ck.className = "badge " + (h.selfcheck.ok ? "ok" : "err");
     $("#ckt").textContent = h.selfcheck.ok ? "自检通过 · 资源齐全" : "自检失败 · 缺资源";
     ck.title = (h.selfcheck.msgs || []).map(m => (m[0] ? "✓ " : "✗ ") + m[1]).join("\n");
+    if (h.mode === "public"){
+      const lb = document.querySelector(".local");
+      if (lb){ lb.textContent = "🔓 公开（令牌）"; lb.title = "公开托管模式：需令牌访问，文件限制在沙箱内"; }
+    }
     $$('input[id$="_out"]').forEach(i => { if (!i.value) i.value = h.outdir; });
     $$('input[id$="_in"]').forEach(i => { if (!i.value) i.value = ""; });
     $("#p_out").value = h.outdir; $("#k_out").value = h.outdir;

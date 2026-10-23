@@ -39,6 +39,25 @@ from app.webui_page import PAGE_HTML
 DEFAULT_PORT = 8756
 _LOCAL_HOSTS = {"127.0.0.1", "localhost", "::1"}
 
+# ── 公开托管模式 ──────────────────────────────────────────────────────
+# 默认关闭。开启后：绑定 0.0.0.0 + 令牌鉴权（替代本机 Host/Origin 校验）+
+# 文件系统收进单一沙箱（并禁用文件选择器），使本工具可被部署成"粘贴链接就能用"的
+# 在线平台——对标的就是 vreport.tri4t.xyz 那种"填链接一键"形态。
+# 关键：蒸馏（LLM）那一步仍不内置——公开模式同样 BYO-AI，不破「不内置 LLM」铁律。
+_PUBLIC = False
+_ACCESS_TOKEN = ""
+_SANDBOX = None
+
+
+def set_public(token, sandbox):
+    """进入公开托管模式。sandbox 为空则取 <cwd>/out/public。"""
+    global _PUBLIC, _ACCESS_TOKEN, _SANDBOX
+    _PUBLIC = True
+    _ACCESS_TOKEN = token or ""
+    _SANDBOX = (Path(sandbox).resolve() if sandbox
+                else (Path.cwd() / "out" / "public").resolve())
+    _SANDBOX.mkdir(parents=True, exist_ok=True)
+
 # 前端动作 -> 是否需要语料白名单校验的入参键
 _EXTRA_ROOTS = set()
 
@@ -50,7 +69,10 @@ def allowed_roots():
 
     默认：用户主目录 + 当前工作目录 + 系统临时目录 + 仓库根（读示例语料）。
     刻意**不包含**整个磁盘——本地工具也不是"任意路径可读"的许可证。
+    公开模式下：只允许沙箱目录（防公网用户读服务器任意文件）。
     """
+    if _PUBLIC and _SANDBOX:
+        return [_SANDBOX]
     roots = []
     for p in (Path.home(), Path.cwd(), Path(tempfile.gettempdir()),
               core.resource_root()):
@@ -168,6 +190,25 @@ def start_job(action, params):
 
 # ────────────────────────────── 各动作的真正执行体 ──────────────────────────────
 
+def _pub_out(name, default):
+    """公开模式：把输出路径收进沙箱（只取文件名，杜绝任意写）。"""
+    base = (name or "").strip()
+    base = Path(base).name or default
+    p = _SANDBOX / base
+    p.parent.mkdir(parents=True, exist_ok=True)
+    return p
+
+
+def _pub_in(name, default):
+    """公开模式：输入必须已在沙箱内（取文件名查存在的文件）。"""
+    base = (name or "").strip()
+    base = Path(base).name or default
+    p = _SANDBOX / base
+    if not p.exists():
+        raise FileNotFoundError(f"公开模式下找不到：{base}（请在沙箱内操作）")
+    return p
+
+
 def _files_of(d):
     """把目录或文件路径列表 -> 前端 files 结构。"""
     out = []
@@ -180,12 +221,15 @@ def _files_of(d):
 
 def _do_crawl(p, log):
     arg = (p.get("arg") or "").strip()
-    out = (p.get("out") or "").strip()
     if not arg:
         raise ValueError("请填视频链接或 BV 号")
-    if not out:
-        raise ValueError("请填输出 CSV 路径")
-    out_p = safe_path(out, allow_missing_parent=True)
+    if _PUBLIC:
+        out_p = _pub_out(p.get("out"), "comments.csv")
+    else:
+        out = (p.get("out") or "").strip()
+        if not out:
+            raise ValueError("请填输出 CSV 路径")
+        out_p = safe_path(out, allow_missing_parent=True)
     out_p.parent.mkdir(parents=True, exist_ok=True)
     roots_only = bool(p.get("roots_only"))
 
@@ -201,9 +245,13 @@ def _do_crawl(p, log):
 
 
 def _do_prep(p, log):
-    src = safe_path(p.get("input"), must_exist=True)
-    outdir = safe_path(p.get("outdir") or str(Path.home() / "comment-distillery-output"),
-                       allow_missing_parent=True)
+    if _PUBLIC:
+        src = _pub_in(p.get("input"), "comments.csv")
+        outdir = _SANDBOX
+    else:
+        src = safe_path(p.get("input"), must_exist=True)
+        outdir = safe_path(p.get("outdir") or str(Path.home() / "comment-distillery-output"),
+                           allow_missing_parent=True)
     outdir.mkdir(parents=True, exist_ok=True)
     stats, paths = core.prepare(str(src), str(outdir),
                                 int(p.get("low_max") or 8),
@@ -212,9 +260,13 @@ def _do_prep(p, log):
 
 
 def _do_pack(p, log):
-    src = safe_path(p.get("input"), must_exist=True)
-    outdir = safe_path(p.get("outdir") or str(Path.home() / "comment-distillery-output"),
-                       allow_missing_parent=True)
+    if _PUBLIC:
+        src = _pub_in(p.get("input"), "comments.csv")
+        outdir = _SANDBOX
+    else:
+        src = safe_path(p.get("input"), must_exist=True)
+        outdir = safe_path(p.get("outdir") or str(Path.home() / "comment-distillery-output"),
+                           allow_missing_parent=True)
     res = core.export_package(str(src), str(outdir), p.get("name") or None,
                               int(p.get("low_max") or 8),
                               int(p.get("low_min_len") or 120),
@@ -223,8 +275,12 @@ def _do_pack(p, log):
 
 
 def _do_verify(p, log):
-    guide = safe_path(p.get("guide"), must_exist=True)
-    corpora = [str(safe_path(c, must_exist=True)) for c in (p.get("corpora") or [])]
+    if _PUBLIC:
+        guide = _pub_in(p.get("guide"), "guide.md")
+        corpora = [str(_pub_in(c, "comments.csv")) for c in (p.get("corpora") or [])]
+    else:
+        guide = safe_path(p.get("guide"), must_exist=True)
+        corpora = [str(safe_path(c, must_exist=True)) for c in (p.get("corpora") or [])]
     if not corpora:
         raise ValueError("至少给一份语料 CSV——没有语料就无从判断引用是否真实")
     log("抽取引用并与语料真实 ID 求差集…")
@@ -233,10 +289,15 @@ def _do_verify(p, log):
 
 
 def _do_emit(p, log):
-    guide = safe_path(p.get("guide"), must_exist=True)
-    corpora = [str(safe_path(c, must_exist=True)) for c in (p.get("corpora") or [])]
-    out = p.get("out")
-    out_p = safe_path(out, allow_missing_parent=True) if out else None
+    if _PUBLIC:
+        guide = _pub_in(p.get("guide"), "guide.md")
+        corpora = [str(_pub_in(c, "comments.csv")) for c in (p.get("corpora") or [])]
+        out_p = _pub_out(p.get("out"), "report.html")
+    else:
+        guide = safe_path(p.get("guide"), must_exist=True)
+        corpora = [str(safe_path(c, must_exist=True)) for c in (p.get("corpora") or [])]
+        out = p.get("out")
+        out_p = safe_path(out, allow_missing_parent=True) if out else None
     log("渲染中…")
     res = core.emit_report(str(guide), str(out_p) if out_p else None,
                            corpora or None, None,
@@ -431,9 +492,30 @@ class Handler(BaseHTTPRequestHandler):
                 return False
         return True
 
+    def _request_token(self):
+        """从 Authorization: Bearer / X-Access-Token / ?token= 取公开模式令牌。"""
+        auth = self.headers.get("Authorization") or ""
+        if auth[:7].lower() == "bearer ":
+            return auth[7:].strip()
+        t = self.headers.get("X-Access-Token")
+        if t:
+            return t
+        q = urllib.parse.parse_qs(urllib.parse.urlsplit(self.path).query)
+        return (q.get("token") or [""])[0]
+
+    def _gate(self):
+        """公开模式用令牌鉴权；本地模式用本机 Host/Origin 校验。"""
+        if not _PUBLIC:
+            return self._local_only()
+        tok = self._request_token()
+        if tok != _ACCESS_TOKEN:
+            self._err(401, "公开模式需要访问令牌")
+            return False
+        return True
+
     # ── 路由 ──
     def do_GET(self):
-        if not self._local_only():
+        if not self._gate():
             return
         u = urllib.parse.urlsplit(self.path)
         q = urllib.parse.parse_qs(u.query)
@@ -453,7 +535,8 @@ class Handler(BaseHTTPRequestHandler):
             sample_guide = root / "examples" / "sample_guide.md"
             self._json({
                 "ok": True, "version": core.APP_VERSION,
-                "outdir": str(Path.home() / "comment-distillery-output"),
+                "mode": "public" if _PUBLIC else "local",
+                "outdir": str(_SANDBOX) if _PUBLIC else str(Path.home() / "comment-distillery-output"),
                 "roots": [str(r) for r in allowed_roots()],
                 "selfcheck": {"ok": ok, "msgs": [list(m) for m in msgs]},
                 "sample_corpus": str(sample_corpus) if sample_corpus.exists() else "",
@@ -486,7 +569,7 @@ class Handler(BaseHTTPRequestHandler):
         self.do_GET()
 
     def do_POST(self):
-        if not self._local_only():
+        if not self._gate():
             return
         u = urllib.parse.urlsplit(self.path)
         if u.path != "/api/start":
@@ -507,6 +590,8 @@ class Handler(BaseHTTPRequestHandler):
 
     # ── 具体实现 ──
     def _api_fs(self, q):
+        if _PUBLIC:
+            return self._err(403, "公开模式不提供文件选择器")
         raw = (q.get("path") or [""])[0]
         try:
             d = safe_path(raw) if raw else Path.home().resolve()
@@ -607,11 +692,23 @@ def main(argv=None):
     ap.add_argument("--allow-root", action="append", default=[], metavar="DIR",
                     help="追加一个允许访问的根目录（可重复）")
     ap.add_argument("--host", default="127.0.0.1",
-                    help="监听地址（默认 127.0.0.1；改成 0.0.0.0 会暴露到局域网，**不建议**）")
+                    help="监听地址（默认 127.0.0.1；公开模式会自动改 0.0.0.0）")
+    ap.add_argument("--public", action="store_true",
+                    help="公开托管模式：绑定 0.0.0.0 + 令牌鉴权（替代本机校验），文件限制在沙箱")
+    ap.add_argument("--token", default="",
+                    help="公开模式访问令牌（建议长随机串；必须配合 --public）")
+    ap.add_argument("--public-dir", default="",
+                    help="公开模式文件系统沙箱目录（默认 <cwd>/out/public）")
     args = ap.parse_args(argv)
 
     for r in args.allow_root:
         add_root(r)
+
+    if args.public:
+        if not args.token:
+            print("⚠️ 公开模式必须提供 --token，否则任何人都无法访问本服务")
+        set_public(args.token, args.public_dir or None)
+        args.host = "0.0.0.0"
 
     ok, msgs = core.selfcheck()
     for good, m in msgs:
@@ -619,7 +716,10 @@ def main(argv=None):
     if not ok:
         print("\n自检未通过：缺少随包资源，界面里对应功能会失败。")
     if args.host not in ("127.0.0.1", "localhost", "::1"):
-        print(f"\n⚠️ 监听 {args.host} 会把本服务暴露到网络，且 Host 校验将拒绝外部请求。")
+        if _PUBLIC:
+            print(f"\n🔓 公开模式：监听 {args.host}，能访问该端口者凭 --token 即可使用本服务。")
+        else:
+            print(f"\n⚠️ 监听 {args.host} 会把本服务暴露到网络，且 Host 校验将拒绝外部请求。")
 
     srv, url = serve(args.port, open_browser=not args.no_browser, host=args.host)
     try:
