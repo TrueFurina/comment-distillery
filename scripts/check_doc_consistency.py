@@ -446,21 +446,29 @@ def check_rule_counts(root):
 TEST_COUNT_PAT = re.compile(
     r"测试\s*(?:（[^）]*）)?\s*,?\s*(\d+)\s*项"             # 「回归测试 73 项（CI 自动跑）」
     r"|(\d+)\s*(?:<[^>]*>\s*)*项(?:自动化)?测试"             # 「73 项自动化测试」
+    r"|unittest\s*(\d+)\s*项"                               # HANDOFF：「unittest 130 项」
+    r"|(\d+)\s*tests\s*OK"                                  # ROADMAP：「130 tests OK」
+    r"|(\d+)\s*cases\s*\(run in CI\)"                       # README.en：「130 cases (run in CI)」
 )
 
-# 为什么两个分支都要认：README 那处数字跟在「测试」**后面**，官网 stat 那处却在**前面**
-# 且被 HTML 标签割开 —— `<div class="num">73</div><div class="lbl">项自动化测试</div>`。
-# 认不全就是放行，放行就等于没有这项检查（和史记学金句一样：漏检比不检查更危险，
-# 因为它会让后来的维护者误以为有人在把关）。
+# 为什么五个分支都要认：README 那处数字跟在「测试」**后面**，官网 stat 那处却在**前面**
+# 且被 HTML 标签割开 —— `<div class="num">73</div><div class="lbl">项自动化测试</div>`；
+# 而 HANDOFF / ROADMAP / README.en 三处用英文或「unittest … 项」写法，早期只认中文两分支时
+# 全被漏检（实测：这三处都曾写过 114，机验却报绿——这正是「漏检比不检查更危险」的真例）。
+# 后三个分支刻意**窄匹配**（锚定 unittest / tests OK / (run in CI)），避免误伤 README.en 里
+# 的「golden test set: 8 cases」与 docs/submittables 里按规矩刻意去数字化、本就不该被机验的草稿。
 
 
 def _declared_test_counts(root):
-    """所有形如「N 项测试」/「测试 N 项」的声明，带上出处返回。"""
+    """所有「测试项数」声明（中文/英文/HTML 多种写法），带上出处与数值返回。"""
     out = []
     for p in _doc_files(root):
         for i, line in enumerate(p.read_text(encoding="utf-8").splitlines(), 1):
             for m in TEST_COUNT_PAT.finditer(line):
-                out.append((_rel(root, p), i, int(m.group(1) or m.group(2))))
+                # 五个分支各有一个 (\d+) 捕获组，取非 None 的那个
+                num = next((g for g in m.groups() if g is not None), None)
+                if num is not None:
+                    out.append((_rel(root, p), i, int(num)))
     return out
 
 
@@ -723,6 +731,50 @@ def _mut_test_count(st):
     return None
 
 
+def _mut_test_count_handoff(st):
+    """HANDOFF 的 `unittest 130 项` 改错（130→129）→ 必须报错。
+
+    专门验「unittest … 项」这个新分支真的被扫到——否则 HANDOFF 里的测试数写错
+    仍会漏检（正是 2026-10-23 那次假绿的盲区）。
+    """
+    f = st / "HANDOFF.md"
+    t = f.read_text(encoding="utf-8")
+    out = t.replace("unittest 130 项", "unittest 129 项")
+    if out == t:
+        return "HANDOFF.md 里找不到「unittest 130 项」，变异未生效"
+    f.write_text(out, encoding="utf-8")
+    return None
+
+
+def _mut_test_count_roadmap(st):
+    """ROADMAP 的 `130 tests OK` 改错（130→129）→ 必须报错。
+
+    验「N tests OK」英文分支真的被扫到。
+    """
+    f = st / "ROADMAP.md"
+    t = f.read_text(encoding="utf-8")
+    out = t.replace("130 tests OK", "129 tests OK")
+    if out == t:
+        return "ROADMAP.md 里找不到「130 tests OK」，变异未生效"
+    f.write_text(out, encoding="utf-8")
+    return None
+
+
+def _mut_test_count_en(st):
+    """README.en 的 `130 cases (run in CI)` 改错（130→129）→ 必须报错。
+
+    验「N cases (run in CI)」英文分支真的被扫到；同时证明该窄匹配不会误伤
+    同文件里的「golden test set: 8 cases」。
+    """
+    f = st / "README.en.md"
+    t = f.read_text(encoding="utf-8")
+    out = t.replace("130 cases (run in CI)", "129 cases (run in CI)")
+    if out == t:
+        return "README.en.md 里找不到「130 cases (run in CI)」，变异未生效"
+    f.write_text(out, encoding="utf-8")
+    return None
+
+
 CASES = [
     ("Python 版本写错（3.10→3.8）", "Python 版本口径", _mut_python),
     ("引用不存在的 Release tag", "Release tag 引用", _mut_tag),
@@ -739,6 +791,9 @@ CASES = [
     ("总量分项改一个数（和不再等于总量）", "语料总量一致", _mut_corpus_item),
     ("对外声明改总量（真值源没跟着改）", "语料总量一致", _mut_corpus_decl),
     ("测试项数声明改错（tests/ 没动）", "测试项数一致", _mut_test_count),
+    ("HANDOFF 的 unittest N 项 改错", "测试项数一致", _mut_test_count_handoff),
+    ("ROADMAP 的 N tests OK 改错", "测试项数一致", _mut_test_count_roadmap),
+    ("README.en 的 N cases (run in CI) 改错", "测试项数一致", _mut_test_count_en),
 ]
 
 
