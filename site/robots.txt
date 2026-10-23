@@ -4,11 +4,15 @@
 #
 # 为什么要专门写这个文件：
 #   第三方平台把 AI 挡在门外是它们的商业选择，不是我们的默认值。
-#   对照：知乎 robots.txt 的尾部是 `User-Agent: * → Disallow: /`，且 `Google-Extended`
-#   同样被 Disallow —— 也就是说发在知乎上的内容，主流 AI 检索按规则是抓不到的。
-#   自有域名是唯一一个我们能明确写「允许」的地方，而 GitHub Pages 不提供默认
-#   robots.txt（缺失时等效全 Allow，但那是默认值，不是声明）。把它显式写出来，
-#   AI 可见性才算是有意为之，而不是碰巧。
+#   对照：知乎 robots.txt 实际**只**封了 `Google-Extended`（`Disallow: /`），
+#   而 Googlebot / bingbot / Baiduspider 等搜索主爬虫都是放行的，且整份文件
+#   没有 `User-agent: *` 通配全禁段 —— 因此 GPTBot / ClaudeBot / PerplexityBot
+#   等未被点名的 AI UA 按惯例默认放行。知乎内容能出现在 AI 回答里，靠的是
+#   搜索引擎索引 + 训练语料遗产，而非实时 AI 抓取。这说明"发知乎"对 AI 可见性
+#   并非死路，只是你控制不了、且有索引延迟。
+#   自有域名是唯一一个我们能**明确、主动**写「允许」并自定结构的地方，而 GitHub
+#   Pages 不提供默认 robots.txt（缺失时等效全 Allow，但那是默认值，不是声明）。
+#   把它显式写出来，AI 可见性才算是有意为之，而不是碰巧。
 #
 # 维护约定（改动前请读）：
 #   ① 本站是单页静态站（site/index.html）。将来若新增子目录（如 /samples/）
