@@ -27,17 +27,25 @@
 E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 ├── .git/                                （HEAD 见 `git log -1`，remote: SSH）
 ├── .github/workflows/
-│   ├── ci.yml                           （3 个 Python 版本，**13 步**：compileall / 零依赖守卫 / 编码守卫 / 文档一致性机验 / 文档一致性变异验证 / unittest / 无裸铁律 / 判据变异验证 / golden 变异 / golden 基线 / prep 冒烟 / 引用机验冒烟 / 冒烟产出展示）
+│   ├── ci.yml                           （3 个 Python 版本，**16 步**：compileall / 零依赖守卫 / 编码守卫 / 文档一致性机验 / 文档一致性变异验证 / unittest / 无裸铁律 / 判据变异验证 / golden 变异 / golden 基线 / prep 冒烟 / 引用机验冒烟 / HTML 报告冒烟 / 技能包 ZIP 冒烟 / Web 界面冒烟 / 冒烟产出展示）
 │   ├── build-exe.yml                    （CI 上真跑 PyInstaller 打包 + 双冒烟，上传 artifact）
 │   └── pages.yml                        （官网发布到 GitHub Pages）
 ├── app_main.py                          （桌面工具入口：源码运行 / PyInstaller 共用；含 --selfcheck / --selftest-gui / --selftest-run）
+├── launch-webui.bat                     （Web 界面双击启动器：路径无关，按优先级找 Python，只绑 127.0.0.1）
+├── publish_config.local.json.example    （发布器配置模板；真配置 `publish_config.local.json` 已 gitignore）
 ├── app/
 │   ├── core.py                          （★ 逻辑层：只委托 scripts/ 与 contrib/，零 GUI 依赖 → 可单测）
-│   └── gui.py                           （界面层：tkinter，唯一接触 GUI 的模块）
+│   ├── gui.py                           （界面层：tkinter，唯一接触 GUI 的模块）
+│   ├── webui.py                         （本地 Web 界面服务端：`python -m app --web`，三模式 本地 / --lan / --public）
+│   └── webui_page.py                    （Web 界面单文件前端页）
 ├── site/index.html                      （官网单文件静态页；内容全部取自仓库真实数据）
+├── site/samples/sample-guide.html       （HTML 报告成品样例；**刻意用合成语料**渲染，不用 cases/ 真实语料）
 ├── assets/icon.ico                      （应用图标，由 scripts/make_icon.py 标准库手写生成，不引 Pillow）
 ├── scripts/prep.py                      （预处理：编码容错 → 去重 → 去噪 → 按赞降序 → 导出）
 ├── scripts/verify_citations.py          （引用幻觉机验，强制质量门）
+├── scripts/emit_html.py                 （指南 Markdown → 自包含 HTML 报告；引用角标可点击跳附录原句）
+├── scripts/make_skill_zip.py            （技能包**可复现** ZIP：两次打包 SHA-256 相同）
+├── scripts/publish.py                   （多平台发布器 GitHub Pages/知乎/B站/CSDN；含 Cookie，**不进 exe**）
 ├── scripts/check_rule_tags.py           （机验 SKILL.md 无「裸铁律」，含变异自验）
 ├── scripts/check_doc_consistency.py     （文档一致性机验：版本口径 / Release tag / 站点数字 / 锚点 / 中英对等 / 已证伪表述，含变异自验；同时取代了原先三处重复的「官网自检」内联实现）
 ├── scripts/build_exe.py                 （PyInstaller 打包脚本，仅构建期依赖，不进运行期）
@@ -45,10 +53,13 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 ├── contrib/fetch_bilibili_comments.py   （纯标准库 WBI 签名抓取，含去重与退避）
 ├── golden/                              （评估集：8 场景 / 4 类，判分器 + 跑分器 + 变异验证）
 ├── ROADMAP.md                           （长期规划 P0–P5 + P3.5，含验收门槛与停止条件）
-├── tests/test_prep.py                   （27 个用例）
-├── tests/test_golden.py                 （12 个用例）
-├── tests/test_rule_tags.py              （6 个用例）
-├── tests/test_app_core.py               （16 个用例，桌面工具逻辑层）
+├── tests/                               （**145 项**，`unittest discover -s tests`；CI 强制）
+│   ├── test_prep.py                     （16）· test_verify_citations.py（11）· test_rule_tags.py（6）
+│   ├── test_golden.py                   （12）· test_app_core.py（16，桌面工具逻辑层）
+│   ├── test_emit_html.py                （12）· test_make_skill_zip.py（15，含可复现构建）
+│   ├── test_webui.py                    （35，含本地 / --lan / --public 三模式安全边界）
+│   ├── test_publish.py                  （17，含密钥与合规护栏）
+│   └── test_gui_wiring.py               （5，纯 AST —— 本机与 CI 都无 tkinter，GUI 改动靠它兜底）
 ├── docs/collecting.md                   （各社区采集工具 + 许可证 + 风险对照）
 ├── docs/retrospective.md                （十一战沉淀：五次修正 / 7 条判据 / 质量门 G1–G7）
 ├── docs/rule-provenance.md              （规则溯源：9 铁律 / 5 待复现 / 8 环境事实 / 13 工程坑，附复现判据；计数由机验强制与 SKILL.md + docs/engineering-pitfalls.md 对齐）
@@ -64,6 +75,10 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
     ├── 03-qingbei-discouraged/          （5052 条 · 13 章 · 楼中楼捞出一级缺失的 7 个议题）✅ 指南已公开
     ├── 04-salary-age43/                 （8941 条 · 23 章 · 双视频合并 · 首次抓到幻觉引用）✅ 指南已公开
     ├── 05-mustwatch-math/               （21100 条 · 正卷 15 章 + 增补卷 10 章）  ✅ 两卷均已公开
+    ├── 08-breakfast/                    （2190 条 · 8 章 · 高赞≠高信号最极端样本）✅ 指南已公开
+    ├── 09-cs-autumn-recruit27/          （489 条 · 8 章 · 楼中楼占比 85% 历史最高）✅ 指南已公开
+    ├── 10-job-market-2026/              （235 条 · 7 章 · 语料内自带水军质疑）    ✅ 指南已公开
+    ├── 11-degree-and-fate/              （2697 条 · 8 章 · 双视频合并 · 首次记录 AI 总结机器人刷屏）✅ 指南已公开
     └── notes/
         ├── 评论指南Skill方案论述.md      ✅ 已公开（设计留档）
         ├── comment-distillery开源冲刺路线图.md ✅ 已公开（设计留档）
@@ -77,7 +92,7 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 
 | 入口 | 面向谁 | 命令 / 方式 |
 |---|---|---|
-| **桌面 exe**（`dist/comment-distillery.exe`，~11 MB） | 非技术用户 | 双击；四页签：采集 → 预处理 → 导出蒸馏包 → 引用校验 |
+| **桌面 exe**（`dist/comment-distillery.exe`，~12 MB） | 非技术用户 | 双击；四页签：采集 → 预处理 → 导出蒸馏包 → 引用校验 |
 | **装进 Agent** | Agent 用户 | `npx skills add TrueFurina/comment-distillery` |
 | **命令行脚本** | 开发者 / CI | `python scripts/prep.py …` / `python contrib/fetch_bilibili_comments.py …` |
 
@@ -110,6 +125,10 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 | 5 | — | examples/ 合成样例 | 端到端回归 | CI 自动跑 |
 | 6 | 21,100（一级 14,376 + 楼中楼 6,724） | 《火柴人 VS 数学》 | **正卷 15 章** | **抓到并修复 22% 重复行缺陷**；首次在近乎全正向情绪语料上验证"反例对冲"仍需主动开采 |
 | 7 | **+6,724（楼中楼）** | 同上视频 · 补抓辩论层 | **增补卷 10 章 / 31.0 KB** | **修正正卷 3 条结论**；量化注意力漂移（语法争论楼 2,867 赞 ＝ 实质教育辩论 1,142 赞的 **2.5 倍**）；引用机验 **54 条 / 0 幻觉** |
+| 8 | 2,190（一级 1,027 / 楼中楼 1,163） | 「你到底该不该吃早餐」 | 8 章 | **"高赞 ≠ 高信号"最极端样本**：最高赞 2,063 是零信息量"省流"，三条最高信号权重仅 **3 / 0 / 0**；引用机验 **115 条 / 0 幻觉** |
+| 9 | 489（**一级仅 73 / 回复 416**） | 27 届计算机秋招 | 8 章 | **楼中楼占比 85%**（历史最高）：一级层几乎不承载讨论；机验抓到 **2 条跨语料混引**幻觉；引用机验 **88 条 / 0 幻觉** |
+| 10 | 235 | 26 届硕士投 2k 简历 · 就业市场 | 7 章 | **语料内自带"水军质疑"**（首次遇到）：语料可信度第一次成为议题内容本身；引用机验 **77 条 / 0 幻觉** |
+| 11 | 2,697（语料 A 1,170 / 语料 B 1,527） | 「学历/跃迁」+「你信命吗」（双视频合并） | 8 章 | **首次记录"AI 总结机器人"刷屏**（语料 A 33 条召回帖占 2.8%、其中 24 条零赞）；引用机验 **93 条 / 0 幻觉** |
 
 ---
 
@@ -179,7 +198,7 @@ CI       .github/workflows/ci.yml  **16 个质量门步骤**全绿
          另有 build-exe.yml（真打包 + --verify 资源核验 + 三道冒烟 + 文档一致性）与
          pages.yml（官网发布；站点自检已统一走 check_doc_consistency.py，不再内联第三份实现）
 安装     npx skills add TrueFurina/comment-distillery   （--list 实测 Found 1 skill）
-桌面     双击 dist/comment-distillery.exe（~11 MB 单文件，未签名 → SmartScreen 会提示，属正常）
+桌面     双击 dist/comment-distillery.exe（**12.0 MB** 单文件，未签名 → SmartScreen 会提示，属正常）
 迁移     E:\Program\comment-distillery，cases/ 已 gitignore，仅本地留存
 ```
 
