@@ -221,6 +221,11 @@ CI       .github/workflows/ci.yml  **16 个质量门步骤**全绿
 - 全量回归 137 → **145 项**（`TestPublicMode` 6 + `TestLanMode` 8），机验 9 项 / 判据变异 18/18 绿；
   测试数声明 6 处 + 机验变异字符串已同步。
 
+**✅ 产物滞后消解（2026-10-23，v1.6.0 已发）**：tag `v1.6.0` → [Release](https://github.com/TrueFurina/comment-distillery/releases/tag/v1.6.0)
+已发布（exe **12,611,650 字节 / 12.0 MB**，SHA-256 `d06e4daa…45818`；技能包 ZIP 与两份哈希文件一并挂载，
+四资产下载复算全 MATCH）。build-exe 的「核验产物内资源与仓库逐项一致」步骤绿 → **上述五轮滞后全部消解**；
+本文件同日 20:5x 记录的 CI 假红事故（坑清单 C8）亦已由 `b3a1b41` 修复回绿。
+
 ---
 
 ## 七、下一步（Open Items）
