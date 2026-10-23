@@ -6,7 +6,7 @@
 3.10+）、`docs/distribution.md` §E 的「需要你的仓库权限」（已被证伪——本地 token 就够了）、
 `HANDOFF.md` 的 Release 待办（实际早已发布）。**靠自觉不如靠机验。**
 
-机验的九件事（全部零依赖、不联网、可离线复现）：
+机验的十件事（全部零依赖、不联网、可离线复现）：
 
 | # | 检查 | 拦的是什么 |
 |---|---|---|
@@ -19,6 +19,7 @@
 | 7 | 已证伪表述不再出现 | 被推翻的判断留在文档里误导后来人 |
 | 8 | 语料总量 == 各战分项之和 == 对外声明 | **总量靠人算就会漂移**——旧基线把战 7 的楼中楼数了两次，多算 6,724 |
 | 9 | 测试项数 == unittest 实跑数 | **加了测试只改一处地方**——2026-10-23 实测：改的人同步了 README 与官网，却漏了 `docs/submittables/` 里的两篇发帖稿 |
+| 10 | 交接单结构 == 仓库事实（CI 步数 / cases 目录 / scripts·tests 文件 / 战次索引） | **机验只管"已写进判据"的数字，叙述性结构是盲区**——2026-10-24 巡检发现 `HANDOFF.md` 四处落后于事实（13 步 vs 16 步 / ~11 MB vs 12.0 MB / 目录树缺 cases 08–11 与六个新形态文件 / 档案索引只列到战 7），**没有一项被既有判据覆盖**。本项把这类"人工巡检才找得到"的漂移变成常驻门 |
 
 第 9 项的判据刻意**不写死数值**（不是「必须 = 73」）：真值源是当场跑一遍
 `python -m unittest discover -s tests` 得到的用例数，文档必须跟着它走。
@@ -509,6 +510,81 @@ def check_test_count(root):
     return [("OK", f"测试项数一致：{actual}（unittest 实跑 == {len(decls)} 处对外声明）")]
 
 
+def check_handoff_structure(root):
+    """交接单（`HANDOFF.md`）的**叙述性结构**必须与仓库事实一致。
+
+    为什么必须有这一项：2026-10-24 巡检发现 HANDOFF 四处落后于事实——
+    ci.yml 写 **13 步**（实际 16）、exe 写 ~11 MB（实际 12.0）、目录树缺
+    `cases/08–11` 与六个新形态文件、档案索引只列到战 7。
+    **它们没有一项被既有判据覆盖**：机验只管"已写进判据"的数字，
+    而目录树与索引表是叙述性结构，只能靠人巡检才找得到。本项把它变成常驻门。
+
+    ⚠️ 真值源一律取 **ROOT**，理由与第 9 项同：`--self-test` 的临时副本只搬文档，
+    里面没有 `cases/` `scripts/` `tests/` `.github/`，在那儿算出来的"事实"是假的。
+    """
+    hf = root / "HANDOFF.md"
+    if not hf.exists():
+        return [("SKIP", "缺少 HANDOFF.md，跳过交接单结构校验")]
+    text = hf.read_text(encoding="utf-8")
+    bad = []
+
+    # 1) CI 步数：真值源是工作流文件本身，不是人写的注记
+    ci = ROOT / ".github/workflows/ci.yml"
+    if ci.exists():
+        n_ci = len(re.findall(r"^\s*- name:", ci.read_text(encoding="utf-8"), re.M))
+        decls = [int(x) for x in re.findall(r"\*\*(\d+)\s*步\*\*", text)]
+        if not decls:
+            bad.append("HANDOFF 找不到「**N 步**」声明")
+        else:
+            wrong = sorted({d for d in decls if d != n_ci})
+            if wrong:
+                bad.append(f"HANDOFF 声明 {wrong} 步，ci.yml 实算 {n_ci} 步")
+
+    tree = _section(text, "## 二、目录结构")
+    if not tree:
+        bad.append("HANDOFF 找不到「## 二、目录结构」小节，无法校验目录树")
+        tree = None
+
+    # 2) cases 战次目录必须在目录树里出现
+    cases = ROOT / "cases"
+    if tree and cases.is_dir():
+        miss = [d.name for d in sorted(cases.iterdir())
+                if d.is_dir() and re.match(r"^\d{2}-", d.name) and d.name not in tree]
+        if miss:
+            bad.append("目录树缺 cases 目录：" + ", ".join(miss))
+
+    # 3) scripts/ 与 tests/ 下的每个 .py 都必须在目录树里出现
+    #    （真实历史：emit_html.py / make_skill_zip.py / publish.py 三个新形态脚本
+    #     进了仓库却没进目录树，读者按交接单找会以为它们不存在）
+    if tree:
+        for sub in ("scripts", "tests"):
+            sd = ROOT / sub
+            if not sd.is_dir():
+                continue
+            miss = [p.name for p in sorted(sd.glob("*.py")) if p.name not in tree]
+            if miss:
+                bad.append(f"目录树缺 {sub}/：" + ", ".join(miss))
+
+    # 4) 档案索引的战次集合 == 复盘总表的战次集合
+    retro = ROOT / "docs" / "retrospective.md"
+    if retro.exists():
+        def battle_ids(path, header):
+            sec = _section(path.read_text(encoding="utf-8"), header)
+            return {int(m.group(1)) for m in re.finditer(r"^\|\s*(\d+)\s*\|", sec, re.M)}
+        want = battle_ids(retro, "## 1.")
+        have = battle_ids(hf, "## 三、")
+        if want and have != want:
+            gap = sorted(want - have)
+            extra = sorted(have - want)
+            bad.append(f"档案索引战次 {sorted(have)} != 复盘总表 {sorted(want)}"
+                       f"（缺 {gap or '无'}，多 {extra or '无'}）")
+
+    if bad:
+        return [("FAIL", "交接单结构落后于仓库事实：\n    " + "\n    ".join(bad))]
+    return [("OK", "交接单结构一致：CI 步数 / cases 目录 / scripts·tests 文件 / "
+                   "战次索引 四项全对")]
+
+
 CHECKS = [
     ("Python 版本口径", check_python_version),
     ("Release tag 引用", check_release_tags),
@@ -519,6 +595,7 @@ CHECKS = [
     ("已证伪表述", check_refuted),
     ("语料总量一致", check_corpus_total),
     ("测试项数一致", check_test_count),
+    ("交接单结构一致", check_handoff_structure),
 ]
 
 
@@ -674,6 +751,38 @@ def _mut_stmt_gone(st):
     return None
 
 
+def _mut_handoff_ci_steps(st):
+    """HANDOFF 里的 CI 步数写错（16→15）→ 交接单结构检查必须报错。
+
+    真实历史（2026-10-24 巡检实锤）：`ci.yml` 加了 HTML 报告 / ZIP / Web 界面三道冒烟，
+    步数 13 → 16，而 HANDOFF 的注记还停在 13；同一份文件 §六 写的却是 16 —— 自相矛盾，
+    而**没有任何既有判据覆盖它**。
+    """
+    f = st / "HANDOFF.md"
+    t = f.read_text(encoding="utf-8")
+    out = t.replace("**16 步**", "**15 步**")
+    if out == t:
+        return "HANDOFF 里找不到「**16 步**」，变异未生效"
+    f.write_text(out, encoding="utf-8")
+    return None
+
+
+def _mut_handoff_tree_case(st):
+    """从 HANDOFF 目录树里删掉 `cases/11-degree-and-fate/` 行 → 必须报错。
+
+    真实历史：目录树停在战 7 时代，缺 08/09/10/11 四个目录——新增一战只改了
+    `cases/README.md` 与复盘总表，没人回头补交接单的目录树。
+    """
+    _drop_line(st / "HANDOFF.md", "11-degree-and-fate")
+    return None
+
+
+def _mut_handoff_battle_index(st):
+    """从 HANDOFF §三 档案索引里删掉战 11 行 → 必须报错（战次集合对不上复盘总表）。"""
+    _drop_line(st / "HANDOFF.md", "「学历/跃迁」")
+    return None
+
+
 def _mut_legacy_statement(st):
     """在别的文档里写回**旧的三段式**声明（只写铁律/待复现/环境事实）→ 必须报错。
 
@@ -794,6 +903,9 @@ CASES = [
     ("HANDOFF 的 unittest N 项 改错", "测试项数一致", _mut_test_count_handoff),
     ("ROADMAP 的 N tests OK 改错", "测试项数一致", _mut_test_count_roadmap),
     ("README.en 的 N cases (run in CI) 改错", "测试项数一致", _mut_test_count_en),
+    ("交接单 CI 步数写错（16→15）", "交接单结构一致", _mut_handoff_ci_steps),
+    ("交接单目录树漏掉一个 cases 目录", "交接单结构一致", _mut_handoff_tree_case),
+    ("交接单档案索引漏掉战 11", "交接单结构一致", _mut_handoff_battle_index),
 ]
 
 

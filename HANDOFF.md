@@ -244,7 +244,7 @@ CI       .github/workflows/ci.yml  **16 个质量门步骤**全绿
 - **局域网模式** `--lan --token <rand>`（与 `--public` 互斥）：私网 Host 白名单（回环 / RFC1918 /
   链路本地 / 本机主机名）+ **保留文件选择器与完整文件系统**，内网任意设备走完整闭环。
 - **`launch-webui.bat`**：双击即开本地平台（只绑 127.0.0.1），路径无关，按优先级找 Python。
-- 全量回归 137 → **145 项**（`TestPublicMode` 6 + `TestLanMode` 8），机验 9 项 / 判据变异 18/18 绿；
+- 全量回归 137 → **145 项**（`TestPublicMode` 6 + `TestLanMode` 8），机验 **10 项** / 判据变异 **21/21** 绿（第 10 项「交接单结构 == 仓库事实」为 2026-10-24 新增）；
   测试数声明 6 处 + 机验变异字符串已同步。
 
 **✅ 产物滞后消解（2026-10-23，v1.6.0 已发）**：tag `v1.6.0` → [Release](https://github.com/TrueFurina/comment-distillery/releases/tag/v1.6.0)
@@ -298,8 +298,8 @@ CI       .github/workflows/ci.yml  **16 个质量门步骤**全绿
 ③ `HANDOFF.md` 里 Release 仍被列为待办（实际早已发布上线）。**靠自觉不如靠机验。**
 
 ```bash
-"$PY" "$REPO/scripts/check_doc_consistency.py"             # 6 项检查（存在 dist/*.exe 时会核对站点 SHA/体积）
-"$PY" "$REPO/scripts/check_doc_consistency.py" --self-test # 判据自身有效（6/6 变异必须被拦截）
+"$PY" "$REPO/scripts/check_doc_consistency.py"             # 10 项检查（存在 dist/*.exe 时会核对站点 SHA/体积）
+"$PY" "$REPO/scripts/check_doc_consistency.py" --self-test # 判据自身有效（21/21 变异必须被拦截）
 # CI 的打包工作流用 --no-artifact：站点记的是**已发布产物**，与 CI 现打包的字节必然不同
 # （PyInstaller 非可复现），硬比会逼出「永远不许重建」的假红线。
 ```
