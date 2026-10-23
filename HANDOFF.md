@@ -144,6 +144,7 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 | C5 | **推送认证** | `gho_` token 用 `Bearer` header 必报 invalid | 必须 URL 内嵌：`https://x-access-token:${TOKEN}@github.com/...` |
 | C6 | **`github.com:443` 直连被阻断** | `curl` 到 api.github.com 通，但 git 不通，fetch 报 `Connection reset` | origin 已切 SSH：`ssh.github.com:443` 与 `github.com:22` 均可用 |
 | C7 | **GITHUB_TOKEN 在 WorkBuddy bash 里读不到** | shell 不继承 HKCU 环境变量 | 用 Python `winreg` 读，或 `~/.workbuddy/bin/gh_run.py` |
+| C8 | **测试断言的平台脆弱性**（2026-10-23 实锤） | 穿越探测串 `C:/Windows/System32` 在 POSIX 上是相对路径，resolve 后落仓库内（非穿越）→ CI(Linux) 假红，`eb15e33..bb41bfa` 连红 7 个提交才被发现 | 探测串按平台给：通用「`..` 深链 + home 父目录」，盘符探测仅 `os.name=="nt"`。**本地全绿 ≠ CI 绿——push 后必须查 Actions 页，干净副本复验不覆盖平台差异** |
 
 ---
 

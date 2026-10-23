@@ -106,6 +106,10 @@
 - `tests/test_webui.py`：unittest 按**类名字母序**加载测试类，`TestPublicMode` 的 `tearDownClass`
   经 `set_public()` 无法复位（该函数只会把 `_PUBLIC` 置 True），全局态泄漏进后面的本地模式测试类
   → `WebUIBase.setUpClass` 显式复位三个全局 + `TestPublicMode` 退出时直接置 `_PUBLIC=False`。
+- `tests/test_webui.py` 路径穿越探测的平台假红：`C:/Windows/System32` 在 POSIX 上是**相对路径**
+  （resolve 后落在仓库内、根本不是穿越），CI(Linux) 自 eb15e33 起假红 7 个提交才被发现
+  → 探测串改为按平台给：通用「`..` 深链 + home 父目录」（两大平台都必然越权），
+  盘符绝对路径探测仅在 Windows 启用。**本地全绿 ≠ CI 绿，push 后必须看 Actions 页。**
 
 ## [1.5.0] — 2026-09-26
 

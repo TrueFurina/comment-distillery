@@ -13,6 +13,7 @@
 
 import http.client
 import json
+import os
 import re
 import shutil
 import socket
@@ -215,17 +216,30 @@ class TestSecurity(WebUIBase):
         self.assertNotIn(b"403", buf[:64])
 
     def test_path_traversal_rejected(self):
-        # 注意：允许根含用户家目录，故「仓库两级之上」未必越权（仓库在家目录下时两级之上仍在家里）。
-        # 改用「家目录两级之上」作为必定越权的动态用例，跨平台稳健，不依赖仓库摆放位置。
-        above_home = str(Path.home().parent.parent)
-        for bad in ("C:/Windows/System32", "/etc", above_home):
+        # 探测串必须「在当前平台上真的位于允许根之外」，否则测到的是 404 不是越权：
+        #  · 「..」深链 —— resolve 后越过所有允许根（两大平台都成立）
+        #  · home 父目录 —— 必在 home / 仓库 / 系统临时目录之外
+        #  · 「C:/Windows/...」这种盘符绝对路径只在 Windows 上成立；POSIX 上它是
+        #    相对路径，resolve 后落在仓库内、根本不是穿越——eb15e33 曾把它当
+        #    通用探测，CI(Linux) 假红 7 个提交才被发现（2026-10-23 教训）。
+        deep = "/".join([".."] * 8) + "/x"
+        for bad in (deep, str(Path.home().parent)):
             with self.assertRaises(urllib.error.HTTPError) as c:
                 self.getj("/api/fs?path=" + urllib.parse.quote(bad))
             self.assertEqual(c.exception.code, 403, f"应拦截：{bad}")
+        if os.name == "nt":
+            with self.assertRaises(urllib.error.HTTPError) as c:
+                self.getj("/api/fs?path=" + urllib.parse.quote("C:/Windows/System32"))
+            self.assertEqual(c.exception.code, 403)
 
     def test_safe_path_rejects_outside_root(self):
         with self.assertRaises(webui.OutsideRoot):
-            webui.safe_path("C:/Windows/System32/config/SAM")
+            webui.safe_path("/".join([".."] * 8) + "/x")
+        with self.assertRaises(webui.OutsideRoot):
+            webui.safe_path(str(Path.home().parent / "cd-outside"))
+        if os.name == "nt":
+            with self.assertRaises(webui.OutsideRoot):
+                webui.safe_path("C:/Windows/System32/config/SAM")
         with self.assertRaises(webui.OutsideRoot):
             webui.safe_path("")
 
