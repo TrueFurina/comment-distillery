@@ -99,7 +99,7 @@
 | P1 | topics 检索词补齐 | 搜索可命中 | ✅ **已完成**（2026-09-26 补入 `agent-skills` / `claude-skills` / `skills` / `ai-agents`，12 → 16） |
 | P2 | `cases/` 产物层公开 | 外部能看到真实案例 | ✅ **已完成**（9 md / 277 KB；原始语料按合规约束不公开） |
 | P1 | **Release 首发 + 官网上线** | 有可下载产物与可打开落地页 | ✅ **已完成**（当前版 Release [v1.6.0](https://github.com/TrueFurina/comment-distillery/releases/tag/v1.6.0) 挂 exe / 官网线上 HTTP 200；**原判"需你执行"是误判**，本地 token 即可，见 `docs/distribution.md` §1-E） |
-| P1 | awesome 列表 PR（ComposioHQ / m-fyi / VoltAgent） | 至少 1 个合入 | 🟡 **2 个已提交待审**（[ComposioHQ#2002](https://github.com/ComposioHQ/awesome-claude-skills/pull/2002) / [m-fyi#2](https://github.com/m-fyi/awesome-claude-skills/pull/2)，2026-09-26）；VoltAgent 按其"不接受全新 skill"规则**缓发**，等有真实安装量再提 |
+| P1 | awesome 列表 PR（ComposioHQ / m-fyi / VoltAgent） | 至少 1 个合入 | 🟡 **2 个已提交待审**（[ComposioHQ#2002](https://github.com/ComposioHQ/awesome-claude-skills/pull/2002) / [m-fyi#2](https://github.com/m-fyi/awesome-claude-skills/pull/2)，2026-09-26）；VoltAgent 按其"不接受全新 skill"规则**缓发**，等有真实安装量再提。<br>**2026-10-24 实况复查**：两个仍 open、维护者零回应 —— ComposioHQ#2002 的 `validate` 与 Socket Security 检查**全 success**，`mergeable_state=blocked` 只差审批（该仓 7.8 万 star、1,852 open issues、默认分支最近提交停在 2026-07-24，积压大）；m-fyi 仓仅 3 star、**自 2026-08-03 起未推送**，且我们是其唯一 PR —— 合入概率低。<br>**结论**：awesome 列表按「发了就忘」处理，**不把分发指望放在它身上**，杠杆仍在社区发帖。 |
 | P2 | Reddit `r/ClaudeAI` / `r/LocalLLaMA` Show & Tell + 中文社区同步 | 各发一轮 | ⏳ **需你执行**（§1-C 有骨架） |
 | P3 | 方法论长文（"Why comment sections are the most underrated dataset"） | 长尾搜索流量 | ⏳ 素材已就位（§1-D） |
 
