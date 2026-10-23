@@ -136,6 +136,8 @@
 
 **回滚方式**：删除 `app/` / `app_main.py` / `site/` / `scripts/build_exe.py` / `scripts/make_icon.py` / 两个新工作流即可，`scripts/` 与 `contrib/` 的改动均为**纯增量**（只加可调用入口，未改任何 CLI 签名，45 项原测试全绿）。
 
+**2026-10-23 多形态扩展（随 [v1.6.0](https://github.com/TrueFurina/comment-distillery/releases/tag/v1.6.0) 发布）**：交付形态从「exe + 官网」扩到**七种**——① Agent 用法（`npx skills add`，仓库根即技能包）② 桌面 exe ③ 官网 ④ **HTML 报告**（`scripts/emit_html.py`：引用角标可点击跳转溯源，零依赖；对标产品的来源绑定是隐藏属性、读者点不了）⑤ **本地 Web 界面**（`python -m app --web`，三模式：本地 / `--lan` 局域网令牌+私网 Host 白名单 / `--public` 公开托管令牌+单沙箱+禁文件选择器）+ `launch-webui.bat` 双击启动器 ⑥ **技能包可复现 ZIP**（`scripts/make_skill_zip.py`，两次打包 SHA-256 相同，测试钉住）⑦ **多平台发布器**（`scripts/publish.py`：GitHub Pages / 知乎 / B站 / CSDN，密钥仅存本地 + dry-run + GitHub 渠道绝不自动 push；含 Cookie 逻辑，刻意不进 exe）。五轮 `SKILL.md` 变更的产物滞后由 v1.6.0 重建消解（CI `--verify` 绿）；全量 145 测试 + 机验 9 项 + Release 四资产下载复算全 MATCH。
+
 ---
 
 ### P4 · 场景升维收尾 ⛔ **已决定不做**（2026-09-26 用户拍板）
