@@ -644,6 +644,11 @@ def _case(root, tags, label, check_name, mutate):
     with tempfile.TemporaryDirectory() as td:
         st = _stage(root, Path(td) / "case")
         fake_exe = mutate(st)
+        # 变异体用"返回字符串"表示没生效。早期版本把它直接当 exe 路径传下去，
+        # 结果崩成 AttributeError: 'str' object has no attribute 'exists'，
+        # **错误信息完全指不到真因**（2026-10-24 实测）。现在就地炸，指名道姓。
+        if isinstance(fake_exe, str):
+            raise AssertionError(f"变异「{label}」未生效：{fake_exe}")
         res = run(st, exe=fake_exe, tags=tags)
         sts = [s for n, s, _ in res if n == check_name]
         return label, check_name, sts
@@ -811,77 +816,78 @@ def _mut_corpus_item(st):
 
 
 def _mut_corpus_decl(st):
-    """只改对外声明里的总量（45,633→45,634），不动真值源 → 必须报错。
+    """只改对外声明里的总量（N→N-1），不动真值源 → 必须报错。
 
     这是最典型的漂移方式：真值源是对的，散落各处的副本没跟着改，
     而副本正是别人（和发帖素材）实际读到的东西。
+    ⚠️ 数字**从 `CORPUS_TOTAL` 注释现取**：2026-10-01 把总量 42,936→45,633 时，
+    这里写死的旧值失配，self-test 直接报「变异未生效」。同类坑 2026-10-24 又在
+    测试项数上犯了一次 —— 见 `_bump_declared_number` 的说明。
     """
+    src = (st / CORPUS_SOURCE).read_text(encoding="utf-8")
+    m = re.search(r"CORPUS_TOTAL:\s*([0-9,]+)", src)
+    if not m:
+        return f"{CORPUS_SOURCE} 里找不到 CORPUS_TOTAL，变异未生效"
+    total = int(m.group(1).replace(",", ""))
     f = st / "ROADMAP.md"
     t = f.read_text(encoding="utf-8")
-    if "45,633" not in t:
-        return "ROADMAP.md 里找不到 45,633，变异未生效"
-    f.write_text(t.replace("45,633", "45,634"), encoding="utf-8")
+    old, new = f"{total:,}", f"{total - 1:,}"
+    if old not in t:
+        return f"ROADMAP.md 里找不到 {old}，变异未生效"
+    f.write_text(t.replace(old, new, 1), encoding="utf-8")
+    return None
+
+
+def _bump_declared_number(st, rel, pattern, label):
+    """把文档里**第一处**匹配到的数字改成 N-1（N 从文档现取，**不写死**）。
+
+    🔴 为什么必须现取：2026-10-24 把测试数 145→149 时，三个变异体里写死的 "145"
+    全部失配 → mutate 返回"变异未生效"字符串 → 被当成 exe 路径传进去 →
+    self-test 崩在 `AttributeError: 'str' object has no attribute 'exists'`，
+    **错误信息完全指不到真因**。同一类坑 2026-10-01 也在语料总量上犯过一次。
+    **判据写"关系"，变异体也要写"关系"** —— 否则每改一次数字就要手改一处，迟早再漏。
+    """
+    f = st / rel
+    t = f.read_text(encoding="utf-8")
+    m = re.search(pattern, t)
+    if not m:
+        return f"{rel} 里找不到「{label}」，变异未生效"
+    n = int(m.group(1))
+    f.write_text(t[:m.start(1)] + str(n - 1) + t[m.end(1):], encoding="utf-8")
     return None
 
 
 def _mut_test_count(st):
-    """只把一处声明里的测试项数改错（73→72），tests/ 本身不动 → 必须报错。
+    """只把一处声明里的测试项数改错（N→N-1），tests/ 本身不动 → 必须报错。
 
-    判据是「声明数 == unittest 实跑数」，与 73 这个具体数值无关 ——
-    将来加到 80 也好、删到 50 也好，这个变异照样成立，不用跟着改。
-    （这正是「写关系不写数值」的收益：变异用例本身也不会过期。）
+    判据是「声明数 == unittest 实跑数」，与具体数值无关 —— 加到 200 也好、
+    删到 50 也好，这个变异照样成立，不用跟着改。
     """
-    f = st / "README.md"
-    t = f.read_text(encoding="utf-8")
-    out = re.sub(r"(回归测试 )\d+( 项)", r"\g<1>72\g<2>", t)
-    if out == t:
-        return "README.md 里找不到「回归测试 N 项」，变异未生效"
-    f.write_text(out, encoding="utf-8")
-    return None
+    return _bump_declared_number(st, "README.md", r"回归测试 (\d+) 项", "回归测试 N 项")
 
 
 def _mut_test_count_handoff(st):
-    """HANDOFF 的 `unittest 145 项` 改错（145→144）→ 必须报错。
+    """HANDOFF 的 `unittest N 项` 改错 → 必须报错。
 
-    专门验「unittest … 项」这个新分支真的被扫到——否则 HANDOFF 里的测试数写错
+    专门验「unittest … 项」这个分支真的被扫到——否则 HANDOFF 里的测试数写错
     仍会漏检（正是 2026-10-23 那次假绿的盲区）。
     """
-    f = st / "HANDOFF.md"
-    t = f.read_text(encoding="utf-8")
-    out = t.replace("unittest 145 项", "unittest 144 项")
-    if out == t:
-        return "HANDOFF.md 里找不到「unittest 145 项」，变异未生效"
-    f.write_text(out, encoding="utf-8")
-    return None
+    return _bump_declared_number(st, "HANDOFF.md", r"unittest (\d+) 项", "unittest N 项")
 
 
 def _mut_test_count_roadmap(st):
-    """ROADMAP 的 `145 tests OK` 改错（145→144）→ 必须报错。
-
-    验「N tests OK」英文分支真的被扫到。
-    """
-    f = st / "ROADMAP.md"
-    t = f.read_text(encoding="utf-8")
-    out = t.replace("145 tests OK", "144 tests OK")
-    if out == t:
-        return "ROADMAP.md 里找不到「145 tests OK」，变异未生效"
-    f.write_text(out, encoding="utf-8")
-    return None
+    """ROADMAP 的 `N tests OK` 改错 → 必须报错（验英文分支真的被扫到）。"""
+    return _bump_declared_number(st, "ROADMAP.md", r"(\d+) tests OK", "N tests OK")
 
 
 def _mut_test_count_en(st):
-    """README.en 的 `145 cases (run in CI)` 改错（145→144）→ 必须报错。
+    """README.en 的 `N cases (run in CI)` 改错 → 必须报错。
 
-    验「N cases (run in CI)」英文分支真的被扫到；同时证明该窄匹配不会误伤
-    同文件里的「golden test set: 8 cases」。
+    验该英文分支真的被扫到；同时证明这个窄匹配不会误伤同文件里的
+    「golden test set: 8 cases」。
     """
-    f = st / "README.en.md"
-    t = f.read_text(encoding="utf-8")
-    out = t.replace("145 cases (run in CI)", "144 cases (run in CI)")
-    if out == t:
-        return "README.en.md 里找不到「145 cases (run in CI)」，变异未生效"
-    f.write_text(out, encoding="utf-8")
-    return None
+    return _bump_declared_number(st, "README.en.md",
+                                 r"(\d+) cases \(run in CI\)", "N cases (run in CI)")
 
 
 CASES = [

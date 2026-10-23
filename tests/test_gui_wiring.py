@@ -115,6 +115,20 @@ class TestGuiWiring(unittest.TestCase):
                       "关于页应保留「启动本地 Web 界面」按钮——非 Windows 用户靠它")
         self.assertIn("def start_webui", self.src)
 
+    # ── 2b. HTML 报告出口必须在（2026-10-24 接入） ──
+    def test_html_report_entry_present(self):
+        """「导出 HTML 报告」按钮必须留在 ④ 引用校验页。
+
+        为什么单独钉：报告的输入是**AI 回来之后的指南**，所以它的位置在校验页
+        （那里已有指南与语料两个输入框），不在「③ 导出蒸馏包」（那时还没指南）。
+        若有人把它挪走或删掉，用户就再也拿不到可读可转发的产物——而 Markdown
+        只是中间物。
+        """
+        self.assertIn("导出 HTML 报告", self.src)
+        self.assertIn("def _emit_report", self.src)
+        self.assertIn("core.emit_report", self.src,
+                      "必须走 core 委托，不许在 GUI 层另写一份渲染逻辑")
+
     # ── 3. 静态 import 必须在（打包靠它收模块） ──
     def test_webui_import_is_static(self):
         found = False

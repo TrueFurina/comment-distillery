@@ -108,6 +108,47 @@ class TestExportPackage(unittest.TestCase):
             core.export_package(str(self.out / "nope.csv"), str(self.out))
 
 
+class TestEmitReport(unittest.TestCase):
+    """`core.emit_report` —— GUI 与 Web 界面共同的 HTML 报告出口。
+
+    为什么必须在 core 层测：`app/gui.py` 的改动在本机与 CI **都跑不了**
+    （两边都没有 tkinter），GUI 接线只能靠 `test_gui_wiring.py` 的静态 AST 兜底；
+    那么这条链路的"真的能产出报告"就只能由本类端到端证明。
+    """
+
+    def setUp(self):
+        self.out = Path(tempfile.mkdtemp(prefix="cdtest-emit-"))
+
+    def tearDown(self):
+        shutil.rmtree(self.out, ignore_errors=True)
+
+    def test_report_is_written(self):
+        dst = self.out / "report.html"
+        res = core.emit_report(str(EXAMPLE_GUIDE), out=str(dst),
+                               corpora=[str(EXAMPLE)])
+        self.assertEqual(res["out"], str(dst))
+        self.assertTrue(dst.exists(), "报告文件没写出来")
+        self.assertGreater(res["bytes"], 0)
+
+    def test_report_is_self_contained(self):
+        dst = self.out / "report.html"
+        core.emit_report(str(EXAMPLE_GUIDE), out=str(dst), corpora=[str(EXAMPLE)])
+        html = dst.read_text(encoding="utf-8")
+        self.assertIn("<!DOCTYPE html>", html)
+        self.assertNotIn("<script", html.lower(),
+                        "自包含报告不该带脚本（要能离线双击打开、也要能通过 CSP）")
+
+    def test_report_reuses_citation_diff(self):
+        """信任条必须复用 verify_citations 的差集，不能另写一套口径。"""
+        dst = self.out / "report.html"
+        res = core.emit_report(str(EXAMPLE_GUIDE), out=str(dst),
+                               corpora=[str(EXAMPLE)])
+        ver = res["verify"] or {}
+        self.assertTrue(ver.get("ran"), "挂了语料就该真跑引用机验")
+        self.assertEqual(ver.get("bad"), [], "样例指南的引用应全部可溯源")
+        self.assertGreater(len(res["cites"]), 0)
+
+
 class TestVerify(unittest.TestCase):
     def test_clean_guide_passes(self):
         res = core.verify_guide(str(EXAMPLE_GUIDE), [str(EXAMPLE)])

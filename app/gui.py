@@ -531,6 +531,8 @@ class VerifyTab(RunTab):
 
         ttk.Button(self.extra, text="校验随包 SKILL.md", style="Ghost.TButton",
                    command=self._check_skill).pack(side="left")
+        ttk.Button(self.extra, text="导出 HTML 报告", style="Ghost.TButton",
+                   command=self._emit_report).pack(side="left", padx=(8, 0))
 
     def _pick_corpora(self):
         ps = filedialog.askopenfilenames(filetypes=CSV_TYPES)
@@ -551,6 +553,40 @@ class VerifyTab(RunTab):
         else:
             self.log("通过：全部规则条目均带溯源标记。", "ok")
             self.set_status("SKILL.md 检查通过", ACC)
+
+    def _emit_report(self):
+        """把已写好的指南渲染成自包含 HTML 报告（引用角标可点击溯源）。
+
+        为什么放在这一页：HTML 报告的输入是**指南 + 语料**，而指南是用户拿蒸馏包
+        交给 AI 之后才产出的——所以它的位置在"AI 回来之后"，与引用校验同一处，
+        而不是在「③ 导出蒸馏包」（那时还没有指南可渲染）。
+        """
+        guide = self.var_guide.get().strip()
+        if not guide or not Path(guide).exists():
+            messagebox.showwarning("导出 HTML 报告",
+                                   "请先在上方选择一个存在的指南 Markdown。")
+            return
+        corpora = self._corpora or [p.strip() for p in
+                                    self.var_corpora.get().split("｜") if p.strip()]
+        self.clear_log()
+        self.set_status("生成 HTML 报告…", BLUE)
+        try:
+            res = core.emit_report(guide, out=None, corpora=corpora or None)
+        except Exception as e:
+            self.log(f"失败：{type(e).__name__}: {e}", "err")
+            self.set_status("HTML 报告生成失败", ERR)
+            return
+        self.log(f"指南：{guide}", "info")
+        self.log(f"输出：{res['out']}（{res['bytes']:,} 字节）", "ok")
+        self.log(f"章节 {res['headings']}   引用 {len(res['cites'])}", "info")
+        bad = (res.get("verify") or {}).get("bad") or []
+        if bad:
+            self.log(f"⚠ 引用差集非空（{len(bad)} 条），报告顶部信任条已翻红 ——"
+                     f"先把引用修掉再交付。", "warn")
+            self.set_status(f"报告已生成，但有 {len(bad)} 条幻觉引用", ERR)
+        else:
+            self.log("引用溯源：差集为空（全部可追溯）。", "ok")
+            self.set_status("HTML 报告已生成", ACC)
 
     def build_work(self):
         guide = self.var_guide.get().strip()

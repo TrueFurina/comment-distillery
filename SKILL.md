@@ -2,7 +2,7 @@
 name: comment-distillery
 description: 把任何一群人对同一议题的自发文本（评论区 / 问卷开放题 / 访谈逐字稿 / 产品反馈 / Issue 讨论 / 弹幕）蒸馏成带引用溯源、反例对冲、盲区说明的厚指南。当用户说「把评论整理成指南」「评论区洞察」「评论分析」「问卷开放题整理」「访谈记录提炼」「用户反馈分析」「群体文本分析」，或给出一堆未结构化的群体文本想要建设性结论时使用。不做采集、不做情感饼图，只做 L3 建设性综合。
 metadata:
-  version: 1.6.0
+  version: 1.7.0
 agent_created: true
 ---
 
@@ -13,7 +13,7 @@ agent_created: true
 
 - **开源仓库**：<https://github.com/TrueFurina/comment-distillery>（MIT，零依赖）
 - **官网**：<https://truefurina.github.io/comment-distillery/>
-- **桌面工具（Windows）**：`dist/comment-distillery.exe`（约 11 MB 单文件免安装）—— 采集 → 预处理 → 导出蒸馏包 → 引用校验 → 出 HTML 报告。**不内置 LLM**：它只负责把语料和本文件打包好，蒸馏那一步交给你自己的 AI，因此零 API Key、零成本，方法论也永远跟本文件一致。
+- **桌面工具（Windows）**：`dist/comment-distillery.exe`（约 12 MB 单文件免安装）—— 采集 → 预处理 → 导出蒸馏包 → 引用校验 → 出 HTML 报告。**不内置 LLM**：它只负责把语料和本文件打包好，蒸馏那一步交给你自己的 AI，因此零 API Key、零成本，方法论也永远跟本文件一致。
 - **本地 Web 界面（跨平台）**：`python -m app --web` —— 浏览器里走完同样五步，纯标准库 `http.server`，只监听 127.0.0.1。**非 Windows 系统或无 exe 场景走这条**；它读的是仓库当前文件，不存在 exe 那种"产物滞后"。
 - **产出 HTML 报告（可选，对外交付时做）**：`python scripts/emit_html.py <指南.md> --corpus <语料.csv>` —— 零依赖，把 Markdown 指南转成**单文件自包含 HTML**（内联样式、无外链、可转发、可打印成 PDF）。每条 `[源:ID|…]` 渲染成**可点击角标**，跳到附录原句并可返回；页首写明「N 条引用 · 机验通过 · 差集 0」，差集非空时翻红。Markdown 是中间物，HTML 才是能交付出去的东西。
 - **详细文档**：`docs/` —— 格式规范 `canonical-format.md` / **语料从哪来 `collecting.md`** / 语料域适配 `domains.md`（⚠️ 除 B 站外均为**未验证外推**） / 流水线 `pipeline.md` / 合规 `compliance.md`

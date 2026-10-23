@@ -53,7 +53,7 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 ├── contrib/fetch_bilibili_comments.py   （纯标准库 WBI 签名抓取，含去重与退避）
 ├── golden/                              （评估集：8 场景 / 4 类，判分器 + 跑分器 + 变异验证）
 ├── ROADMAP.md                           （长期规划 P0–P5 + P3.5，含验收门槛与停止条件）
-├── tests/                               （**145 项**，`unittest discover -s tests`；CI 强制）
+├── tests/                               （**149 项**，`unittest discover -s tests`；CI 强制）
 │   ├── test_prep.py                     （16）· test_verify_citations.py（11）· test_rule_tags.py（6）
 │   ├── test_golden.py                   （12）· test_app_core.py（16，桌面工具逻辑层）
 │   ├── test_emit_html.py                （12）· test_make_skill_zip.py（15，含可复现构建）
@@ -192,7 +192,7 @@ HEAD     见 `git log -1`（最后核验 2026-09-26 为 2cae432；**本文件每
          先前写法把 hash 写死，导致每次提交都要改一次，是自找的漂移源）
 origin   git@github.com:TrueFurina/comment-distillery.git   (SSH)
 CI       .github/workflows/ci.yml  **16 个质量门步骤**全绿
-         （compileall / 零依赖守卫 / 编码守卫 / 文档一致性机验 / 文档一致性变异验证 / unittest 145 项 /
+         （compileall / 零依赖守卫 / 编码守卫 / 文档一致性机验 / 文档一致性变异验证 / unittest 149 项 /
           无裸铁律 / 判据变异验证 / golden 变异 / golden 基线 / prep 冒烟 / 引用机验冒烟 /
           HTML 报告冒烟 / Web 界面冒烟 / **技能包 ZIP 冒烟** / 冒烟产出展示）
          另有 build-exe.yml（真打包 + --verify 资源核验 + 三道冒烟 + 文档一致性）与
@@ -244,7 +244,7 @@ CI       .github/workflows/ci.yml  **16 个质量门步骤**全绿
 - **局域网模式** `--lan --token <rand>`（与 `--public` 互斥）：私网 Host 白名单（回环 / RFC1918 /
   链路本地 / 本机主机名）+ **保留文件选择器与完整文件系统**，内网任意设备走完整闭环。
 - **`launch-webui.bat`**：双击即开本地平台（只绑 127.0.0.1），路径无关，按优先级找 Python。
-- 全量回归 137 → **145 项**（`TestPublicMode` 6 + `TestLanMode` 8），机验 **10 项** / 判据变异 **21/21** 绿（第 10 项「交接单结构 == 仓库事实」为 2026-10-24 新增）；
+- 全量回归 137 → **149 项**（`TestPublicMode` 6 + `TestLanMode` 8），机验 **10 项** / 判据变异 **21/21** 绿（第 10 项「交接单结构 == 仓库事实」为 2026-10-24 新增）；
   测试数声明 6 处 + 机验变异字符串已同步。
 
 **✅ 产物滞后消解（2026-10-23，v1.6.0 已发）**：tag `v1.6.0` → [Release](https://github.com/TrueFurina/comment-distillery/releases/tag/v1.6.0)
