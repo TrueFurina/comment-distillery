@@ -23,7 +23,7 @@ npx skills add TrueFurina/comment-distillery   # agent use
 
 **Why split it this way:** the analysis is the part that benefits from your model of choice; the *collect-clean-verify* part is boring deterministic work that shouldn't depend on any provider. Keeping them separate also means the methodology (SKILL.md) is versioned in a repo, not frozen inside a binary — the exe always points at the current repo version.
 
-**Why pure stdlib, seriously:** everything is `urllib` + `csv` + `json`. `pip install` isn't in the pipeline at all. 61 tests run on Python 3.10–3.13 in CI. This came from a real failure: an isolated venv broke on a setuptools source-build mid-upgrade, and that one incident made us commit to zero runtime dependencies. It also means you can read every line before running it.
+**Why pure stdlib, seriously:** everything is `urllib` + `csv` + `json`. `pip install` isn't in the pipeline at all. The full regression suite runs on Python 3.10–3.13 in CI. This came from a real failure: an isolated venv broke on a setuptools source-build mid-upgrade, and that one incident made us commit to zero runtime dependencies. It also means you can read every line before running it.
 
 **What the pipeline does:**
 
