@@ -1,0 +1,27 @@
+{
+  "github": {
+    "enabled": true
+  },
+  "csdn": {
+    "enabled": false,
+    "endpoint": "https://bizapi.csdn.net/blog-console-api/v1/post/save",
+    "cookie": "",
+    "extra_headers": {},
+    "tags": "人工智能,数据分析",
+    "category_id": 1,
+    "status": 1
+  },
+  "bilibili": {
+    "enabled": false,
+    "cookie": "",
+    "category_id": 0,
+    "list_id": 0,
+    "original": 1,
+    "submit": true
+  },
+  "zhihu": {
+    "enabled": false,
+    "cookie": "",
+    "xsrf": ""
+  }
+}

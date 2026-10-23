@@ -59,6 +59,17 @@ jobs:
       - name: 打包
         run: python scripts/build_exe.py --clean
 
+      - name: 打包技能包 ZIP（可复现构建）
+        # 与 exe 不同，ZIP 是**可复现**的：固定时间戳 / 权限 / create_system + 排序写入，
+        # 同一份源码两次打包 SHA-256 完全相同（tests/test_make_skill_zip.py 钉住）。
+        # 所以"自动覆盖 Release 资产会让已发布哈希失真"这条对 ZIP **不成立**。
+        # 但为了与 exe 保持同一发布节奏，这里仍只出 Artifact，挂载走 dispatch。
+        shell: bash
+        run: |
+          python scripts/make_skill_zip.py
+          python scripts/make_skill_zip.py --print-sha > dist/SKILLZIP-SHA256.txt
+          cat dist/SKILLZIP-SHA256.txt
+
       - name: 核验产物内资源与仓库逐项一致（防陈旧副本）
         run: python scripts/build_exe.py --verify
 
@@ -116,6 +127,8 @@ jobs:
           path: |
             dist/comment-distillery.exe
             dist/SHA256.txt
+            dist/comment-distillery-skill-*.zip
+            dist/SKILLZIP-SHA256.txt
 
       - name: 挂载到 Release（仅手动触发且显式给了 tag 时）
         # ⚠️ 打 tag 自动跑时**刻意不挂载**：发布资产是本地构建并逐项冒烟验证过的那一份，
@@ -132,3 +145,7 @@ jobs:
           gh release view $tag 2>$null
           if ($LASTEXITCODE -ne 0) { gh release create $tag --title $tag --notes "见仓库 CHANGELOG" }
           gh release upload $tag dist/comment-distillery.exe dist/SHA256.txt --clobber
+          $zip = Get-ChildItem dist/comment-distillery-skill-*.zip | Select-Object -First 1
+          if ($zip) {
+            gh release upload $tag $zip.FullName dist/SKILLZIP-SHA256.txt --clobber
+          }

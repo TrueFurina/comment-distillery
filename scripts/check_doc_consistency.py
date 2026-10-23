@@ -6,7 +6,7 @@
 3.10+）、`docs/distribution.md` §E 的「需要你的仓库权限」（已被证伪——本地 token 就够了）、
 `HANDOFF.md` 的 Release 待办（实际早已发布）。**靠自觉不如靠机验。**
 
-机验的八件事（全部零依赖、不联网、可离线复现）：
+机验的九件事（全部零依赖、不联网、可离线复现）：
 
 | # | 检查 | 拦的是什么 |
 |---|---|---|
@@ -18,6 +18,12 @@
 | 6 | 规则计数四方一致（SKILL.md / 维护侧文档 / 溯源台账 §3.1+§3.2 / 文档里的计数声明） | 「加了条目不进台账」「拆了表没同步声明」——长期静默缺口的成因 |
 | 7 | 已证伪表述不再出现 | 被推翻的判断留在文档里误导后来人 |
 | 8 | 语料总量 == 各战分项之和 == 对外声明 | **总量靠人算就会漂移**——旧基线把战 7 的楼中楼数了两次，多算 6,724 |
+| 9 | 测试项数 == unittest 实跑数 | **加了测试只改一处地方**——2026-10-23 实测：改的人同步了 README 与官网，却漏了 `docs/submittables/` 里的两篇发帖稿 |
+
+第 9 项的判据刻意**不写死数值**（不是「必须 = 73」）：真值源是当场跑一遍
+`python -m unittest discover -s tests` 得到的用例数，文档必须跟着它走。
+这样加一个测试后，同步文档即可通关；写成常量则每次加测试都得连脚本一起改——
+那等于把同一个数字的真值源从一个地方换成两个地方。**检查关系，不检查某个具体的数。**
 
 **第 6 项的四方是**（2026-09-26 环境坑按读者拆表后确定）：`SKILL.md`「环境坑」（蒸馏侧，随打包产物分发）
 ↔ 台账 §3.1；`docs/engineering-pitfalls.md`（维护侧，**不进打包产物**）↔ 台账 §3.2；
@@ -44,6 +50,7 @@ import hashlib
 import os
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -435,6 +442,65 @@ def check_rule_counts(root):
 
 
 
+# ── 9. 测试项数：unittest 实跑出来的 N == 各处对外声明的 N ───────────────────
+TEST_COUNT_PAT = re.compile(
+    r"测试\s*(?:（[^）]*）)?\s*,?\s*(\d+)\s*项"             # 「回归测试 73 项（CI 自动跑）」
+    r"|(\d+)\s*(?:<[^>]*>\s*)*项(?:自动化)?测试"             # 「73 项自动化测试」
+)
+
+# 为什么两个分支都要认：README 那处数字跟在「测试」**后面**，官网 stat 那处却在**前面**
+# 且被 HTML 标签割开 —— `<div class="num">73</div><div class="lbl">项自动化测试</div>`。
+# 认不全就是放行，放行就等于没有这项检查（和史记学金句一样：漏检比不检查更危险，
+# 因为它会让后来的维护者误以为有人在把关）。
+
+
+def _declared_test_counts(root):
+    """所有形如「N 项测试」/「测试 N 项」的声明，带上出处返回。"""
+    out = []
+    for p in _doc_files(root):
+        for i, line in enumerate(p.read_text(encoding="utf-8").splitlines(), 1):
+            for m in TEST_COUNT_PAT.finditer(line):
+                out.append((_rel(root, p), i, int(m.group(1) or m.group(2))))
+    return out
+
+
+def _actual_test_count(root):
+    """当场跑一遍 unittest 拿真实用例数。拿不到返回 None —— 由调用方据此 SKIP，
+    而不是自作聪明地默认通过：拿不到数就报绿，等于给这项检查留了一个永久后门。"""
+    if not (root / "tests").is_dir():
+        return None
+    env = dict(os.environ)
+    env["PYTHONIOENCODING"] = "utf-8"        # Windows 控制台 cp1252 下测试可能 print 中文
+    argv = [sys.executable, "-m", "unittest", "discover", "-s", "tests"]
+    try:
+        p = subprocess.run(argv, cwd=str(root), capture_output=True,
+                           text=True, timeout=300, env=env)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    # "Ran 73 tests in 0.28s" 由 unittest 写到 stderr，两股流一起找才稳。
+    m = re.search(r"^Ran (\d+) tests? in", (p.stdout or "") + (p.stderr or ""), re.M)
+    return int(m.group(1)) if m else None
+
+
+def check_test_count(root):
+    # ⚠️ 真值源**永远取真实仓库**（ROOT），不取传进来的 root：
+    # `--self-test` 传进来的是只搬了文档的临时副本，在里面跑 unittest 会因缺 scripts/
+    # 而少算一大半（实测 73 → 6），拿那种数字当基准等于自己骗自己。
+    # 把副本补全是一条无底洞（测试明天又依赖 golden/ 了）；而"跑一遍真实仓库"既准确又恒定——
+    # 测试项数是仓库的事实，不是一个需要跟副本同步的东西。
+    actual = _actual_test_count(ROOT if (ROOT / "tests").is_dir() else root)
+    if actual is None:
+        return [("SKIP", "拿不到 unittest 用例数（缺 tests/ 或执行失败），跳过测试项数核对")]
+    decls = _declared_test_counts(root)
+    if not decls:
+        return [("FAIL", "全库找不到任何「N 项测试」声明 —— 是都被删了，还是换了写法导致漏检？")]
+    bad = [f"{f}:{i} 声明 {n} 项" for f, i, n in decls if n != actual]
+    if bad:
+        return [("FAIL", f"测试项数应为 **{actual}**（unittest 实跑），"
+                         f"下列 {len(bad)} 处未同步：\n    " + "\n    ".join(bad))]
+    return [("OK", f"测试项数一致：{actual}（unittest 实跑 == {len(decls)} 处对外声明）")]
+
+
 CHECKS = [
     ("Python 版本口径", check_python_version),
     ("Release tag 引用", check_release_tags),
@@ -444,6 +510,7 @@ CHECKS = [
     ("规则计数一致", check_rule_counts),
     ("已证伪表述", check_refuted),
     ("语料总量一致", check_corpus_total),
+    ("测试项数一致", check_test_count),
 ]
 
 
@@ -640,6 +707,22 @@ def _mut_corpus_decl(st):
     return None
 
 
+def _mut_test_count(st):
+    """只把一处声明里的测试项数改错（73→72），tests/ 本身不动 → 必须报错。
+
+    判据是「声明数 == unittest 实跑数」，与 73 这个具体数值无关 ——
+    将来加到 80 也好、删到 50 也好，这个变异照样成立，不用跟着改。
+    （这正是「写关系不写数值」的收益：变异用例本身也不会过期。）
+    """
+    f = st / "README.md"
+    t = f.read_text(encoding="utf-8")
+    out = re.sub(r"(回归测试 )\d+( 项)", r"\g<1>72\g<2>", t)
+    if out == t:
+        return "README.md 里找不到「回归测试 N 项」，变异未生效"
+    f.write_text(out, encoding="utf-8")
+    return None
+
+
 CASES = [
     ("Python 版本写错（3.10→3.8）", "Python 版本口径", _mut_python),
     ("引用不存在的 Release tag", "Release tag 引用", _mut_tag),
@@ -655,6 +738,7 @@ CASES = [
     ("别处写回旧的三段式声明", "规则计数一致", _mut_legacy_statement),
     ("总量分项改一个数（和不再等于总量）", "语料总量一致", _mut_corpus_item),
     ("对外声明改总量（真值源没跟着改）", "语料总量一致", _mut_corpus_decl),
+    ("测试项数声明改错（tests/ 没动）", "测试项数一致", _mut_test_count),
 ]
 
 

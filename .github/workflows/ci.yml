@@ -56,9 +56,12 @@ jobs:
           PYTHONIOENCODING=cp1252 python scripts/check_rule_tags.py
           PYTHONIOENCODING=cp1252 python scripts/prep.py examples/sample_corpus.csv /tmp/cd-enc
           PYTHONIOENCODING=cp1252 python scripts/verify_citations.py examples/sample_guide.md examples/sample_corpus.csv
+          PYTHONIOENCODING=cp1252 python scripts/emit_html.py examples/sample_guide.md --corpus examples/sample_corpus.csv -o /tmp/cd-enc/report.html
           echo "✅ cp1252 控制台下中文输出正常（降级替换而非抛异常）；图标生成可复现"
 
-      - name: 文档一致性机验（版本口径 / Release tag / 站点数字 / 锚点 / 中英对等 / 已证伪表述）
+      # step 名刻意**不枚举**具体检查项：每新增一项都要回来改这里，而忘改就会让名字说谎。
+      # 判据的完整清单与取舍理由写在 scripts/check_doc_consistency.py 的模块文档里，以那里为准。
+      - name: 文档一致性机验（口径与数字真值，判据见脚本头）
         # 为什么要有这一步：2026-09-26 一次普查漏出 3 处「文档落后于事实」
         # （PR 文案写 Python 3.8+、distribution.md §E 的「需要你的仓库权限」已被证伪、
         #  HANDOFF 里 Release 仍是待办）。**人眼 grep 会漏，机验不会。**
@@ -88,6 +91,30 @@ jobs:
 
       - name: 端到端冒烟 —— 引用真实性机验（必须通过）
         run: python scripts/verify_citations.py examples/sample_guide.md examples/sample_corpus.csv
+
+      - name: 端到端冒烟 —— HTML 报告产出（差集非空则本步失败）
+        # 交付形态的冒烟：脚本在差集非空时返回非 0，与 verify 同一条硬门。
+        # 锚点零死链 / 无外链资源 / 转义竖线不误拆列 等不变量由
+        # tests/test_emit_html.py 覆盖（同一件事只留一处判据）。
+        run: |
+          python scripts/emit_html.py examples/sample_guide.md --corpus examples/sample_corpus.csv -o /tmp/cd-ci/report.html
+          echo "--- 报告首屏（信任条）---"
+          grep -o 'class="trustbar[^<]*' /tmp/cd-ci/report.html || true
+
+      - name: 端到端冒烟 —— 技能包 ZIP（可复现构建 + 结构校验）
+        # 交付形态的冒烟：打包 + 结构校验（必需文件 / 排除项 / 路径安全）一次过。
+        # 可复现性与"判据真能抓错"由 tests/test_make_skill_zip.py 覆盖
+        # （同一件事只留一处判据）。这里只打印哈希，便于 Release 记录时直接复制。
+        run: |
+          python scripts/make_skill_zip.py
+          python scripts/make_skill_zip.py --check dist/comment-distillery-skill-*.zip
+          python scripts/make_skill_zip.py --print-sha
+
+      - name: 端到端冒烟 —— 本地 Web 界面（路由 + 安全边界 + 端到端作业）
+        # 真起一个 127.0.0.1 服务跑 HTTP，不 mock：mock 出来的"能跑"证明不了什么。
+        # 覆盖路由、Host/Origin 校验、路径穿越、端到端 prep→pack→verify→emit；
+        # 判据只在 tests/test_webui.py 一处，这里只负责让它真的跑起来。
+        run: python -m unittest tests.test_webui -v
 
       - name: 冒烟产出展示
         if: always()

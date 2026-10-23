@@ -66,3 +66,6 @@ golden/results/
 /build/
 /dist/
 *.spec
+
+# ── 发布器本地配置（含平台 Cookie，绝不提交）──
+publish_config.local.json

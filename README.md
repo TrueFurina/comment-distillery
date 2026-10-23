@@ -12,9 +12,12 @@
 
 | 你是 | 做什么 |
 |---|---|
+| 想先看看它到底产出什么 | **[📄 直接打开一份成品 HTML 指南](https://truefurina.github.io/comment-distillery/samples/sample-guide.html)** —— 点正文里的「源」角标可跳到附录原句 |
 | 不想碰命令行 | **⬇ [下载 Windows 桌面工具](https://github.com/TrueFurina/comment-distillery/releases/latest)**（~11 MB · 免安装 · **连 Python 都不用装**） |
+| 不用 Windows / 不想装 exe | **`python -m app --web`** —— 浏览器里走完全流程（纯标准库，**跨平台**，免打包免签名，见下） |
+| 在用 ChatGPT / Claude 网页版 | **⬇ [下载 Skill ZIP](https://github.com/TrueFurina/comment-distillery/releases/latest)**（约 69 KB）—— 解压后整个文件夹拖进对话，或把 `PROMPT.md` 粘进去 |
 | 已经在用 AI Agent | `npx skills add TrueFurina/comment-distillery`（Claude Code / Cursor / Codex / Copilot 等 40+ 家） |
-| 想看它到底产出什么 | **[🌐 官网](https://truefurina.github.io/comment-distillery/)** · 或直接读下面的[真实产出节选](#真实产出长什么样) |
+| 想看它到底怎么做的 | **[🌐 官网](https://truefurina.github.io/comment-distillery/)** · 或继续读下面的[真实产出节选](#真实产出长什么样) |
 
 ---
 
@@ -135,7 +138,21 @@ bbc-skill            …然后就没有然后了      + 行动清单 + 盲区说
 > exe 未做代码签名，首次运行 Windows SmartScreen 会拦截，点「更多信息 → 仍要运行」即可（属正常现象，非病毒）。
 > 想自己构建：`python scripts/make_icon.py && python scripts/build_exe.py`。
 
-### 二、装进你的 Agent（一条命令）
+### 二、本地 Web 界面（跨平台，免打包）
+
+exe 只覆盖 Windows。其余系统（macOS / Linux）或不想装 exe 时，用这个：
+
+```bash
+python -m app --web            # 自动打开浏览器；Ctrl+C 结束
+python -m app --web --port 9000 --no-browser
+```
+
+纯标准库 `http.server`，**只监听 127.0.0.1**，不联网、不上传任何数据。五个步骤在浏览器里走完：
+采集 → 预处理 → 导出蒸馏包 → 引用机验 → **出 HTML 报告**。
+
+它比 exe 还多一个好处：读的是仓库里**当前**的 `SKILL.md`，**永远不存在"产物滞后"**（exe 内的那份是打包时冻结的）。
+
+### 三、装进你的 Agent（一条命令）
 
 ```bash
 npx skills add TrueFurina/comment-distillery
@@ -143,7 +160,7 @@ npx skills add TrueFurina/comment-distillery
 
 兼容 Claude Code / Cursor / Codex / Windsurf / Copilot 等 40+ agent（由 `vercel-labs/skills` 自动解析安装位置）。只想看不装：`npx skills add TrueFurina/comment-distillery --list`。
 
-### 三、直接用脚本（零依赖）
+### 四、直接用脚本（零依赖）
 
 **零依赖，不需要 `pip install`。** 只要 Python 3.10+。
 
@@ -158,7 +175,14 @@ python scripts/prep.py examples/sample_corpus.csv out/
 
 # 3) 写完指南后，强制机验引用真实性（防止幻觉引用）
 python scripts/verify_citations.py 你的指南.md examples/sample_corpus.csv
+
+# 4) 把指南转成可转发 / 可打印的 HTML 报告（引用角标可点击溯源）
+python scripts/emit_html.py 你的指南.md --corpus examples/sample_corpus.csv
 ```
+
+> 第 4 步产出的 HTML 是**单文件自包含**的：内联样式、无外链、可直接双击打开、
+> 可发给同事、可打印成 PDF。页首写明「N 条引用 · 机验通过 · 差集 0」——
+> 差集非空时它会翻红并拒绝交付。
 
 `prep.py` 产出：
 
@@ -308,7 +332,9 @@ comment-distillery/
 ├── app_main.py              # 桌面工具入口（源码运行 / PyInstaller 打包共用）
 ├── app/                     # ★ 桌面工具（tkinter，零第三方依赖）
 │   ├── core.py              #   逻辑层：委托调用 scripts/ 与 contrib/，无 GUI 依赖
-│   └── gui.py               #   界面层：唯一接触 GUI 的模块
+│   ├── gui.py               #   界面层：唯一接触 tkinter 的模块
+│   ├── webui.py             #   ★ 本地 Web 界面：http.server + 作业调度（纯标准库，**跨平台**）
+│   └── webui_page.py        #     上面那个界面的页面资源（纯数据，内联 CSS/JS）
 ├── site/index.html          # 官网（单文件静态页，GitHub Pages 发布）
 ├── assets/icon.ico          # 应用图标（由 scripts/make_icon.py 标准库手写生成）
 ├── docs/
@@ -325,10 +351,12 @@ comment-distillery/
 ├── scripts/
 │   ├── prep.py              # 预处理（零依赖）
 │   ├── verify_citations.py  # 引用真实性机验（强制质量门）
+│   ├── emit_html.py         # 指南 Markdown → 自包含 HTML 报告（引用角标可点击溯源，零依赖）
 │   ├── check_rule_tags.py   # 机验 SKILL.md 无「裸铁律」（带变异验证）
 │   ├── check_doc_consistency.py  # 文档一致性机验：版本口径 / Release tag / 站点数字 / 规则计数 / 中英对等（带变异验证）
 │   ├── build_exe.py         # 打包桌面 exe（PyInstaller，仅构建期依赖）
-│   └── make_icon.py         # 标准库手写 ICO 生成器（不引入 Pillow）
+│   ├── make_icon.py         # 标准库手写 ICO 生成器（不引入 Pillow）
+│   └── make_skill_zip.py    #   技能包 ZIP（**可复现构建**，给「只会上传文件」的用户）
 ├── golden/                  # 评估集：8 场景 / 4 类，判「改规则后是否变强」
 │   ├── README.md
 │   ├── cases/               # 场景集（纯数据 JSON）
@@ -345,7 +373,7 @@ comment-distillery/
 │   ├── 01…04/               # 第 1–4 战：真实语料 → 深度指南
 │   ├── 05-mustwatch-math/   # 第 6+7 战：正卷 15 章 + 增补卷 10 章（含 3 处结论修正）
 │   └── notes/               # 设计留档：方案论述 / 开源冲刺路线图
-└── tests/                   # 回归测试 61 项（CI 自动跑）
+└── tests/                   # 回归测试 130 项（CI 自动跑）
 ```
 
 > `cases/` **只放产出**（各战指南 + 设计文档，共 9 个 md / 277 KB）。

@@ -2,6 +2,91 @@
 
 本项目遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## [Unreleased]
+
+> 尚未发版（不写版本号是为了不触发「文档引用的 Release tag 必须真实存在」这条机验）。
+
+### Added
+- **`scripts/emit_html.py` —— 交付形态补齐：指南 Markdown → 自包含 HTML 报告**（零依赖，纯标准库）。
+  - **为什么做**：Markdown 是**中间物**，不是交付物——它不能转发、不能打印成 PDF、不能挂网页。
+    对标产品（video-report-agent / vreport）的产物是自包含 HTML + 长图，用户拿到就能读就能分享；
+    本项目此前终点停在 `.md`，这是产品感知上最大的短板。
+  - **引用角标可点击溯源**（这是 Markdown 做不到、且直接强化护城河的一点）：每条
+    `[源:ID|权重N|层级]` 渲染成角标 → 点它跳到附录原句 → 点「返回正文」跳回。
+    对标产品的来源绑定是隐藏属性（`data-source-units`），读者看不见也点不了。
+  - **页首信任条**：给了 `--corpus` 就复用 `verify_citations.run` 的差集结果，写明
+    「N 条引用 · 机验通过 · 差集 0」；差集非空时**翻红并拒绝交付**（CLI 退出码 1）。
+  - **口径与机验严格一致**：ID 抽取直接调用 `verify_citations.extract_cited`，不另写正则；
+    由 `tests/test_emit_html.py::test_cite_extraction_matches_verifier` 锁死。
+  - 单文件自包含（内联 CSS、零外链）、响应式、`@media print` 完整（可直接打印成 PDF）。
+- **`tests/test_emit_html.py`（12 项）**：锚点零死链 / 无外链资源 / 表格转义竖线不误拆列 /
+  引用标记尾部被整体消费 / 信任条三态 / HTML 转义 / 口径一致。全量回归 61 → **73 项**。
+- **官网首屏挂成品样例**：`site/samples/sample-guide.html`，hero 新增「先看一份成品 →」入口。
+  ⚠️ 只用**合成语料**渲染：`cases/` 的真实 `raw.csv` 按 `docs/compliance.md` §2 不公开，
+  把原句搬进公开页面等于二次分发原始语料。
+- **`app/webui.py` + `app/webui_page.py` —— 本地 Web 界面（`python -m app --web`）**（零依赖，纯标准库）。
+  - **为什么做**：exe 有三宗罪，这个形态一条都不犯 ——
+    ① **仅 Windows** → 纯 `http.server`，三平台同一份代码；
+    ② **SmartScreen 拦截**（无签名证书）→ 不打包、不签名，`python -m app --web` 直接起；
+    ③ **改 `SKILL.md` 就得重发版**（随包资源 = 发版线）→ 它读的是仓库**当前**文件，
+      **永远不存在「产物滞后」**。
+  - 五步在浏览器里走完：采集 → 预处理 → 导出蒸馏包 → 引用机验 → **出 HTML 报告**（含「打开报告」预览）。
+  - **安全边界**（本地工具也不裸奔）：只监听 127.0.0.1；Host / Origin 校验挡 DNS-rebinding 与跨站表单；
+    路径白名单 + `resolve()` 挡穿越与整盘可读；预览页 CSP `default-src 'none'` + `sandbox`（不放行脚本）。
+  - **不另立实现**：全部委托 `app/core.py`，`core` 再委托 `scripts/` —— 与 exe / CLI 同一条代码路径。
+  - `app/core.py` 新增 `emit_report()` 委托，自检清单 +1 项。
+- **`scripts/make_skill_zip.py` —— 技能包 ZIP（可复现构建）**。
+  - **为什么做**：三条入口各有缺口 —— `npx skills add` 要会命令行，exe 要 Windows，
+    Web 界面要本地起服务。而**一大群人用的是 ChatGPT / Claude 网页版**：他们不会装 CLI，
+    只会「上传一个文件」。ZIP 就是给这群人的入口。产物约 **69 KB**，16 个文件。
+  - **🔴 ZIP 是**可复现**的，exe 不是**：固定时间戳 / 权限 / `create_system` + 排序写入，
+    同一份源码两次打包 SHA-256 完全相同（`test_reproducible_build` 钉住）。
+    这直接推翻了「自动覆盖 Release 资产会让已发布哈希失真」这条顾虑——
+    该顾虑只对 PyInstaller 产物成立（见 `build-exe.yml` 里那段注释）。
+  - **显式清单而非整目录**（与 `build_exe.py` 的 `ADD_DATA` 同一条纪律）：整目录会把
+    `cases/`（真实语料，按 `docs/compliance.md` 不公开）、`tests/`、`golden/`、`.github/`
+    一起打进去——那不是技能，是仓库快照。`FORBIDDEN` 名单 + 测试双重拦截。
+  - 包内 `README.md` / `PROMPT.md` 由脚本生成（**不塞仓库 README**——那里有下载链接等
+    与"喂给 AI"无关的噪音）。
+  - 版本号取 `SKILL.md` frontmatter 的 `metadata.version`，**单一真值源**，不另写一份。
+- **`tests/test_make_skill_zip.py`（15 项）**：清单无缺失 / 必需文件齐全 / **排除项一个不许进** /
+  路径穿越 / frontmatter 存在 / 版本真值源 / **可复现性** / 体积上限；
+  以及判据自身的变异验证：缺 SKILL.md、无 frontmatter、混入 `cases/`、路径穿越、
+  包不存在 —— 五类坏包都必须被 `check()` 抓出。
+- **`tests/test_webui.py`（21 项）**：路由自检 / 页面自包含 / CSP 头 / 目录列举 / 未知动作 400 /
+  **伪造 Host 403 / 跨站 Origin 403 / 路径穿越 403 / 预览沙箱化** / 端到端 prep→pack→verify→emit /
+  缺语料与缺文件的错误路径。全量回归 73 → **114 项**（webui 21 + gui 接线 5 + skill-zip 15）。
+- **`scripts/publish.py` —— 多平台发布器（替代会员制 CSDN 同步插件）**（零依赖，纯标准库）。
+  - **为什么做**：把 `cases/` 里的蒸馏指南一键投到自有域名（GitHub Pages）+ 知乎 + B站专栏 + CSDN。
+    复用 `emit_html.run` 渲染，发出去的版本**带引用溯源角标**——这是项目护城河，普通同步插件做不到。
+  - **四个适配器**：GitHub（写 `site/cases/<slug>.html` + 更新 `sitemap.xml`，作 canonical 规范源、绝不自动 push）/
+    CSDN（`v1/post/save` 走 Cookie）/ B站专栏（`creative/draft/addupdate` → `article/submit` 两步）/
+    知乎（`api/v4/articles`，best-effort，失败回退生成可粘贴草稿 `out/<slug>.zhihu.md`）。
+  - **安全护栏**：密钥只存 `publish_config.local.json`（已加 `.gitignore`，模板 `publish_config.local.json.example`
+    由 `--init-config` 生成）；`_guard_no_csv` 拒绝任何 `.csv` 作发布对象——CSV 仅本地渲染挂载溯源附录，原始语料绝不上传；
+    `--dry-run` 先打印各渠道请求（端点/载荷/Cookie 脱敏），没填 Cookie 直接拒绝。
+  - **🔴 不进 exe**：`build_exe.py` 的 `ADD_DATA` 是显式清单，`publish.py` 含 Cookie 处理逻辑，不该进用户分发产物。
+- **`tests/test_publish.py`（16 项）**：slugify / 渲染 / GitHub 真实写盘+sitemap 幂等 / CSDN 请求构造 /
+  B站两步流程+csrf 抽取 / 知乎成功+失败回退 / 合规护栏。全量回归 114 → **130 项**。
+
+### Changed
+- `SKILL.md` 头部与流水线第 5 步各加一段：`emit_html.py` 的存在与用法（**Markdown 是中间物，不是交付物**）。
+- `SKILL.md` 头部新增「本地 Web 界面（跨平台）」入口说明。
+- `app/__main__.py` 支持 `--web`；tkinter 缺失时的报错里直接给出 `python -m app --web` 的退路。
+- `app/gui.py` 关于页新增「🌐 启动本地 Web 界面」按钮（exe 里也能拉起来；这条静态 import 负责让
+  PyInstaller 把 `webui` 模块收进产物）。
+- `scripts/build_exe.py` 的 `ADD_DATA` +1：`scripts/emit_html.py`。
+- **发布链路**：`build-exe.yml` 增加「打包技能包 ZIP」步骤，产物与哈希进 Artifact，
+  `workflow_dispatch` 挂载 Release 时一并带上 ZIP（tag 自动触发仍只出 Artifact，
+  与 exe 保持同一发布节奏——虽然 ZIP 可复现，技术上自动挂载是安全的）。
+- `ci.yml`：编码守卫 +1 条（cp1252 下跑 `emit_html.py`）、新增「HTML 报告冒烟」与「Web 界面冒烟」两步。
+- `.gitignore` 新增 `publish_config.local.json`（发布器本地 Cookie 配置，绝不提交）；`scripts/publish.py` 不进 exe
+  （`build_exe.py` 的 `ADD_DATA` 显式清单不含它，含 Cookie 处理逻辑不该进用户分发产物）。
+- 对外文档（README / README.en / site / HANDOFF / ROADMAP）测试数 61 → 73 → 114 → **130**；CI 步骤数 13 → 15。
+
+### Fixed
+- ROADMAP P2 验收记录里的「24/24 条目」是 09-26 的旧值，2026-10-23 复测为 **22/22**，已订正。
+
 ## [1.5.0] — 2026-09-26
 
 > **为什么要发 1.5.0**：`SKILL.md` 是**打进 exe 的随包资源**。本次把维护类环境事实从 `SKILL.md`

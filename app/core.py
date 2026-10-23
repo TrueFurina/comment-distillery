@@ -8,6 +8,7 @@
     预处理   -> scripts/prep.py                    :: run()
     引用机验 -> scripts/verify_citations.py        :: run()
     规则机验 -> scripts/check_rule_tags.py         :: check()
+    HTML报告 -> scripts/emit_html.py               :: run()
 
 为什么坚持委托而不重写：本项目对"数字漂移 / 口径漂移"零容忍。
 只要有两套实现，就一定会分叉——CLI 修了 bug 而 exe 里还是旧的。
@@ -31,6 +32,7 @@ RES_DOCS = ("docs/canonical-format.md", "docs/pipeline.md")
 RES_PREP = "scripts/prep.py"
 RES_VERIFY = "scripts/verify_citations.py"
 RES_RULETAGS = "scripts/check_rule_tags.py"
+RES_EMIT = "scripts/emit_html.py"
 RES_CRAWL = "contrib/fetch_bilibili_comments.py"
 
 _MOD_CACHE = {}
@@ -87,6 +89,10 @@ def _ruletags_mod():
     return _load("cd_ruletags", RES_RULETAGS)
 
 
+def _emit_mod():
+    return _load("cd_emit", RES_EMIT)
+
+
 def _crawl_mod():
     return _load("cd_crawl", RES_CRAWL)
 
@@ -128,6 +134,21 @@ def check_skill(path=None):
     errors, checked, tagged, _ = _ruletags_mod().check(target)
     return {"path": str(target), "errors": errors,
             "checked": checked, "tagged": tagged}
+
+
+# ────────────────────────────── HTML 报告 ──────────────────────────────
+
+def emit_report(guide, out=None, corpora=None, field=None,
+                title=None, subtitle=None, no_verify=False):
+    """指南 Markdown -> 自包含 HTML 报告（引用角标可点击溯源）。
+
+    corpora 非空时会挂原句并跑引用机验，差集非空时返回的 verify["bad"] 不为空；
+    **是否算交付由调用方判定**，本层不替前端做产品决策。
+    """
+    return _emit_mod().run(
+        guide, out, corpora, field, title, subtitle, no_verify,
+        root=str(resource_root()),
+    )
 
 
 # ────────────────────────────── 蒸馏包导出 ──────────────────────────────
@@ -313,6 +334,7 @@ def selfcheck():
         ("预处理脚本", RES_PREP),
         ("引用机验脚本", RES_VERIFY),
         ("规则机验脚本", RES_RULETAGS),
+        ("HTML 报告脚本", RES_EMIT),
         ("采集桥接脚本（可选）", RES_CRAWL),
     ]
     for label, rel in checks:

@@ -13,7 +13,9 @@ agent_created: true
 
 - **开源仓库**：<https://github.com/TrueFurina/comment-distillery>（MIT，零依赖）
 - **官网**：<https://truefurina.github.io/comment-distillery/>
-- **桌面工具（Windows）**：`dist/comment-distillery.exe`（约 11 MB 单文件免安装）—— 采集 → 预处理 → 导出蒸馏包 → 引用校验。**不内置 LLM**：它只负责把语料和本文件打包好，蒸馏那一步交给你自己的 AI，因此零 API Key、零成本，方法论也永远跟本文件一致。
+- **桌面工具（Windows）**：`dist/comment-distillery.exe`（约 11 MB 单文件免安装）—— 采集 → 预处理 → 导出蒸馏包 → 引用校验 → 出 HTML 报告。**不内置 LLM**：它只负责把语料和本文件打包好，蒸馏那一步交给你自己的 AI，因此零 API Key、零成本，方法论也永远跟本文件一致。
+- **本地 Web 界面（跨平台）**：`python -m app --web` —— 浏览器里走完同样五步，纯标准库 `http.server`，只监听 127.0.0.1。**非 Windows 系统或无 exe 场景走这条**；它读的是仓库当前文件，不存在 exe 那种"产物滞后"。
+- **产出 HTML 报告（可选，对外交付时做）**：`python scripts/emit_html.py <指南.md> --corpus <语料.csv>` —— 零依赖，把 Markdown 指南转成**单文件自包含 HTML**（内联样式、无外链、可转发、可打印成 PDF）。每条 `[源:ID|…]` 渲染成**可点击角标**，跳到附录原句并可返回；页首写明「N 条引用 · 机验通过 · 差集 0」，差集非空时翻红。Markdown 是中间物，HTML 才是能交付出去的东西。
 - **详细文档**：`docs/` —— 格式规范 `canonical-format.md` / **语料从哪来 `collecting.md`** / 语料域适配 `domains.md`（⚠️ 除 B 站外均为**未验证外推**） / 流水线 `pipeline.md` / 合规 `compliance.md`
 - **规则溯源**：`docs/rule-provenance.md`（每条规则的验证战次；**单战证据标「待复现」，不是铁律**）· `docs/overturned.md`（被推翻结论台账）
 - **人读说明**：`README.md`（中文）、`README.en.md`（English）
@@ -111,6 +113,9 @@ id,text,parent_id,is_reply,score,reply_count,created_at,author_id,source
    - **引用溯源**：每条带数据的结论后标 `[源:ID|权重N|层级]`，从 `id_map.json` 取；
    - **盲区诚实说明**：幸存者偏差、平台/人群偏差、权重（点赞）算法偏差、时间切片偏差。
 5. **结构化输出 Emit**：默认**深度版**（见下）。
+   - 若这份指南要**对外交付**（转发给同事 / 打印 / 挂网页），再跑一步：
+     `python scripts/emit_html.py <指南.md> --corpus <语料.csv>` → 自包含 HTML。
+     引用角标可点击跳到附录原句，页首写明引用条数与机验差集。**Markdown 是中间物，不是交付物。**
 6. **验证 Verify**：
    - **⚠️ 强制质量门：引用真实性机验（不可跳过）** `[战4][战6][战7]`。AI 写长指南时**会生成看似合理但实际不存在的 ID**（幻觉引用）。写完必须跑：
      ```bash

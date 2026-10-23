@@ -171,9 +171,10 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 HEAD     见 `git log -1`（最后核验 2026-09-26 为 2cae432；**本文件每次提交后 hash 都会前进一格，属正常**——
          先前写法把 hash 写死，导致每次提交都要改一次，是自找的漂移源）
 origin   git@github.com:TrueFurina/comment-distillery.git   (SSH)
-CI       .github/workflows/ci.yml  **13 个质量门步骤**全绿
-         （compileall / 零依赖守卫 / 编码守卫 / 文档一致性机验 / 文档一致性变异验证 / unittest 61 项 /
-          无裸铁律 / 判据变异验证 / golden 变异 / golden 基线 / prep 冒烟 / 引用机验冒烟 / 冒烟产出展示）
+CI       .github/workflows/ci.yml  **16 个质量门步骤**全绿
+         （compileall / 零依赖守卫 / 编码守卫 / 文档一致性机验 / 文档一致性变异验证 / unittest 130 项 /
+          无裸铁律 / 判据变异验证 / golden 变异 / golden 基线 / prep 冒烟 / 引用机验冒烟 /
+          HTML 报告冒烟 / Web 界面冒烟 / **技能包 ZIP 冒烟** / 冒烟产出展示）
          另有 build-exe.yml（真打包 + --verify 资源核验 + 三道冒烟 + 文档一致性）与
          pages.yml（官网发布；站点自检已统一走 check_doc_consistency.py，不再内联第三份实现）
 安装     npx skills add TrueFurina/comment-distillery   （--list 实测 Found 1 skill）
@@ -190,6 +191,24 @@ CI       .github/workflows/ci.yml  **13 个质量门步骤**全绿
 因此 `dist/comment-distillery.exe`（v1.5.0）内置的 `SKILL.md` **落后于仓库当前版本**。
 后果：此时跑 `build_exe.py --verify` 会报资源不一致（属预期，非缺陷）。**下次发版时重建即可消解**。
 （`ci.yml` 不打包，故当前 push 不会红；只有 `build-exe.yml` 的 `--verify` 步骤会红。）
+
+**⚠️ 产物滞后（2026-10-23，第四次累积）**：新增 `scripts/emit_html.py`（指南 Markdown → 自包含 HTML
+报告，引用角标可点击溯源），并在 `SKILL.md` 头部与流水线第 5 步各加一段说明它。
+- **`scripts/emit_html.py` 未加入 `build_exe.py` 的 `ADD_DATA`** → 不进包 → **不会**让 `--verify` 报错；
+  但 exe 的「导出蒸馏包」页签也还不会用它（下轮发版时一并接进去）。
+- **`SKILL.md` 是随包资源，本次又改了** → 同上，第四轮滞后，`--verify` 仍会红，**属预期**。
+- 官网新增 `site/samples/sample-guide.html`（合成语料渲染的成品样例，首屏已挂入口）。
+  刻意**不用** `cases/` 的真实语料渲染：那些 `raw.csv` 按 `docs/compliance.md` §2 不公开（已被
+  `.gitignore` 的 `/cases/**/*.csv` 排除），把原句搬进公开页面等于二次分发原始语料。
+
+**⚠️ 产物滞后（2026-10-23，第五次累积）**：新增 `app/webui.py` + `app/webui_page.py`
+（本地 Web 界面，`python -m app --web`），并再次改 `SKILL.md`（头部加 Web 界面入口）。
+- `scripts/emit_html.py` **已加入** `ADD_DATA`；`app/webui*.py` 走 PyInstaller 的模块图分析
+  （由 `app/gui.py` 关于页按钮里那条 `from app import webui` 静态 import 带进去）。
+  两者都**未在已发布的 v1.5.0 产物里**，下轮发版重建即生效。
+- **`SKILL.md` 又改了** → 第五轮滞后，`--verify` 仍会红，**属预期**。
+- 这条滞后有一个正面副作用值得记住：**Web 界面不打包，所以它读的永远是仓库当前 `SKILL.md`**
+  —— 它不存在 exe 这种滞后问题，是「改方法论不用重发版」的出口。
 
 ---
 

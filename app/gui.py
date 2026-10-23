@@ -641,6 +641,8 @@ class AboutTab(ttk.Frame):
         ttk.Button(btns, text="打开输出目录", style="Ghost.TButton",
                    command=lambda: open_in_explorer(default_outdir())).pack(
             side="left", padx=(8, 0))
+        ttk.Button(btns, text="🌐 启动本地 Web 界面", style="Ghost.TButton",
+                   command=self.start_webui).pack(side="left", padx=(8, 0))
         ttk.Button(btns, text="项目主页", style="Ghost.TButton",
                    command=lambda: self._open("https://github.com/TrueFurina/comment-distillery")
                    ).pack(side="left", padx=(8, 0))
@@ -649,6 +651,31 @@ class AboutTab(ttk.Frame):
             side="left", padx=(8, 0))
 
         self.run_check()
+
+    def start_webui(self):
+        """启动本地 Web 界面（纯标准库 http.server，**跨平台**）。
+
+        exe 只覆盖 Windows，且改 SKILL.md 就得重发版（随包资源 = 发版线）。
+        Web 形态两条都不犯：它读的就是仓库当前文件，永远不存在"产物滞后"。
+        这里从 exe 里也能拉起来，作为"想换台机器用"时的出口。
+        """
+        if getattr(self.app, "_web_url", None):
+            import webbrowser
+            webbrowser.open(self.app._web_url)
+            self.app.set_status("Web 界面已在运行，已重新打开浏览器", ACC)
+            return
+        try:
+            from app import webui           # noqa: PLC0415 —— 打包靠这条静态 import 收模块
+        except Exception as e:
+            messagebox.showerror("启动失败", f"无法载入 Web 界面模块：{e}")
+            return
+        try:
+            srv, url = webui.serve(port=webui.DEFAULT_PORT, quiet=True)
+        except Exception as e:
+            messagebox.showerror("启动失败", f"Web 界面启动失败：{e}")
+            return
+        self.app._web, self.app._web_url = srv, url
+        self.app.set_status("Web 界面已启动：" + url, ACC)
 
     def _open(self, target):
         t = str(target)

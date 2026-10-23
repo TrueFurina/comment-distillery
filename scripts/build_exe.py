@@ -63,6 +63,7 @@ ADD_DATA = [
     ("scripts/prep.py", "scripts"),
     ("scripts/verify_citations.py", "scripts"),
     ("scripts/check_rule_tags.py", "scripts"),
+    ("scripts/emit_html.py", "scripts"),
     ("contrib/fetch_bilibili_comments.py", "contrib"),
     ("contrib/README.md", "contrib"),
     ("examples/sample_corpus.csv", "examples"),

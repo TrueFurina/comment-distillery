@@ -87,7 +87,7 @@
 
 ---
 
-工具与全部复盘文档开源：[TrueFurina/comment-distillery](https://github.com/TrueFurina/comment-distillery)（零依赖，61 项测试，官网 <https://truefurina.github.io/comment-distillery/>，附桌面 exe 免安装直下）。
+工具与全部复盘文档开源：[TrueFurina/comment-distillery](https://github.com/TrueFurina/comment-distillery)（零依赖，全套回归测试跑通 Python 3.10–3.13，官网 <https://truefurina.github.io/comment-distillery/>，附桌面 exe 免安装直下）。
 ````
 
 ## 发后备注（不贴进文章）
