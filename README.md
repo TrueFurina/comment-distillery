@@ -1,5 +1,7 @@
 # comment-distillery · 评论蒸馏器
 
+[![AgentShield Security](https://merx.help/badge/A+.svg)](https://merx.help/shield)
+
 > **把一堆群体文本，炼成一份有据可查的行动指南。**
 > Turn a pile of crowd text into an evidence-cited action guide.
 
