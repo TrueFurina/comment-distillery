@@ -68,6 +68,23 @@
   - **🔴 不进 exe**：`build_exe.py` 的 `ADD_DATA` 是显式清单，`publish.py` 含 Cookie 处理逻辑，不该进用户分发产物。
 - **`tests/test_publish.py`（16 项）**：slugify / 渲染 / GitHub 真实写盘+sitemap 幂等 / CSDN 请求构造 /
   B站两步流程+csrf 抽取 / 知乎成功+失败回退 / 合规护栏。全量回归 114 → **130 项**。
+- **`app/webui.py` 公开托管模式（`--public --token`）—— 部署成「贴链接就能用」的在线平台**。
+  - **为什么做**：对标 vreport 的「填链接一键出报告」，Web 形态只差「能被别的设备访问」这一步。
+    绑 `0.0.0.0` + **令牌鉴权**（Authorization Bearer / `X-Access-Token` / `?token=`，缺失或错误 → 401）+
+    **文件系统锁进单一沙箱**（只许读写 `--public-dir` 内、文件名级白名单，越界抛 `OutsideRoot`）+
+    **禁用文件选择器**（`/api/fs` → 403）。本地模式的安全边界（Host/Origin/路径穿越/预览 CSP sandbox）全保留。
+  - **🔴 不破铁律**：蒸馏 LLM 仍 BYO-AI，平台只暴露工具链、绝不内置 Key。
+    部署须反代 + HTTPS + 速率限制；公开暴露抓 B 站评论的接口前先评估 ToS / 滥用风险。
+- **`app/webui.py` 局域网模式（`--lan --token`，与 `--public` 互斥）**：绑 `0.0.0.0` + 令牌鉴权 +
+  **私网 Host 白名单**（`_host_allowed`：回环 / RFC1918 / 链路本地 / 本机主机名，守住 DNS-rebinding）+
+  **保留文件选择器与完整文件系统**，用于可信内网任意设备走**完整闭环**
+  （含把 AI 成品 `guide.md` 导回机验 / 出报告——公开模式断在这一步）。
+- **`launch-webui.bat` —— 本地一键启动器**：双击即启动 Web 界面 + 自动开浏览器；路径无关
+  （脚本目录即仓库根，换机器/换盘符可用）；按优先级找 Python（WorkBuddy 管理版 → `py` → PATH）。
+- **`tests/test_webui.py` 增补（+14）**：`TestPublicMode` 6 项（无/错/对令牌、`/api/fs` 403、
+  沙箱越界、`hello` 报 `mode=public`）+ `TestLanMode` 8 项（令牌三态、私网 Host 放行、
+  外部 Host 拒绝、局域网下文件选择器仍可用、`hello` 报 `mode=lan` 等）。
+  全量回归 130 → **145 项**（131 = publish 护栏 +1；137 = 公开模式 +6；145 = 局域网模式 +8）。
 
 ### Changed
 - `SKILL.md` 头部与流水线第 5 步各加一段：`emit_html.py` 的存在与用法（**Markdown 是中间物，不是交付物**）。
@@ -82,10 +99,13 @@
 - `ci.yml`：编码守卫 +1 条（cp1252 下跑 `emit_html.py`）、新增「HTML 报告冒烟」与「Web 界面冒烟」两步。
 - `.gitignore` 新增 `publish_config.local.json`（发布器本地 Cookie 配置，绝不提交）；`scripts/publish.py` 不进 exe
   （`build_exe.py` 的 `ADD_DATA` 显式清单不含它，含 Cookie 处理逻辑不该进用户分发产物）。
-- 对外文档（README / README.en / site / HANDOFF / ROADMAP）测试数 61 → 73 → 114 → **130**；CI 步骤数 13 → 15。
+- 对外文档（README / README.en / site / HANDOFF / ROADMAP）测试数 61 → 73 → 114 → 130 → 131 → 137 → **145**；CI 步骤数 13 → 15。
 
 ### Fixed
 - ROADMAP P2 验收记录里的「24/24 条目」是 09-26 的旧值，2026-10-23 复测为 **22/22**，已订正。
+- `tests/test_webui.py`：unittest 按**类名字母序**加载测试类，`TestPublicMode` 的 `tearDownClass`
+  经 `set_public()` 无法复位（该函数只会把 `_PUBLIC` 置 True），全局态泄漏进后面的本地模式测试类
+  → `WebUIBase.setUpClass` 显式复位三个全局 + `TestPublicMode` 退出时直接置 `_PUBLIC=False`。
 
 ## [1.5.0] — 2026-09-26
 
