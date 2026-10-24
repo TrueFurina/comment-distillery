@@ -1,4 +1,4 @@
-@echo off
+﻿@echo off
 chcp 65001 >nul
 REM ============================================================
 REM  comment-distillery · 本地平台一键启动

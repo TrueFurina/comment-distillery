@@ -8,6 +8,12 @@
 *.pdf binary
 *.zip binary
 
+# Windows 批处理：必须保留 CRLF + UTF-8 BOM，否则中文 Windows 的 cmd.exe
+# 按 GBK 码表解析会打乱行边界（setlocal→etlocal、REM 注释被当命令执行）。
+# 不能走 text=auto eol=lf 归一化，否则 checkout/pull 后 LF 换行会让启动器打不开。
+*.bat binary
+*.cmd binary
+
 # CSV 保持原样（含 BOM 的场景靠 utf-8-sig 兼容）
 *.csv text eol=crlf
 
