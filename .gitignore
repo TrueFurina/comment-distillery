@@ -30,6 +30,9 @@ cookies.txt
 *_cookies.json
 *.session
 credentials.json
+# 用户自带的 AI 配置（含 api_key，明文）。默认落在 <程序目录>/llm.json。
+llm.json
+llm.local.json
 
 # ── Python ──
 __pycache__/
@@ -69,3 +72,12 @@ golden/results/
 
 # ── 发布器本地配置（含平台 Cookie，绝不提交）──
 publish_config.local.json
+
+# ── 自检/冒烟产物 ──
+# `--selftest-run` 早先把参数当输出目录，误传 BV 号就会在仓库根建出 `BV1xxxx/`。
+# 该参数现已加校验（不像路径就报错退出），这条忽略是给老用法留下的兜底。
+/BV[0-9A-Za-z]*/
+
+# ── 归档目录（本机残留，内容与 tests/fixtures/ 重复）──
+# 会话保护机制不允许删除，但也不该进仓库：真值源是 tests/fixtures/。
+/_verify_probe/

@@ -196,8 +196,84 @@ button.ghost{border-style:dashed;color:var(--dim)}
 <main>
   <div class="tabs" id="tabs"></div>
 
+  <!-- 0 一键完成 -->
+  <section class="pane" data-p="auto">
+    <div class="card">
+      <h2>⚡ 一键完成</h2>
+      <p class="desc">给一个视频链接或 BV 号，<b>一次跑到底</b>：采集 → 预处理 → 蒸馏包，
+      配了 AI 就继续写指南 → 引用机验 → 出 HTML 报告。没配 AI 就停在一个能直接拖进
+      任意对话框的成品目录。<br>
+      不需要一步步点；下面各页是同一套流程的手动版，需要细调参数时才用。</p>
+      <div class="grid">
+        <div class="field full"><label>视频链接 / BV 号 <span class="hint">也可以填一份现成的 CSV 路径，那样跳过采集</span></label>
+          <input type="text" id="a_arg" placeholder="https://www.bilibili.com/video/BV1xx411c7XX 或 BV1xx411c7XX"></div>
+        <div class="field"><label>输出根目录</label>
+          <div class="row"><input type="text" id="a_out"><button class="mini" data-pick="a_out" data-dir="1">选择</button></div></div>
+        <div class="field"><label>包名 <span class="hint">留空自动按时间生成</span></label>
+          <input type="text" id="a_name" placeholder="例如：早餐真相-2190条"></div>
+      </div>
+      <div class="acts">
+        <label class="chk"><input type="checkbox" id="a_roots" checked>只抓主楼（快 3 倍）</label>
+        <label class="chk"><input type="checkbox" id="a_gloss">生成黑话提示
+          <span class="hint">（圈内术语/疑似错字，帮 AI 别按字面读错）</span></label>
+        <div class="spacer"></div>
+        <button class="pri" data-run="auto">一键跑完</button>
+        <button class="ghost" data-stop="auto" hidden>停止</button>
+      </div>
+      <div class="log" data-log="auto"></div>
+      <div class="res" data-res="auto"></div>
+      <div class="note" style="margin-top:14px" id="ai_note">
+        <b>同一个按钮，走到哪一步取决于你是否配了 AI：</b><br>
+        · <b>没配</b> → 采集 → 预处理 → 蒸馏包，拿到一个可直接拖进任意对话框的目录（零 Key、零成本）。<br>
+        · <b>配了</b> → 再往下：AI 写指南 → 引用机验 → 出 HTML 报告，全程不用手动。<br>
+        模型和额度都在你这边；本工具不内置模型、不代付、Key 不进日志。
+        <a href="#" onclick="goTab('ai');return false;">去配 AI →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- AI 设置 -->
+  <section class="pane" data-p="ai" hidden>
+    <div class="card">
+      <h2>🤖 AI 设置（可选）</h2>
+      <p class="desc">填了这里，「一键出报告」才能跑到最后。<b>不填也完全可用</b>——那时一键只出蒸馏包，
+      你自己把包拖进任意 AI。<br>
+      支持任何 <b>OpenAI 兼容</b>接口：DeepSeek、通义、Kimi、智谱、OpenAI、本地 Ollama / vLLM 都行。
+      填的是<b>你自己的</b> Key，本工具不内置模型、不代付、不转存。</p>
+
+      <div class="grid">
+        <div class="field full"><label>Base URL <span class="hint">到 /v1 为止，不要带 /chat/completions</span></label>
+          <input type="text" id="m_base" placeholder="https://api.deepseek.com/v1"></div>
+        <div class="field"><label>模型名</label>
+          <input type="text" id="m_model" placeholder="deepseek-chat"></div>
+        <div class="field"><label>API Key <span class="hint">只存在本机 llm.json，不回显</span></label>
+          <input type="password" id="m_key" placeholder="留空表示不改动已保存的 Key"></div>
+        <div class="field"><label>语料上限（字符） <span class="hint">超了会保留头尾并标注省略</span></label>
+          <input type="text" id="m_chars" value="120000"></div>
+        <div class="field"><label>单次超时（秒）</label>
+          <input type="text" id="m_timeout" value="600"></div>
+      </div>
+
+      <div class="acts">
+        <button class="pri" id="m_save">保存</button>
+        <button class="ghost" id="m_test">测试连通</button>
+        <div class="spacer"></div>
+        <span class="hint" id="m_state">读取中…</span>
+      </div>
+      <div class="log" id="m_log"></div>
+
+      <div class="note" style="margin-top:14px">
+        <b>成本提示</b>：一次蒸馏 = 1 次生成 + 最多 2 次修引用。以 2,000 条语料为例，约 6–12 万字符输入，
+        按各家中档模型价格大致在几毛到两三元一次。AI 只写指南，<b>不参与采集与机验</b>。<br>
+        <b>写盘位置</b>：<code id="m_path">—</code>（已列入 .gitignore，不会被提交）<br>
+        <b>注意</b>：配置文件跟着<b>程序</b>走，不是跟着你走。源码运行在仓库根，
+        双击 exe 时在 <b>exe 所在目录</b>。换目录/换机器后要重新填，或把 <code>llm.json</code> 一起带过去。
+      </div>
+    </div>
+  </section>
+
   <!-- 1 采集 -->
-  <section class="pane" data-p="crawl">
+  <section class="pane" data-p="crawl" hidden>
     <div class="card">
       <h2>① 采集 B 站评论</h2>
       <p class="desc">给视频链接或 BV 号，抓成规范 CSV。<b>可选</b>——你手头已有 CSV 就直接跳到 ②。<br>
@@ -209,9 +285,15 @@ button.ghost{border-style:dashed;color:var(--dim)}
           <div class="row"><input type="text" id="c_out"><button class="mini" data-pick="c_out" data-new="1" data-f="csv">另存为</button></div></div>
       </div>
       <div class="acts">
-        <label class="chk"><input type="checkbox" id="c_roots">只要主楼（不抓楼中楼）</label>
+        <label class="chk"><input type="checkbox" id="c_roots" checked>只要主楼（不抓楼中楼）</label>
         <div class="spacer"></div>
         <button class="pri" data-run="crawl">开始采集</button>
+        <button class="ghost" data-stop="crawl" hidden>停止</button>
+      </div>
+      <div class="note" id="c_hint" style="margin-top:12px">
+        默认只抓主楼：绝大多数观点都在主楼，几分钟能跑完。
+        取消勾选会连楼中楼一起抓，同一个视频可能从 4 分钟变成十几分钟——中途可点「停止」，
+        已抓到的部分会照常保留。
       </div>
       <div class="log" data-log="crawl"></div>
       <div class="res" data-res="crawl"></div>
@@ -245,8 +327,10 @@ button.ghost{border-style:dashed;color:var(--dim)}
     <div class="card">
       <h2>③ 导出蒸馏包 <span style="font-weight:400;color:var(--dim);font-size:13px">· 核心一步</span></h2>
       <p class="desc">产出一个文件夹：语料 + 方法论 + 可直接粘贴的提示词。<br>
-      <b>把它整个拖进任意 AI</b>，AI 就能按 <code>SKILL.md</code> 产出带引用的深度指南。<br>
-      本工具<b>不内置 LLM</b>——不收你的 Key，也不会把上个月的方法论固化进二进制。</p>
+      <b>两种用法：</b>配了 AI 就在本页继续跑（下方「只跑 AI 蒸馏」），
+      没配就把文件夹<b>整个拖进任意 AI</b>，它按 <code>SKILL.md</code> 产出带引用的指南。<br>
+      <b>不内置模型</b>：配 AI 用的是你自己的 endpoint 与 Key，工具不代付、不转存；
+      方法论每次从当前 <code>SKILL.md</code> 现读，不会固化进二进制。</p>
       <div class="grid">
         <div class="field"><label>原始语料 CSV</label>
           <div class="row"><input type="text" id="k_in"><button class="mini" data-pick="k_in" data-f="csv">选择</button></div></div>
@@ -255,7 +339,25 @@ button.ghost{border-style:dashed;color:var(--dim)}
         <div class="field full"><label>包名 <span class="hint">留空自动生成</span></label>
           <input type="text" id="k_name" placeholder="例如：早餐真相-2190条"></div>
       </div>
-      <div class="acts"><button class="pri" data-run="pack">导出蒸馏包</button></div>
+      <div class="acts">
+        <label class="chk"><input type="checkbox" id="k_gloss">生成黑话提示</label>
+        <div class="spacer"></div>
+        <button class="pri" data-run="pack">导出蒸馏包</button>
+      </div>
+      <div class="note" style="margin-top:14px">
+        <b>已有一个包，只想补跑 AI？</b> 填下面的包目录，直接生成指南（需先在「🤖 AI 设置」配好）。
+        没配 AI 时这里有提示，不会静默失败。
+        <div class="grid" style="margin-top:10px">
+          <div class="field full"><label>蒸馏包目录 <span class="hint">含 corpus_ccf.csv 的那一层</span></label>
+            <div class="row"><input type="text" id="k_pack" placeholder="E:/.../output/distill-20261030-031221">
+              <button class="mini" data-pick="k_pack" data-dir="1">选择</button></div></div>
+        </div>
+        <div class="acts" style="margin-top:10px">
+          <button class="pri alt" data-run="distill">只跑 AI 蒸馏</button>
+        </div>
+        <div class="log" data-log="distill"></div>
+        <div class="res" data-res="distill"></div>
+      </div>
       <div class="log" data-log="pack"></div>
       <div class="res" data-res="pack"></div>
       <div class="note" style="margin-top:14px">
@@ -336,6 +438,8 @@ const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
 
 const PANES = [
+  ["auto",   "⚡ 一键完成"],
+  ["ai",     "🤖 AI 设置"],
   ["crawl",  "① 采集"],
   ["prep",   "② 预处理"],
   ["pack",   "③ 蒸馏包"],
@@ -347,17 +451,32 @@ const FILTERS = {csv: [".csv"], md: [".md", ".markdown"], html: [".html", ".htm"
 /* ── 标签切换 ── */
 function buildTabs(){
   const box = $("#tabs");
-  PANES.forEach((p, i) => {
+  // 默认高亮必须和默认可见面板一致：之前把第 3 个页签写死成 on，
+  // 而 HTML 里默认显示的是 ① 采集 —— 用户看到"选中的是③、内容是①"，
+  // 点③才第一次对齐，等于让用户先怀疑一遍这软件是不是坏了。
+  const first = $(".pane:not([hidden])");
+  const firstKey = first ? first.dataset.p : (PANES[0] && PANES[0][0]);
+  // 编号只给"有先后顺序的步骤"：⚡ 与 AI 设置不属于第几步，
+  // 给它们编 1、2 会把 ① 采集挤成"3"，读起来像顺序错乱。
+  const NO_NUM = new Set(["auto", "ai"]);
+  let step = 0;
+  PANES.forEach(p => {
     const b = document.createElement("button");
-    b.className = "tab" + (i === 2 ? " on" : "");
-    b.innerHTML = '<span class="n">' + (i + 1) + "</span>" + p[1];
-    b.onclick = () => {
-      $$(".tab").forEach(x => x.classList.remove("on"));
-      b.classList.add("on");
-      $$(".pane").forEach(s => s.hidden = s.dataset.p !== p[0]);
-    };
+    b.className = "tab" + (p[0] === firstKey ? " on" : "");
+    b.dataset.k = p[0];
+    const num = NO_NUM.has(p[0]) ? "" : String(++step);
+    b.innerHTML = num ? '<span class="n">' + num + "</span>" + p[1] : p[1];
+    b.onclick = () => goTab(p[0], b);
     box.appendChild(b);
   });
+}
+/* 按 key 切页签。设置页与结果页要能互相跳（"去配 AI"、失败后"回去重跑"），
+   所以抽成函数，不绑死在按钮的 onclick 里。 */
+function goTab(key, btn){
+  const tabBtn = btn || $$(".tab").find(x => x.dataset.k === key);
+  $$(".tab").forEach(x => x.classList.remove("on"));
+  if (tabBtn){ tabBtn.classList.add("on"); tabBtn.scrollIntoView({block:"nearest"}); }
+  $$(".pane").forEach(s => s.hidden = s.dataset.p !== key);
 }
 
 /* ── 接口 ── */
@@ -445,15 +564,37 @@ function closePicker(){ $("#mask").classList.remove("show"); }
 
 /* ── 运行作业 ── */
 const JOBS = {};
-function paneOf(a){ return $$(".pane").find(s => s.dataset.p === a); }
+// 一个页签可能挂多个动作（「一键完成」同时有 auto / full）：
+// 日志框、结果框、停止键都归属页签，不归属动作。
+const RUNPANE = {distill: "pack"};
+function paneOf(a){ return $$(".pane").find(s => s.dataset.p === (RUNPANE[a] || a)); }
 function setBusy(a, on, label){
-  const b = paneOf(a).querySelector("[data-run]");
+  // auto 与 full 共用「一键完成」这一页，所以不能笼统取页内第一个按钮——
+  // 那样点「一键出报告」会把「跑到蒸馏包」那个按钮改成"运行中"。
+  const b = paneOf(RUNPANE[a] || a).querySelector('[data-run="' + a + '"]')
+          || paneOf(a).querySelector("[data-run]");
   b.disabled = on;
-  b.textContent = on ? (label || "运行中…") : b.dataset.label || b.textContent;
-  if (on) b.dataset.label = b.dataset.label || label || "运行中…";
+  if (on){
+    // 原件标签必须在**还没被改写**的这一刻存下来。
+    // 旧写法把 "运行中…" 也存进 dataset.label，于是任务结束后
+    // 按钮还原成"运行中…"并且 disabled 已放开 —— 看上去永远在跑。
+    if (!b.dataset.label) b.dataset.label = b.textContent.trim();
+    b.textContent = label || "运行中…";
+  } else {
+    b.textContent = b.dataset.label || "运行";
+  }
+  // 有「停止」按钮的步骤（如采集）在跑的时候才把它露出来
+  const s = paneOf(RUNPANE[a] || a).querySelector("[data-stop]");
+  if (s) s.hidden = !on;
 }
-function logBox(a){ return paneOf(a).querySelector('[data-log="' + a + '"]'); }
-function resBox(a){ return paneOf(a).querySelector('[data-res="' + a + '"]'); }
+function logBox(a){
+  const p = paneOf(a);
+  return p.querySelector('[data-log="' + a + '"]') || p.querySelector("[data-log]");
+}
+function resBox(a){
+  const p = paneOf(a);
+  return p.querySelector('[data-res="' + a + '"]') || p.querySelector("[data-res]");
+}
 
 function num(id, dflt){
   const v = parseFloat($("#" + id).value);
@@ -464,12 +605,20 @@ function lines(id){
 }
 
 const BUILDERS = {
+  auto:  () => ({arg: $("#a_arg").value.trim(), outdir: $("#a_out").value.trim(),
+                 name: $("#a_name").value.trim(),
+                 roots_only: $("#a_roots").checked,
+                 with_glossary: $("#a_gloss").checked,
+                 low_max: num("p_lowmax", 8), low_min_len: num("p_lowlen", 120)}),
+  // full 与 auto 吃同一组输入，只在"要不要继续跑 AI"上不同
+  distill: () => ({pack_dir: $("#k_pack").value.trim()}),
   crawl: () => ({arg: $("#c_arg").value.trim(), out: $("#c_out").value.trim(),
                  roots_only: $("#c_roots").checked}),
   prep:  () => ({input: $("#p_in").value.trim(), outdir: $("#p_out").value.trim(),
                  low_max: num("p_lowmax", 8), low_min_len: num("p_lowlen", 120)}),
   pack:  () => ({input: $("#k_in").value.trim(), outdir: $("#k_out").value.trim(),
                  name: $("#k_name").value.trim(),
+                 with_glossary: $("#k_gloss").checked,
                  low_max: num("p_lowmax", 8), low_min_len: num("p_lowlen", 120)}),
   verify:() => ({guide: $("#v_guide").value.trim(), corpora: lines("v_corpus"),
                  field: $("#v_field").value.trim() || null}),
@@ -506,10 +655,24 @@ function poll(a, id){
     box.scrollTop = box.scrollHeight;
     if (!d.done){ setTimeout(tick, 400); return; }
     setBusy(a, false);
+    // 主动停止不是失败：别拿红框喊"失败"，用户会以为程序坏了
+    if (d.status === "cancelled"){
+      return showRes(a, Object.assign({cls:"warn", head:"⏹ 已停止（部分结果）"}, d.result || {}));
+    }
     if (d.error) return fail(a, d.error);
     showRes(a, d.result || {});
   };
   tick();
+}
+
+async function stop(a){
+  const id = JOBS[a];
+  if (!id) return;
+  const btn = paneOf(a).querySelector("[data-stop]");
+  if (btn){ btn.disabled = true; btn.textContent = "正在停止…"; }
+  try { await post("/api/cancel", {job: id}); }
+  catch(e){ /* 轮询会看到最终状态，这里不吵 */ }
+  if (btn){ btn.disabled = false; btn.textContent = "停止"; }
 }
 function fail(a, msg){
   setBusy(a, false);
@@ -527,8 +690,28 @@ function showRes(a, d){
 }
 
 const RENDER = {
+  auto(d){
+    let s = "";
+    // 报告是"一键到底"的最终交付物，必须能一键打开。
+    // 没有这段，用户看到"🎉 报告已生成"却在页面上找不到入口——
+    // 只能从文件列表里下载 HTML，体验上等于没完成。
+    const rep = (d.kv || {})["报告"];
+    if (rep){
+      s += '<div style="margin:12px 0;display:flex;gap:8px;flex-wrap:wrap">' +
+        '<a href="/preview?path=' + encodeURIComponent(rep) + tokParam() + '" target="_blank" ' +
+        'style="background:var(--acc);color:#fff;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:550">↗ 打开报告</a>' +
+        '<a href="/download?path=' + encodeURIComponent(rep) + tokParam() + '" ' +
+        'style="border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:13px">⬇ 下载 HTML</a>' +
+        "</div>";
+    }
+    if (d.verdict) s += '<div class="steps">' + d.verdict + "</div>";
+    s += kv(d.kv || {}) + files(d.files);
+    if (d.next) s += '<div class="steps"><b>下一步</b>：' + esc(d.next) + "</div>";
+    return s;
+  },
   crawl(d){
-    return kv(d.kv || {}) + files(d.files);
+    return kv(d.kv || {}) + files(d.files) +
+      (d.next ? '<div class="steps">' + esc(d.next) + "</div>" : "");
   },
   prep(d){
     return kv(d.kv || {}) + files(d.files) +
@@ -544,6 +727,15 @@ const RENDER = {
            "幻觉引用：" + esc(d.bad.join("、")) + "</div>";
     }
     return s + kv(d.kv || {});
+  },
+  distill(d){
+    let s = '<div class="steps">' + (d.verdict || "") + "</div>";
+    if (d.bad && d.bad.length){
+      s += '<div style="margin-top:10px;color:var(--err);font-family:var(--mono);font-size:12px">' +
+           "幻觉引用：" + esc(d.bad.join("、")) + "</div>";
+    }
+    return s + kv(d.kv || {}) + files(d.files) +
+      (d.next ? '<div class="steps">' + esc(d.next) + "</div>" : "");
   },
   emit(d){
     let s = '<div class="steps">' + d.verdict + "</div>";
@@ -570,11 +762,70 @@ function files(fs){
     esc(f.name) + "</a>").join("") + "</div>";
 }
 
+/* ── AI 设置 ── */
+function mlog(msg){
+  const b = $("#m_log");
+  b.classList.add("show");
+  b.textContent = msg;
+}
+async function loadLLM(){
+  try {
+    const d = await api("/api/llm");
+    if (d.configured){
+      $("#m_base").value = d.base_url || "";
+      $("#m_model").value = d.model || "";
+      $("#m_state").textContent = "已配置：" + (d.model || "") ;
+      $("#m_state").style.color = "var(--ok)";
+      $("#ai_note").dataset.on = "1";
+    } else {
+      $("#m_state").textContent = "未配置 → 一键只到蒸馏包";
+      $("#m_state").style.color = "var(--muted)";
+      $("#ai_note").dataset.on = "0";
+    }
+    $("#m_path").textContent = d.path || "—";
+  } catch(e){
+    $("#m_state").textContent = "读取失败：" + e.message;
+  }
+}
+async function saveLLM(){
+  const btn = $("#m_save");
+  btn.disabled = true;
+  try {
+    const r = await post("/api/llm", {
+      base_url: $("#m_base").value.trim(),
+      model: $("#m_model").value.trim(),
+      api_key: $("#m_key").value,          // 留空 = 不改已存的 Key
+      timeout: num("m_timeout", 600),
+      max_corpus_chars: num("m_chars", 120000),
+    });
+    if (r.error) return mlog("✗ " + r.error);
+    $("#m_key").value = "";
+    mlog("✓ 已保存到 " + r.path + "\n" + (r.status || {}).describe);
+    await loadLLM();
+  } catch(e){ mlog("✗ 保存失败：" + e.message); }
+  finally { btn.disabled = false; }
+}
+async function testLLM(){
+  const btn = $("#m_test");
+  btn.disabled = true;
+  mlog("正在发一条最小请求…（用的是已保存的配置，改了记得先保存）");
+  try {
+    const r = await post("/api/llm/test", {});
+    if (r.ok) mlog("✓ 连通（" + r.elapsed + "s），模型回复：" + (r.reply || ""));
+    else mlog("✗ " + (r.error || "失败"));
+  } catch(e){ mlog("✗ " + e.message); }
+  finally { btn.disabled = false; }
+}
+
 /* ── 启动 ── */
 async function boot(){
   buildTabs();
   $$("[data-run]").forEach(b => b.onclick = () => run(b.dataset.run));
+  $$("[data-stop]").forEach(b => b.onclick = () => stop(b.dataset.stop));
   $$("[data-pick]").forEach(b => b.onclick = () => openPicker(b));
+  $("#m_save").onclick = saveLLM;
+  $("#m_test").onclick = testLLM;
+  loadLLM();
   $("#dclose").onclick = closePicker;
   $("#dup").onclick = () => browse($("#dbody").dataset.parent || "");
   $("#dok").onclick = okPick;
@@ -595,18 +846,82 @@ async function boot(){
       const lb = document.querySelector(".local");
       if (lb){ lb.textContent = "🌐 局域网（令牌）"; lb.title = "局域网模式：同网段设备凭令牌访问，文件选择器可用，功能全开"; }
     }
-    $$('input[id$="_out"]').forEach(i => { if (!i.value) i.value = h.outdir; });
-    $$('input[id$="_in"]').forEach(i => { if (!i.value) i.value = ""; });
+    // 只有「输出目录」类字段才预填默认目录。
+    // *_out 里混着两类语义：p_out / k_out 是目录，c_out / e_out 是文件路径。
+    // 早先用 input[id$="_out"] 一刀切，把目录名填进了文件名位置，
+    // ① 采集和 ⑤ 报告会在写盘时抛 PermissionError / IsADirectoryError。
     $("#p_out").value = h.outdir; $("#k_out").value = h.outdir;
+    const cOut = $("#c_out"), eOut = $("#e_out");
+    const aOut = $("#a_out");
+    if (aOut && !aOut.value) aOut.value = h.outdir;
+    if (cOut && !cOut.value) cOut.value = h.outdir + "\\comments.csv";
+    if (eOut && !eOut.value) eOut.value = h.outdir + "\\report.html";
     if (h.sample_corpus){ $("#p_in").value = h.sample_corpus; $("#k_in").value = h.sample_corpus; }
     if (h.sample_guide){
       $("#v_guide").value = h.sample_guide; $("#e_guide").value = h.sample_guide;
       if (!$("#v_corpus").value && h.sample_corpus) $("#v_corpus").value = h.sample_corpus;
       if (!$("#e_corpus").value && h.sample_corpus) $("#e_corpus").value = h.sample_corpus;
     }
+    restoreForm();   // 有上次填过的就盖回默认值
+    bindFormMemory();
   } catch(e){
     $("#ck").className = "badge err"; $("#ckt").textContent = "无法连接后端";
   }
+}
+
+/* ── 表单记忆 ──
+   五个步骤是一条长链，用户可能中途去改别的东西、手一抖关了页面、或者刷新。
+   没有记忆时所有填过的路径全部归零，得从头再选一遍——这不是"够用"，
+   是逼人重做。存 localStorage 只是路径字符串，不碰任何语料内容。 */
+const MEMKEY = "cd.form.v1";
+const MEM_IDS = ["a_arg","a_out","a_name","c_arg","c_out","p_in","p_out","p_lowmax","p_lowlen",
+                 "k_in","k_out","k_name","v_guide","v_field","v_corpus",
+                 "e_guide","e_out","e_title","e_sub","e_corpus"];
+
+function restoreForm(){
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(MEMKEY) || "{}") || {}; } catch(e){ saved = {}; }
+  MEM_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && typeof saved[id] === "string" && saved[id]) el.value = saved[id];
+  });
+  if (typeof saved.c_roots === "boolean"){
+    const cb = document.getElementById("c_roots");
+    if (cb) cb.checked = saved.c_roots;
+  }
+  if (typeof saved.a_roots === "boolean"){
+    const cb = document.getElementById("a_roots");
+    if (cb) cb.checked = saved.a_roots;
+  }
+  if (saved.e_noverify === true){
+    const cb = document.getElementById("e_noverify");
+    if (cb) cb.checked = true;
+  }
+}
+
+function bindFormMemory(){
+  const save = () => {
+    const o = {};
+    MEM_IDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) o[id] = el.value;
+    });
+    const r = document.getElementById("c_roots");
+    if (r) o.c_roots = r.checked;
+    const ar = document.getElementById("a_roots");
+    if (ar) o.a_roots = ar.checked;
+    const nv = document.getElementById("e_noverify");
+    if (nv) o.e_noverify = nv.checked;
+    try { localStorage.setItem(MEMKEY, JSON.stringify(o)); } catch(e){ /* 隐私模式忽略 */ }
+  };
+  MEM_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener("change", save);
+  });
+  ["c_roots", "a_roots", "e_noverify"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener("change", save);
+  });
 }
 boot();
 </script>

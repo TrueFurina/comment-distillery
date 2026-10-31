@@ -18,19 +18,24 @@
 """
 
 import importlib.util
+import os
 import re
 import shutil
 import sys
 import time
 from pathlib import Path
 
-APP_VERSION = "1.0.0"
+# 与 SKILL.md 的 version 字段、Git tag 保持同一口径。
+# 早先长期停在 "1.0.0"，导致界面徽章 / GUI 标题 / exe --selfcheck 对外报告的
+# 版本，与真实发布版（1.7.0）对不上——用户据此判断"我装的是哪版"会直接误判。
+APP_VERSION = "1.7.0"
 
 # 随包资源相对路径（打包时需由 scripts/build_exe.py 的 --add-data 收进来）
 RES_SKILL = "SKILL.md"
 RES_DOCS = ("docs/canonical-format.md", "docs/pipeline.md")
 RES_PREP = "scripts/prep.py"
 RES_VERIFY = "scripts/verify_citations.py"
+RES_VERIFYNUM = "scripts/verify_numbers.py"
 RES_RULETAGS = "scripts/check_rule_tags.py"
 RES_EMIT = "scripts/emit_html.py"
 RES_CRAWL = "contrib/fetch_bilibili_comments.py"
@@ -53,6 +58,51 @@ def resource_root() -> Path:
 
 def is_frozen() -> bool:
     return bool(getattr(sys, "frozen", False))
+
+
+def app_root() -> Path:
+    """程序**自己的位置**——用来落盘所有产物。
+
+    和 `resource_root()` 的区别很关键：
+    - 源码运行：两者都是仓库根；
+    - 打包后：`resource_root()` 是 `_MEIPASS`（每次启动解到临时目录、退出即删），
+      拿它当输出位置会**每次换个地方**、甚至写完就被清掉。
+      真正稳定的位置是 exe 自己所在的目录（`sys.executable`）。
+    """
+    if is_frozen():
+        return Path(sys.executable).resolve().parent
+    return Path(__file__).resolve().parent.parent
+
+
+def default_outdir() -> Path:
+    """默认输出根：**统一放在程序目录下**，不写用户主目录。
+
+    早先取 `Path.home() / "comment-distillery-output"`，理由是"装到 Program Files
+    会没权限"。但实际使用中这造成了两处割裂：程序在 E 盘、产物在 C 盘用户目录，
+    同一个项目的文件散在两个盘上，找起来全靠翻。
+
+    现在的规则：产物一律落在 `<程序目录>/output/`。
+    - 源码运行 → 仓库根下的 `output/`（已在 .gitignore 里）
+    - exe → exe 同级的 `output/`
+    只有该位置不可写（如被装进 Program Files 且无权限）时，才退回用户目录。
+    """
+    preferred = app_root() / "output"
+    try:
+        preferred.mkdir(parents=True, exist_ok=True)
+        probe = preferred / ".writable"
+        probe.write_text("ok", encoding="utf-8")
+        probe.unlink(missing_ok=True)
+        return preferred
+    except OSError:
+        fallback = Path.home() / "comment-distillery-output"
+        fallback.mkdir(parents=True, exist_ok=True)
+        return fallback
+
+
+def outdir_or_default(value=None) -> str:
+    """把用户给的输出目录按统一规则归一：空值 -> 默认根。"""
+    s = (value or "").strip()
+    return s if s else str(default_outdir())
 
 
 def _load(alias: str, rel_path: str):
@@ -83,6 +133,10 @@ def _prep_mod():
 
 def _verify_mod():
     return _load("cd_verify", RES_VERIFY)
+
+
+def _verify_num_mod():
+    return _load("cd_verifynum", RES_VERIFYNUM)
 
 
 def _ruletags_mod():
@@ -149,6 +203,174 @@ def emit_report(guide, out=None, corpora=None, field=None,
         guide, out, corpora, field, title, subtitle, no_verify,
         root=str(resource_root()),
     )
+
+
+# ────────────────────── 蒸馏（可选：用户自带 AI） ──────────────────────
+#
+# ⚠️ 这一节**没有**引入"内置 LLM"，只是把 v1.7.0 里"用户自己把包拖给 AI"
+# 那一跳自动化了——模型、Key、额度全在用户侧。
+# 未配置时 `llm_status()["configured"]` 为 False，一键流程与旧版逐字一致。
+
+def llm_status():
+    """读当前 AI 配置（不含 Key 明文）。"""
+    from . import llm as _llm
+    cfg = _llm.load_config(app_root())
+    return {"configured": bool(cfg.get("configured")),
+            "model": cfg.get("model", ""),
+            "base_url": cfg.get("base_url", ""),
+            "source": cfg.get("source", "none"),
+            "missing": cfg.get("missing", []),
+            "describe": _llm.describe(cfg),
+            "path": cfg.get("path", "")}
+
+
+def save_llm_config(base_url, api_key, model, timeout=600, max_corpus_chars=120000):
+    """写 <程序目录>/llm.json。api_key 传空串表示"不改动已存的 Key"。"""
+    import json as _json
+    from . import llm as _llm
+    p = _llm.config_path(app_root())
+    old = {}
+    if p.exists():
+        try:
+            old = _json.loads(p.read_text(encoding="utf-8")) or {}
+        except Exception:
+            old = {}
+    cfg = dict(old)
+    cfg["base_url"] = (base_url or "").strip().rstrip("/")
+    if model is not None:
+        cfg["model"] = (model or "").strip()
+    if api_key:                                   # 空 = 保留旧 Key
+        cfg["api_key"] = api_key.strip()
+    cfg["timeout"] = int(timeout or 600)
+    cfg["max_corpus_chars"] = int(max_corpus_chars or 120000)
+    cfg.setdefault("max_repair_rounds", 2)
+    p.write_text(_json.dumps(cfg, ensure_ascii=False, indent=2), encoding="utf-8")
+    try:
+        os.chmod(p, 0o600)     # 尽力而为：Windows 上是 no-op，POSIX 上收权限
+    except Exception:
+        pass
+    return {"path": str(p), "status": llm_status()}
+
+
+def distill_package(pack_dir, on_log=None, on_delta=None, should_stop=None,
+                    max_rounds=None):
+    """对一个已生成的蒸馏包跑「AI 写指南 → 机验 → 修正」。
+
+    返回见 app/distill.py::distill()。未配置 AI 时抛 RuntimeError（带人话提示）。
+    """
+    from . import distill as _distill
+    from . import llm as _llm
+    cfg = _llm.load_config(app_root())
+    if not cfg.get("configured"):
+        raise RuntimeError("未配置 AI：" + _llm.describe(cfg)
+                           + "。请先在「AI 设置」里填 endpoint / Key / 模型名，"
+                             "或留空以只生成蒸馏包。")
+
+    def _verify(guide_path, corpus_csv):
+        r = verify_guide(guide_path, [corpus_csv])
+        out = {"cited": len(r.get("cited") or []),
+               "bad": list(r.get("bad") or []), "num_issues": []}
+        # 数字机验：抓"引用全真但数字算错"——那是最像可信的错误。
+        try:
+            n = _verify_num_mod()
+            issues, _checked = n.collect(str(guide_path), str(corpus_csv))
+            out["num_issues"] = list(issues or [])
+        except Exception as e:
+            out["num_issues"] = []
+            out["num_error"] = f"{type(e).__name__}: {e}"
+        return out
+
+    return _distill.distill(pack_dir, cfg, on_log=on_log, on_delta=on_delta,
+                            should_stop=should_stop, verify_fn=_verify,
+                            max_rounds=max_rounds)
+
+
+def finish_after_pack(pack_dir, on_log=None, should_stop=None):
+    """蒸馏包已就绪之后的收尾：配了 AI 就继续到报告，没配就到此为止。
+
+    **这是「一键」真正语义的唯一实现**，GUI 与 Web 都必须走它。
+    为什么抽到 core：两个前端各写一遍必然漂移（本仓库为此付过代价），
+    而且"到底算不算跑完"这种事，只该有一个地方说了算。
+
+    返回值（都带 mode 字段，前端据此决定文案）：
+        mode="pack-only"       未配置 AI，只出了包（也可因 AI 失败而降级）
+        mode="guide-unverified" 指南生成了但机验没过，**未出报告**
+        mode="full"            报告已生成且机验通过
+    附带 ai / ai_error / distill / report / stale_report 等字段供展示。
+    """
+    log = on_log or (lambda m: None)
+    pack = Path(pack_dir)
+    out = {"mode": "pack-only", "pack_dir": str(pack), "ai": {}, "distill": None,
+           "report": None, "ai_error": ""}
+
+    status = llm_status()
+    out["ai"] = {"configured": bool(status.get("configured")),
+                 "model": status.get("model", "")}
+
+    if not status.get("configured"):
+        log("")
+        log("④ 跳过 AI 蒸馏：" + status.get("describe", "未配置"))
+        log("   把包目录拖进任意 AI 就能拿到带引用的指南（零成本）。")
+        log("   想全自动出报告：去「AI 设置」填 endpoint / Key / 模型名后重跑。")
+        out["skipped_reason"] = "no-ai"
+        return out
+
+    if should_stop and should_stop():
+        out["skipped_reason"] = "stopped"
+        return out
+
+    log("")
+    log("④ AI 蒸馏：" + status.get("describe", ""))
+    try:
+        d = distill_package(str(pack), on_log=log, should_stop=should_stop)
+    except RuntimeError as e:
+        # AI 挂了不该把前三步成果作废：包已在，用户能手动拿走。
+        log(f"   ⚠️ AI 蒸馏失败：{e}")
+        log(f"   前三步的蒸馏包仍然可用：{pack}")
+        out["ai_error"] = str(e)
+        return out
+
+    out["distill"] = d
+
+    if d.get("passed") is False:
+        moved = _stale_report(str(pack))
+        if moved:
+            log(f"   上一轮的报告已改名避让：{moved}")
+        log("   机验未过：不出 HTML 报告。差集非空的指南不算可交付报告。")
+        out["mode"] = "guide-unverified"
+        out["stale_report"] = moved
+        return out
+
+    if should_stop and should_stop():
+        return out
+
+    log("⑤ 出报告…")
+    em = emit_report(d["guide_path"], str(pack / "report.html"),
+                     [str(pack / "corpus_ccf.csv")])
+    out["report"] = em
+    out["mode"] = "full"
+    log(f"   报告：{em['out']}")
+    return out
+
+
+def _stale_report(pack_dir):
+    """机验未过时，把上一轮的 report.html 挪开。
+
+    否则会出现最坏的一种误导：用户重跑了一次，机验其实没过，
+    但目录里躺着一份**上一轮**的报告——点开看着完好，页首还写着
+    "机验通过"。那比没有报告更糟：它让人相信了一份没被验证的东西。
+
+    不删除，只改名加 .stale-<时间戳>，用户想找回来还在。
+    """
+    rep = Path(pack_dir) / "report.html"
+    if not rep.exists():
+        return ""
+    dst = rep.with_name(f"report.html.stale-{time.strftime('%Y%m%d-%H%M%S')}")
+    try:
+        rep.replace(dst)
+        return str(dst)
+    except OSError:
+        return ""
 
 
 # ────────────────────────────── 蒸馏包导出 ──────────────────────────────
@@ -261,7 +483,7 @@ def _summarize_stats(stats: dict) -> str:
 
 
 def export_package(input_csv, outdir, package_name=None,
-                   low_max=8, low_min_len=120, on_log=None):
+                   low_max=8, low_min_len=120, on_log=None, with_glossary=False):
     """一键：原始语料 CSV -> 预处理 -> 蒸馏包目录。
 
     包内同时含"给人看的说明"与"给 AI 读的语料 + 方法论"，拿到即用。
@@ -278,6 +500,12 @@ def export_package(input_csv, outdir, package_name=None,
     stamp = time.strftime("%Y%m%d-%H%M%S")
     name = _sanitize_name(package_name) or f"comment-distillery-pack-{stamp}"
     pack_dir = Path(outdir) / name
+    if pack_dir.exists() and any(pack_dir.iterdir()):
+        # 同名重跑不能就地覆盖：mkdtemp 式的"复用同名目录"会让上一次的
+        # 残留文件跟这一次的产物混在一起，用户分不清哪份是这次的结果。
+        # 实测：在包里放一个标记文件，重跑后它仍在 —— 就是这个问题。
+        # 这里改名为 <name>-<时间戳>，两次结果各占一个目录，互不污染。
+        pack_dir = Path(outdir) / f"{name}-{stamp}"
     pack_dir.mkdir(parents=True, exist_ok=True)
 
     log(f"[1/4] 预处理语料 → {pack_dir}")
@@ -313,6 +541,19 @@ def export_package(input_csv, outdir, package_name=None,
                             .replace("{summary}", _summarize_stats(stats)),
         encoding="utf-8")
 
+    # 黑话提示（可选，默认关）：
+    # 生成代价几乎为零，但它只"提示哪里可能有坑"，不做解释——所以默认关，
+    # 需要的人勾一下即可，避免给不需要的人多一个看不懂的文件。
+    if with_glossary:
+        try:
+            from . import glossary as _gl
+            gp = _gl.write_glossary(str(pack_dir))
+            copied.append("GLOSSARY.md")
+            log(f"      已生成黑话提示：{Path(gp).name}"
+                "（只提示，不解释；含义未确认时请勿猜）")
+        except Exception as e:
+            log(f"      ⚠️ 黑话提示生成失败（不影响其余产物）：{e}")
+
     files = sorted(p.name for p in pack_dir.iterdir() if p.is_file())
     log(f"完成：{pack_dir}（{len(files)} 个文件）")
     return {"pack_dir": str(pack_dir), "files": files, "name": name,
@@ -333,6 +574,7 @@ def selfcheck():
         ("方法论 SKILL.md", RES_SKILL),
         ("预处理脚本", RES_PREP),
         ("引用机验脚本", RES_VERIFY),
+        ("数字机验脚本", RES_VERIFYNUM),
         ("规则机验脚本", RES_RULETAGS),
         ("HTML 报告脚本", RES_EMIT),
         ("采集桥接脚本（可选）", RES_CRAWL),

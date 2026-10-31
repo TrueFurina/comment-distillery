@@ -127,10 +127,11 @@ If you'd rather not touch a terminal:
 
 **[⬇ Download comment-distillery.exe](https://github.com/TrueFurina/comment-distillery/releases/latest)** — ~12 MB, single file, no installer.
 
-Four tabs, in order:
+Opens straight into **⚡ One-click**: paste a link, press once, get a ready-to-use pack. Use the four tabs below when you need finer control:
 
 | Tab | What it does |
 |---|---|
+| **⚡ One-click** | paste a link or BV id → runs ①②③ in one go → a finished pack ready to hand to any AI |
 | **1. Collect** | Bilibili link → comments (incl. nested replies) → CSV; can stop midway and still writes what it got |
 | **2. Prep** | dedupe / denoise / stats. **Check `dup_dropped` before trusting any scale number** |
 | **3. Export pack** | one click → a folder with corpus + methodology + a paste-ready `PROMPT.md` |
@@ -374,7 +375,7 @@ comment-distillery/
 │   ├── 01…04/               # runs 1–4: real corpus → deep-dive guide
 │   ├── 05-mustwatch-math/   # runs 6+7: 15-chapter guide + 10-chapter addendum (3 claims corrected)
 │   └── notes/               # design notes: rationale / open-source sprint roadmap
-└── tests/                   # regression tests, 149 cases (run in CI)
+└── tests/                   # regression tests, 190 cases (run in CI)
 ```
 
 > `cases/` ships **artifacts only** (the guides + design docs, 9 md files / 277 KB).

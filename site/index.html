@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>comment-distillery · 评论蒸馏器 — 把一堆群体文本炼成一份有据可查的行动指南</title>
-<meta name="description" content="comment-distillery：Agent Skill + 零依赖工具链。把评论区 / 问卷开放题 / 访谈逐字稿 / 工单讨论蒸馏成带认知框架、共识与争议、反例对冲、引用溯源、行动清单与盲区说明的厚指南。十一战实战验证，149 项自动化测试，零第三方依赖。">
+<meta name="description" content="comment-distillery：Agent Skill + 零依赖工具链。把评论区 / 问卷开放题 / 访谈逐字稿 / 工单讨论蒸馏成带认知框架、共识与争议、反例对冲、引用溯源、行动清单与盲区说明的厚指南。十一战实战验证，190 项自动化测试，零第三方依赖。">
 <meta property="og:title" content="comment-distillery · 评论蒸馏器">
 <meta property="og:description" content="反例对冲 · 引用溯源 · 盲区诚实说明 —— 现有工具停在「告诉你大家什么情绪」，我们补的是 L3 建设性综合。">
 <meta property="og:type" content="website">
@@ -296,9 +296,9 @@ footer{border-top:1px solid var(--line);padding:44px 0 52px;margin-top:40px}
         <div class="os">桌面工具<small>Windows x64 · 单文件免安装</small></div>
         <a class="btn btn-dl" href="https://github.com/TrueFurina/comment-distillery/releases/latest">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          下载 exe · 12.0 MB
+          下载 exe · 11.5 MB
         </a>
-        <p>采集 → 预处理 → 导出蒸馏包 → 引用校验，四项全在图形界面里。</p>
+        <p>打开就是「⚡ 一键完成」：给个 B 站链接，一次跑完采集 → 预处理 → 蒸馏包，直接拿到能喂给 AI 的成品。</p>
       </div>
       <div class="dl-card">
         <div class="os">一行安装<small>Claude Code / Cursor / Codex …</small></div>
@@ -313,7 +313,7 @@ footer{border-top:1px solid var(--line);padding:44px 0 52px;margin-top:40px}
       </div>
     </div>
     <div class="dl-meta">exe 未做代码签名，首次运行 Windows SmartScreen 会拦截 —— 属正常现象。
-      v1.7.0 的 SHA-256：<code>aac6b9be8983a81949714ab08e21276fbfda03455a66239e09806769a5779275</code>
+      v1.7.0 的 SHA-256：<code>8de11dc3bc3e950eec8ea55f84b8c7f75555cf96789e7aa8011d8a5e3eb1f9d6</code>
       （以 <a href="https://github.com/TrueFurina/comment-distillery/releases">Releases</a> 页与实际产物为准）。</div>
 
     <div class="sample-cta">
@@ -325,7 +325,7 @@ footer{border-top:1px solid var(--line);padding:44px 0 52px;margin-top:40px}
     <div class="stats">
       <div class="stat"><div class="num">11</div><div class="lbl">战实战跑通</div></div>
       <div class="stat"><div class="num">10</div><div class="lbl">份深度指南</div></div>
-      <div class="stat"><div class="num">149</div><div class="lbl">项自动化测试</div></div>
+      <div class="stat"><div class="num">190</div><div class="lbl">项自动化测试</div></div>
       <div class="stat"><div class="num">0</div><div class="lbl">第三方依赖</div></div>
     </div>
   </div>
@@ -515,7 +515,8 @@ python scripts/emit_html.py \
     </div>
 
     <div class="note">
-      <b>桌面工具的四个页签</b>：① <b>采集</b>（B 站链接 → 评论含楼中楼 → CSV，支持中途停止、已抓部分照常写出）
+      <b>桌面工具</b>：打开即 <b>⚡ 一键完成</b>（给个链接，一次跑完 ①②③，直接拿到成品包）。
+      需要细调时用下面四页：① <b>采集</b>（B 站链接 → 评论含楼中楼 → CSV，支持中途停止、已抓部分照常写出）
       · ② <b>预处理</b>（去重/去噪/统计，先看 <code>dup_dropped</code>）
       · ③ <b>导出蒸馏包</b>（一键打包，含 <code>PROMPT.md</code>）
       · ④ <b>引用校验</b>（幻觉引用差集检测）。

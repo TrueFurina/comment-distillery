@@ -17,6 +17,7 @@ CI 的 Python（含本机的 managed 版）**没有 tkinter**，窗口构造不�
 """
 
 import ast
+import sys
 import unittest
 from pathlib import Path
 
@@ -115,6 +116,39 @@ class TestGuiWiring(unittest.TestCase):
                       "关于页应保留「启动本地 Web 界面」按钮——非 Windows 用户靠它")
         self.assertIn("def start_webui", self.src)
 
+    # ── 2a. GUI 必须也有一键入口（exe 默认打开的是 tkinter） ──
+    def test_gui_has_one_click_tab(self):
+        """exe 双击进的是 tkinter，没有一键页就等于"一键完成"对 exe 用户不存在。"""
+        self.assertIn("class AutoTab", self.src)
+        self.assertIn('nb.add(self.tabs["auto"]', self.src)
+        self.assertIn("def one_click", self.src)
+        # 一键页应在最前：多数人只想"放进去、拿出来"
+        idx_auto = self.src.index('nb.add(self.tabs["auto"]')
+        idx_crawl = self.src.index('nb.add(self.tabs["crawl"]')
+        self.assertLess(idx_auto, idx_crawl, "一键页应排在采集页之前")
+
+    def test_one_click_never_touches_widgets_from_worker(self):
+        """后台线程里不许调 set_status / 碰控件。
+
+        实测踩过：one_click 里写 task.set_status(...)，而 Task 没有该方法，
+        后台线程抛 AttributeError，界面弹「任务失败」——但产物其实已经生成。
+        这类错误只在真跑 GUI 时出现，静态看代码很容易漏。
+        """
+        tree = ast.parse(self.src)
+        fn = None
+        for n in ast.walk(tree):
+            if isinstance(n, ast.FunctionDef) and n.name == "one_click":
+                fn = n
+                break
+        self.assertIsNotNone(fn, "找不到 one_click")
+        bad = []
+        for n in ast.walk(fn):
+            if isinstance(n, ast.Attribute) and isinstance(n.value, ast.Name) \
+                    and n.value.id == "task" and n.attr not in (
+                        "log", "progress", "stopped"):
+                bad.append(f"task.{n.attr}")
+        self.assertEqual(bad, [], f"后台线程里用了不允许的 task 成员：{set(bad)}")
+
     # ── 2b. HTML 报告出口必须在（2026-10-24 接入） ──
     def test_html_report_entry_present(self):
         """「导出 HTML 报告」按钮必须留在 ④ 引用校验页。
@@ -169,6 +203,63 @@ class TestGuiWiring(unittest.TestCase):
                               "http", "pathlib", "socket", "ipaddress",
                               "sys", "argparse"}}
         self.assertEqual(third, set(), f"webui.py 引入了第三方依赖：{third}")
+
+    # ── 6. 入口不得吞掉自检开关 ──
+    def test_main_forwards_selftest_flags(self):
+        """`-m app --selftest-gui` 必须真的自检并退出，不能打开真窗口。
+
+        实测过的坏法：app/__main__.py 只认 --web，把其余参数当"多余"丢掉，
+        于是 --selftest-gui 变成「开一个真窗口、永远不退出」——打包冒烟
+        与 CI 全卡在那里。这类"开关被吞"只能靠行为和源码一起盯。
+        """
+        import subprocess
+        exe = sys.executable
+        r = subprocess.run([exe, "-m", "app", "--version"],
+                           cwd=str(ROOT), capture_output=True, text=True, timeout=90)
+        self.assertEqual(r.returncode, 0, r.stderr[-500:])
+        self.assertIn("comment-distillery", (r.stdout or "") + (r.stderr or ""))
+
+        src = (ROOT / "app" / "__main__.py").read_text(encoding="utf-8")
+        self.assertIn("app_main", src,
+                      "app/__main__.py 应把非 --web 开关转交 app_main，而不是自己吞掉")
+
+    # ── 7. 窗口尺寸必须容得下内容（高 DPI 下尤其） ──
+    def test_window_geometry_fits_content(self):
+        """窗口高度按内容真实需求定，不能写死 760。
+
+        实测：200% 缩放下五个页签内容需要 706~842px，而 760 减去页头/状态栏
+        只剩 654px —— 连最矮的页签都放不下，「开始采集」按钮被挤出可视区。
+        """
+        src = (ROOT / "app" / "gui.py").read_text(encoding="utf-8")
+        self.assertIn("winfo_reqheight", src,
+                      "应按 winfo_reqheight 自适应窗口高度")
+        self.assertIn("_fit_geometry", src)
+        # 允许在无显示环境跳过真建窗
+        try:
+            import tkinter as tk
+            tk.Tk().destroy()
+        except Exception:
+            self.skipTest("无图形环境，跳过真建窗验证")
+
+        sys.path.insert(0, str(ROOT))
+        from app import gui
+        app = gui.App()
+        try:
+            app.update_idletasks()
+            app.update()
+            nb = None
+            for c in app.winfo_children():
+                if "notebook" in str(c):
+                    nb = c
+            self.assertIsNotNone(nb, "找不到 notebook")
+            avail = nb.winfo_height()
+            for tab in nb.winfo_children():
+                need = tab.winfo_reqheight()
+                self.assertLessEqual(
+                    need, avail + 2,
+                    f"{str(tab).split('.')[-1]} 需要 {need}px，但 notebook 只有 {avail}px")
+        finally:
+            app.destroy()
 
 
 if __name__ == "__main__":

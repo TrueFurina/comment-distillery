@@ -13,7 +13,10 @@ agent_created: true
 
 - **开源仓库**：<https://github.com/TrueFurina/comment-distillery>（MIT，零依赖）
 - **官网**：<https://truefurina.github.io/comment-distillery/>
-- **桌面工具（Windows）**：`dist/comment-distillery.exe`（约 12 MB 单文件免安装）—— 采集 → 预处理 → 导出蒸馏包 → 引用校验 → 出 HTML 报告。**不内置 LLM**：它只负责把语料和本文件打包好，蒸馏那一步交给你自己的 AI，因此零 API Key、零成本，方法论也永远跟本文件一致。
+- **桌面工具（Windows）**：`dist/comment-distillery.exe`（约 12 MB 单文件免安装）—— 采集 → 预处理 → 导出蒸馏包 → 引用校验 → 出 HTML 报告。**不内置 LLM，但可以自带 Key（BYO-AI）**，一键有两条终点：
+  - **不填 AI** → 停在蒸馏包（语料 + 本文件 + `PROMPT.md`），你把包交给任意 AI。零 Key、零成本，方法论永远跟本文件一致。
+  - **填了 AI**（任何 OpenAI 兼容 endpoint，Key 只存本机 `llm.json`）→ 继续把指南写完、过引用机验、出 HTML 报告。模型和额度都在你这边，工具不内置、不代付、不代理。
+  两种模式下**机验都是闸门**：差集非空就不出报告，修不动就只交 markdown 并标注"未通过"。
 - **本地 Web 界面（跨平台）**：`python -m app --web` —— 浏览器里走完同样五步，纯标准库 `http.server`，只监听 127.0.0.1。**非 Windows 系统或无 exe 场景走这条**；它读的是仓库当前文件，不存在 exe 那种"产物滞后"。
 - **产出 HTML 报告（可选，对外交付时做）**：`python scripts/emit_html.py <指南.md> --corpus <语料.csv>` —— 零依赖，把 Markdown 指南转成**单文件自包含 HTML**（内联样式、无外链、可转发、可打印成 PDF）。每条 `[源:ID|…]` 渲染成**可点击角标**，跳到附录原句并可返回；页首写明「N 条引用 · 机验通过 · 差集 0」，差集非空时翻红。Markdown 是中间物，HTML 才是能交付出去的东西。
 - **详细文档**：`docs/` —— 格式规范 `canonical-format.md` / **语料从哪来 `collecting.md`** / 语料域适配 `domains.md`（⚠️ 除 B 站外均为**未验证外推**） / 流水线 `pipeline.md` / 合规 `compliance.md`

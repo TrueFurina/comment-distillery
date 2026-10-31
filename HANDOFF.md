@@ -48,23 +48,29 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 ├── scripts/publish.py                   （多平台发布器 GitHub Pages/知乎/B站/CSDN；含 Cookie，**不进 exe**）
 ├── scripts/check_rule_tags.py           （机验 SKILL.md 无「裸铁律」，含变异自验）
 ├── scripts/check_doc_consistency.py     （文档一致性机验：版本口径 / Release tag / 站点数字 / 锚点 / 中英对等 / 已证伪表述，含变异自验；同时取代了原先三处重复的「官网自检」内联实现）
+├── scripts/verify_numbers.py            （数字机验：查"引用真但算错"——引用机验的盲区）
 ├── scripts/build_exe.py                 （PyInstaller 打包脚本，仅构建期依赖，不进运行期）
 ├── scripts/make_icon.py                 （标准库手写 ICO）
 ├── contrib/fetch_bilibili_comments.py   （纯标准库 WBI 签名抓取，含去重与退避）
 ├── golden/                              （评估集：8 场景 / 4 类，判分器 + 跑分器 + 变异验证）
 ├── ROADMAP.md                           （长期规划 P0–P5 + P3.5，含验收门槛与停止条件）
-├── tests/                               （**149 项**，`unittest discover -s tests`；CI 强制）
-│   ├── test_prep.py                     （16）· test_verify_citations.py（11）· test_rule_tags.py（6）
-│   ├── test_golden.py                   （12）· test_app_core.py（16，桌面工具逻辑层）
+├── tests/                               （**190 项**，`unittest discover -s tests`；CI 强制）
+│   ├── test_prep.py                     （16）· test_verify_citations.py（13）· test_rule_tags.py（6）
+│   ├── test_golden.py                   （12）· test_app_core.py（23，桌面工具逻辑层）
 │   ├── test_emit_html.py                （12）· test_make_skill_zip.py（15，含可复现构建）
-│   ├── test_webui.py                    （35，含本地 / --lan / --public 三模式安全边界）
+│   ├── test_webui.py                    （54，含本地 / --lan / --public 三模式安全边界）
 │   ├── test_publish.py                  （17，含密钥与合规护栏）
-│   └── test_gui_wiring.py               （5，纯 AST —— 本机与 CI 都无 tkinter，GUI 改动靠它兜底）
+│   ├── test_verify_numbers.py           （12，数字机验 + 黑话提示的判据）
+│   ├── test_gui_wiring.py               （10，纯 AST —— 本机与 CI 都无 tkinter，GUI 改动靠它兜底）
+│   ├── smoke_distill.py                 （同进程冒烟：假 AI 编 ID → 机验拦截 → 修复 → 出报告）
+│   ├── e2e_web.py                       （真起 HTTP 服务走完一键：验路由与作业接线，非仅函数）
+│   └── fake_openai_server.py            （本地假网关，让端到端不花真钱；也可单独起）
 ├── docs/collecting.md                   （各社区采集工具 + 许可证 + 风险对照）
 ├── docs/retrospective.md                （十一战沉淀：五次修正 / 7 条判据 / 质量门 G1–G7）
-├── docs/rule-provenance.md              （规则溯源：9 铁律 / 5 待复现 / 8 环境事实 / 13 工程坑，附复现判据；计数由机验强制与 SKILL.md + docs/engineering-pitfalls.md 对齐）
-├── docs/engineering-pitfalls.md         （维护/构建类踩坑 13 条；★ **不进打包产物**——改它不必重发 exe）
+├── docs/rule-provenance.md              （规则溯源：9 铁律 / 5 待复现 / 8 环境事实 / 15 工程坑，附复现判据；计数由机验强制与 SKILL.md + docs/engineering-pitfalls.md 对齐）
+├── docs/engineering-pitfalls.md         （维护/构建类踩坑 15 条；★ **不进打包产物**——改它不必重发 exe）
 ├── docs/overturned.md                   （被推翻结论台账 OT-1…OT-5，含"再次推翻的条件"）
+├── docs/2026-10-27-工程复盘.md           （本轮工程复盘：为何"测试全绿但点不动" / 我犯的四个验证错误 / 一键流程的取舍）
 ├── docs/distribution.md                 （★ 分发作战清单：gh 命令 / awesome PR 文案 / 帖子骨架）
 ├── SKILL.md / README.md / README.en.md / CHANGELOG.md
 │
@@ -192,7 +198,7 @@ HEAD     见 `git log -1`（最后核验 2026-09-26 为 2cae432；**本文件每
          先前写法把 hash 写死，导致每次提交都要改一次，是自找的漂移源）
 origin   git@github.com:TrueFurina/comment-distillery.git   (SSH)
 CI       .github/workflows/ci.yml  **16 个质量门步骤**全绿
-         （compileall / 零依赖守卫 / 编码守卫 / 文档一致性机验 / 文档一致性变异验证 / unittest 149 项 /
+         （compileall / 零依赖守卫 / 编码守卫 / 文档一致性机验 / 文档一致性变异验证 / unittest 190 项 /
           无裸铁律 / 判据变异验证 / golden 变异 / golden 基线 / prep 冒烟 / 引用机验冒烟 /
           HTML 报告冒烟 / Web 界面冒烟 / **技能包 ZIP 冒烟** / 冒烟产出展示）
          另有 build-exe.yml（真打包 + --verify 资源核验 + 三道冒烟 + 文档一致性）与
@@ -305,8 +311,8 @@ CI       .github/workflows/ci.yml  **16 个质量门步骤**全绿
 ③ `HANDOFF.md` 里 Release 仍被列为待办（实际早已发布上线）。**靠自觉不如靠机验。**
 
 ```bash
-"$PY" "$REPO/scripts/check_doc_consistency.py"             # 10 项检查（存在 dist/*.exe 时会核对站点 SHA/体积）
-"$PY" "$REPO/scripts/check_doc_consistency.py" --self-test # 判据自身有效（21/21 变异必须被拦截）
+"$PY" "$REPO/scripts/check_doc_consistency.py"             # 11 项检查（存在 dist/*.exe 时会核对站点 SHA/体积）
+"$PY" "$REPO/scripts/check_doc_consistency.py" --self-test # 判据自身有效（22/22 变异必须被拦截）
 # CI 的打包工作流用 --no-artifact：站点记的是**已发布产物**，与 CI 现打包的字节必然不同
 # （PyInstaller 非可复现），硬比会逼出「永远不许重建」的假红线。
 ```

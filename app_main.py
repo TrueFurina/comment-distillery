@@ -58,6 +58,20 @@ def _selftest_run(core, outdir, report):
     import tempfile
     lines = []
     ok = True
+
+    # `--selftest-run` 的参数是**输出目录**，但极易被误传成 BV 号
+    # （文档里写 <dir>，人却习惯照抄 `--selftest-run BV1xxx`）。
+    # 早先的写法会静默把 BV 号当目录名建到 cwd，留下一个 `BV1xxx/` 垃圾目录。
+    # 这里认出"不像路径"的值就直接说清楚，别猜。
+    if outdir:
+        looks_like_path = any(c in outdir for c in ("\\", "/")) or outdir in (".", "..") \
+            or Path(outdir).suffix != ""
+        if not looks_like_path:
+            lines.append(f"FAIL --selftest-run 需要的是**输出目录**，不是 BV 号：{outdir}")
+            lines.append("     用法：--selftest-run <输出目录>，或直接省略该参数（会用临时目录）")
+            _emit(lines, report=report)
+            return 1
+
     outdir = outdir or tempfile.mkdtemp(prefix="cd-selftest-")
     try:
         root = core.resource_root()
@@ -102,7 +116,23 @@ def _selftest_run(core, outdir, report):
     return 0 if ok else 1
 
 
+def _utf8_stdout():
+    """把 stdout/stderr 切到 UTF-8，并在异常时降级而不是崩。
+
+    为什么放在 main() 最前面统一做：Windows 控制台默认 GBK，任何一处
+    `print("⚡ …")` / `print("✓ …")` 都会抛 UnicodeEncodeError 把整个启动打死。
+    这个坑已经踩到第三次（build_exe 自己修过、webui.main 修过、现在
+    gui.smoke_test 又踩），说明"各处自觉加"不可靠 —— 入口一次性兜住。
+    """
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+
+
 def main(argv=None):
+    _utf8_stdout()
     args = list(sys.argv[1:] if argv is None else argv)
 
     def opt(name):
@@ -140,10 +170,22 @@ def main(argv=None):
     if "--selftest-run" in args:
         return _selftest_run(core, opt("--selftest-run"), opt("--report"))
 
+    # exe 入口也要能起本地 Web 界面：源码用户走 `python -m app --web`，
+    # 而 exe 只有 app_main 这一个入口，不接这个开关就等于 exe 用户永远
+    # 只能用 tkinter（换机器 / 远程用就没法子了）。
+    if "--web" in args or "-w" in args:
+        from app.webui import main as webui_main
+        rest = [a for a in args if a not in ("--web", "-w")]
+        return webui_main(rest)
+
     from app.gui import main as gui_main, smoke_test
 
     if "--selftest-gui" in args:
-        return smoke_test()
+        rc = smoke_test()
+        info = list(getattr(smoke_test, "info", []))
+        _emit(info + [f"SELFTEST-GUI {'PASS' if rc == 0 else 'FAIL'}"],
+              report=opt("--report"))
+        return rc
 
     return gui_main()
 

@@ -71,7 +71,7 @@
 | 7 | 跨语料混引：一份指南只能引用自己的语料，凭印象带进相邻语料 ID 必被机验判幻觉 | 战9 / 战10 |
 | 8 | 说明性文字里的示例引用标记也会被机验当真引用 | 战8 |
 
-### 3.2 维护侧（对应 `docs/engineering-pitfalls.md`，13 条）
+### 3.2 维护侧（对应 `docs/engineering-pitfalls.md`，15 条）
 
 同样由 `scripts/check_doc_consistency.py` 机验与 `docs/engineering-pitfalls.md` 的条目数相等。
 
@@ -90,6 +90,8 @@
 | 11 | 在 CI 里比对"站点标注的产物哈希"会制造假红线（非可复现构建） | 同上 |
 | 12 | `actions/checkout` 在 tag 推送时默认只带那一个 tag（会把"存在的 tag"误判为不存在） | v1.4.1 tag 首跑 |
 | 13 | Actions 日志端点 302 后会转发 `Authorization` → `401 InvalidAuthenticationInfo` | 同上 |
+| 14 | 判断功能有没有进产物不能靠截图（截到的是屏幕矩形，可能是别的窗口；且物理/逻辑像素有别） | 2026-10-27 验证 exe 一键页 |
+| 15 | 编码兜底散在各处 → 同一个坑踩三次；缺统一入口才被迫复制 | 同上（build_exe / webui / smoke_test 各修一次） |
 
 ---
 

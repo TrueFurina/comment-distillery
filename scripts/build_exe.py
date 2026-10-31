@@ -62,6 +62,9 @@ ADD_DATA = [
     ("docs/pipeline.md", "docs"),
     ("scripts/prep.py", "scripts"),
     ("scripts/verify_citations.py", "scripts"),
+    # 数字机验：exe 里少了它，selfcheck 会 FAIL —— 这正是"漏 --add-data"的
+    # 典型症状，且只在启动时暴露。新增脚本必须同步加到这里。
+    ("scripts/verify_numbers.py", "scripts"),
     ("scripts/check_rule_tags.py", "scripts"),
     ("scripts/emit_html.py", "scripts"),
     ("contrib/fetch_bilibili_comments.py", "contrib"),

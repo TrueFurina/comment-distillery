@@ -37,6 +37,44 @@ class TestResources(unittest.TestCase):
     def test_skill_path_exists(self):
         self.assertTrue(core.skill_path().exists())
 
+    def test_outputs_live_under_app_root(self):
+        """所有产物统一落在程序目录下，不散到用户主目录。
+
+        早先默认是 `Path.home()/comment-distillery-output`：程序在 E 盘、
+        产物在 C 盘，同一个项目的文件分两个盘放，用户根本找不齐。
+        """
+        d = core.default_outdir()
+        self.assertEqual(d.resolve(), (ROOT / "output").resolve(),
+                         "源码运行时默认输出应为 <仓库根>/output")
+        self.assertTrue(d.is_dir(), "默认输出目录应被创建出来")
+        self.assertNotEqual(d.resolve(), (Path.home() / "comment-distillery-output").resolve())
+
+    def test_outdir_or_default_normalizes(self):
+        self.assertEqual(core.outdir_or_default(""), str(core.default_outdir()))
+        self.assertEqual(core.outdir_or_default("   "), str(core.default_outdir()))
+        self.assertEqual(core.outdir_or_default("D:/somewhere"), "D:/somewhere")
+
+    def test_app_root_differs_from_resource_root_when_frozen(self):
+        """打包后 resource_root 是 _MEIPASS（临时解包目录），不能当输出位置。"""
+        import inspect
+        src = inspect.getsource(core.app_root)
+        self.assertIn("sys.executable", src,
+                      "打包后 app_root 必须取 exe 所在目录，而不是 _MEIPASS")
+
+    def test_gui_and_web_share_one_default(self):
+        """GUI 与 Web 的默认输出必须是同一个地方（单一来源）。"""
+        gsrc = (ROOT / "app" / "gui.py").read_text(encoding="utf-8")
+        # 静态检查即可：不为一条断言去 import tkinter（无图形环境会挂）
+        import re as _re
+        m = _re.search(r"def default_outdir\(\)[^\n]*:\n(.*?)\n\n\n", gsrc, _re.S)
+        self.assertIsNotNone(m, "找不到 gui.default_outdir")
+        self.assertIn("core.default_outdir()", m.group(1),
+                      "GUI 应委托 core.default_outdir()，不再各自维护一份")
+        wsrc = (ROOT / "app" / "webui.py").read_text(encoding="utf-8")
+        self.assertNotIn('Path.home() / "comment-distillery-output"',
+                         wsrc.replace('`Path.home() / "comment-distillery-output"`', ""),
+                         "webui 不应再硬编码用户主目录作为默认输出")
+
 
 class TestPrepare(unittest.TestCase):
     def setUp(self):

@@ -104,6 +104,31 @@ class VerifyCitations(unittest.TestCase):
         for cid in ("c1006", "c1017", "c1020"):
             self.assertIn(cid, cited)
 
+    def test_real_guide_from_one_click_pack(self):
+        """真实端到端样本：一键流程产出的语料 → 据此写的指南必须零幻觉。
+
+        这份指南是拿「一键跑完」得到的 9,537 条真实语料写的，14 条引用全部
+        选中该语料里真实存在的条目。它钉住的是整条链路，而不只是正则：
+        语料规模、ID 形态、引用格式、抽取逻辑，任何一环漂移这里都会红。
+        """
+        guide = ROOT / "tests" / "fixtures" / "mountain_guide_verified.md"
+        corpus = ROOT / "tests" / "fixtures" / "mountain_corpus_ids.csv"
+        if not guide.exists() or not corpus.exists():
+            self.skipTest("端到端样本缺失（该样本由真实抓取生成，不入库时跳过）")
+        res = verify.run(str(guide), [str(corpus)])
+        self.assertEqual(res["bad"], [], f"不该有幻觉引用：{res['bad']}")
+        self.assertGreaterEqual(len(res["cited"]), 10)
+
+    def test_quality_gate_blocks_fake_cite(self):
+        """反向样本：注入一条假引用，质量门必须拦住并点名。"""
+        guide = ROOT / "tests" / "fixtures" / "mountain_guide_with_fake_cite.md"
+        corpus = ROOT / "tests" / "fixtures" / "mountain_corpus_ids.csv"
+        if not guide.exists() or not corpus.exists():
+            self.skipTest("端到端样本缺失")
+        res = verify.run(str(guide), [str(corpus)])
+        self.assertEqual(len(res["bad"]), 1, f"应恰好拦下 1 条：{res['bad']}")
+        self.assertEqual(res["bad"][0], "c999999999999")
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

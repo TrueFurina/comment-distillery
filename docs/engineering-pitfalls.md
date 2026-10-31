@@ -23,7 +23,7 @@
 
 ---
 
-## 坑清单（13 条）
+## 坑清单（15 条）
 
 - **隔离 venv 里 `pip install` 卡在 `pyyaml`/setuptools 编译** `[环境]`（`cython_sources` / `_distutils_hack` 缺失）：是 setuptools 在中断升级里**损坏**了。修复 `pip install --force-reinstall --no-deps setuptools wheel`，并优先用镜像的二进制 wheel（`--only-binary :all:`）。**这也是本仓库坚持零依赖纯标准库的原因之一。**
 - **跨盘移动文件不要用 Python `shutil.move`** `[环境]`：Windows 跨盘时它退化为 copy+rmtree，而 rmtree 可能被安全删除钩子拦截 → 报 `[WinError 17] 系统无法将文件移到不同的磁盘驱动器`，**copy 已成功但源侧留下副本**（静默产生重复）。**跨盘移动请用原生 PowerShell `Move-Item`**。
@@ -38,6 +38,8 @@
 - **在 CI 里比对"站点标注的产物哈希"会制造假红线** `[环境]`：站点写的是**已发布的那一份**产物的 SHA-256，而 CI 重新打包得到的字节必然不同（PyInstaller 非可复现构建）。若在 CI 硬比，等于逼出"永远不许重建产物"。正确做法：CI 跳过该项（`--no-artifact`），**本地出包后**跑完整版核对，并在**发布后把资产下载回来复算哈希**。
 - **`actions/checkout` 在 tag 推送时默认只带那一个 tag** `[环境]`：实测 v1.4.1 首发时 CI 与打包工作流**双双假红**，报"引用了不存在的 tag v1.4.0"——而它明明存在，只是没被拉到本地。修法：三个工作流全部加 `fetch-depth: 0`。**元教训：判据尽量只读仓库内的事实**；依赖本地 tag / 网络 / 外部状态 → 环境一变就假红或假绿，而**假红比不检查更坏，它会训练人"看到红就绕过去"**。
 - **Actions 的 job 日志端点 302 后会转发 `Authorization` → `401`** `[环境]`：`GET /repos/{o}/{r}/actions/jobs/{id}/logs` 会跳转到 blob 存储，urllib 会把 `Authorization` 一起带过去，于是被拒（`InvalidAuthenticationInfo`）。修法：自定义 redirect handler，跳转后**剥掉** `Authorization` 头（已封装为 `~/.workbuddy/bin/gh_logs.py`，见本文末）。
+- **⚠️ 判断"功能有没有进产物"不能靠截图** `[环境]`：截屏抓的是**屏幕上那块矩形**，不是"某个进程的窗口"。实测两次要截 tkinter 窗口，抓到的都是**盖在上面的浏览器窗口**——图里明明有"一键完成"页签，却是 Web 版的，被当成了 exe 有该功能的证据。更隐蔽的是 `GetWindowRect` 返回**物理像素**，200% 缩放时与 tkinter 的逻辑像素差约 1.5 倍，据此还会推出"窗口被压缩"的假结论。**正确做法：让程序自己报告**（`--selftest-gui` 输出 `TABS:` / `SELECTED:` 行并支持 `--report` 落盘），能被断言的东西一律不靠看图。
+- **⚠️ 编码兜底散在各处 → 同一个坑会踩第三次** `[环境]`：Windows 控制台 GBK 下 `print("✓")` / `print("⚡")` 抛 `UnicodeEncodeError`，这个坑先后在 `build_exe.py`、`webui.main`、`gui.smoke_test` 各修一次，每次都是"哪报错修哪"。第三次才发现根因是**没有唯一入口**：`app_main.main()` 是 exe 的必经之路，把 `_utf8_stdout()` 放那儿一次性兜住即可。**判据：如果同一种防御需要写第二遍，就说明缺一个统一入口，不要再复制第三份。**
 
 ---
 
