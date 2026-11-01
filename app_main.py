@@ -157,6 +157,19 @@ def main(argv=None):
         _emit(lines, report=opt("--report"))
         return 0 if ok else 1
 
+    if "--show-config" in args:
+        from app import llm
+        cfg = llm.load_config(core.app_root())
+        lines = [
+            llm.describe(cfg),
+            f"source   = {cfg.get('source') or 'none'}",
+            f"base_url = {cfg.get('base_url') or '(空) → 视为未配置'}",
+            f"model    = {cfg.get('model') or '(空) → 视为未配置'}",
+            "API Key  = (不回显)",
+        ]
+        _emit(lines, report=opt("--report"))
+        return 0
+
     if "--selftest-run" in args:
         return _selftest_run(core, opt("--selftest-run"), opt("--report"))
 

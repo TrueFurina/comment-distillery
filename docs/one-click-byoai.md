@@ -134,10 +134,14 @@
 
 ## 九、故障排查（2026-11-02 补）
 
-按本节顺序排查，`python -m app --selfcheck` 是总开关——它直接打印
-`configured / missing / describe`，比看日志快。
+按本节顺序排查。先分清两个命令，别混：
 
-### 1. `--selfcheck` 显示「未配置 AI」，但本机明明有 Key
+- `python -m app --selfcheck`：查**随包资源**是否齐全（SKILL.md、各机验脚本
+  是否漏打进包），与 AI 配置**无关**。打包漏 `--add-data` 时会在这里暴露。
+- `python -m app --show-config`：**查 AI 配置状态**，打印 `configured / source /
+  base_url / model`（**不回显 Key**）。这是排查「能不能调模型」的总开关。
+
+### 1. `--show-config` 显示「未配置 AI」，但本机明明有 Key
 最常见，按这三步查：
 
 - **env 没真正注入当前进程**。桥接脚本（`set-cd-env.sh` / `set-cd-env.bat`）
