@@ -201,6 +201,20 @@ python scripts/emit_html.py your_guide.md --corpus examples/sample_corpus.csv
 
 ---
 
+### 5. Let the tool call AI itself (optional · BYO-AI)
+
+The default stays **zero-key**: the distillation step is handed back to your own AI — no API key needed, no per-call cost.
+
+If you want the **web UI / scripts to call AI end-to-end on their own** (BYO-AI — still no bundled model, no baked-in key; it just borrows *your* key to close the loop), configure three env vars: `CD_LLM_API_KEY` / `CD_LLM_BASE_URL` / `CD_LLM_MODEL`. The repo ships a one-line bridge script that derives them from your existing `DEEPSEEK_API_KEY`, so the key lives in exactly one place:
+
+```sh
+source set-cd-env.sh        # Git Bash / WSL / macOS
+# or on Windows cmd: set-cd-env.bat
+python -m app --selfcheck   # should report "AI configured: deepseek-chat @ https://api.deepseek.com/v1"
+```
+
+You only need to override `CD_LLM_BASE_URL` / `CD_LLM_MODEL` for a custom endpoint (local llama.cpp, a corporate proxy, or any non-DeepSeek/OpenAI host); otherwise the DeepSeek defaults apply. Full docs in `docs/one-click-byoai.md`.
+
 ## Counter-intuitive finding: weight ≠ signal
 
 Verified repeatedly on real corpora, and the reason `low_score_long.txt` exists:

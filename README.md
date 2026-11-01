@@ -216,6 +216,20 @@ python scripts/emit_html.py 你的指南.md --corpus examples/sample_corpus.csv
 
 ---
 
+### 五、让工具自己调用 AI（可选 · BYO-AI）
+
+默认仍是 **零 Key**：蒸馏那一步交还你自己的 AI，不需要任何 API Key，也不产生调用成本。
+
+如果你想让 **Web 界面 / 脚本一键自己调 AI**（BYO-AI —— 仍不内置模型、不捆绑 Key，只借你自己的 Key 跑完闭环），只需配置三个环境变量 `CD_LLM_API_KEY` / `CD_LLM_BASE_URL` / `CD_LLM_MODEL`。仓库根提供了免记的一键桥接脚本，从你本机已有的 `DEEPSEEK_API_KEY` 派生，**key 只存一处**：
+
+```sh
+source set-cd-env.sh        # Git Bash / WSL / macOS
+# 或 Windows cmd 直接运行：set-cd-env.bat
+python -m app --selfcheck   # 应显示「已配置 AI：deepseek-chat @ https://api.deepseek.com/v1」
+```
+
+只有指向自定义端点（本地 llama.cpp、公司代理等非 DeepSeek / OpenAI 宿主）时才需要显式覆盖 `CD_LLM_BASE_URL` / `CD_LLM_MODEL`；否则用 DeepSeek 默认值即可。完整说明见 `docs/one-click-byoai.md`。
+
 ## 反直觉发现：高权重 ≠ 高信号
 
 这是本项目在真实语料上反复验证的一条铁律，也是 `low_score_long.txt` 存在的原因：
