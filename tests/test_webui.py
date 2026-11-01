@@ -74,10 +74,26 @@ class WebUIBase(unittest.TestCase):
         cls._stub_root = Path(tempfile.mkdtemp(prefix="cd-stub-root-"))
         webui.core.app_root = lambda: cls._stub_root
 
+        # 隔离 AI 相关环境变量：这些测试跑的是"没配 AI"的路径。
+        # 本机若漂着 DEEPSEEK_API_KEY / OPENAI_API_KEY / CD_LLM_*（用户真 Key 或 CI 注入），
+        # load_config 会误判为已配置，一键就会真去调模型——测试从 10 秒变几分钟并超时假红。
+        # 与上面隔离 llm.json 同理：只清本进程视图，不碰用户真实环境。
+        cls._ai_env = ("CD_LLM_API_KEY", "CD_LLM_BASE_URL", "CD_LLM_MODEL",
+                       "DEEPSEEK_API_KEY", "DEEPSEEK_BASE_URL",
+                       "OPENAI_API_KEY", "OPENAI_BASE_URL")
+        cls._saved_ai_env = {k: os.environ.get(k) for k in cls._ai_env}
+        for k in cls._ai_env:
+            os.environ.pop(k, None)
+
     @classmethod
     def tearDownClass(cls):
         cls.srv.shutdown()
         webui.core.app_root = cls._real_app_root
+        for k, v in cls._saved_ai_env.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
         shutil.rmtree(cls.tmp, ignore_errors=True)
 
     # ── 小工具 ──

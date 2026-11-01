@@ -14,12 +14,15 @@
 
 配置来源（优先级从高到低）：
 
-1. 环境变量  CD_LLM_BASE_URL / CD_LLM_API_KEY / CD_LLM_MODEL  ← 推荐：不落盘、不随项目走
+1. 环境变量  CD_LLM_BASE_URL / CD_LLM_API_KEY / CD_LLM_MODEL  ← 唯一的环境变量契约
 2. 配置文件  <程序目录>/llm.json（明文，仅本机；已被 .gitignore 忽略，不上库）
 3. 都没有 → is_configured() 为 False，一键流程停在蒸馏包
 
-环境变量优先于同名字段；**建议把 Key 放环境变量**（尤其多人/共享机），
-llm.json 仅作为单用户本机的便利兜底。两者都不需要时，一键只到蒸馏包。
+**为什么不自动读取 `DEEPSEEK_API_KEY` / `OPENAI_API_KEY` 这类"通用"环境变量？**
+因为那会劫持环境里可能用于别处的 Key，并悄悄把"没配 AI"变成"已配 AI"，
+破坏"只出蒸馏包"这条稳定契约。工具只认自己的显式命名空间 `CD_LLM_*`——
+想用 DeepSeek / OpenAI，把 Key 显式填进 `CD_LLM_API_KEY`（或 `llm.json`）即可，
+干净、不意外、不越界。
 
 llm.json 形如：
 
@@ -47,7 +50,9 @@ CONFIG_NAME = "llm.json"
 
 # 默认值只在与"用户已配置"同时成立时才生效
 DEFAULTS = {
-    "base_url": "https://api.openai.com/v1",
+    # base_url / model 这里故意留空：只有真正来自 env / 文件时才算"已填"，
+    # 否则会被 _REQUIRED 判为缺失 → 正确报告未配置，而不是拿占位值假装已配。
+    "base_url": "",
     "model": "",
     "max_corpus_chars": 120000,
     "timeout": 600,
@@ -73,9 +78,12 @@ def redact(text) -> str:
 
 
 def load_config(app_root) -> dict:
-    """读配置并归一。未配置完整时返回 {"configured": False, ...}。"""
+    """读配置并归一。未配置完整时返回 {"configured": False, ...}。
+
+    来源优先级：CD_LLM_* 环境变量 > llm.json。详见模块 docstring。
+    """
     cfg = dict(DEFAULTS)
-    src = "none"
+    sources = []          # 记录实际命中的来源，供 UI 展示
 
     p = config_path(app_root)
     if p.exists():
@@ -85,11 +93,12 @@ def load_config(app_root) -> dict:
                 for k, v in raw.items():
                     if v not in (None, ""):
                         cfg[k] = v
-                src = "file"
+                sources.append("file")
         except Exception as e:
             return {"configured": False, "source": "file-broken",
                     "error": f"llm.json 解析失败：{e}", "path": str(p)}
 
+    # CD_LLM_* 环境变量（唯一的环境变量契约，覆盖文件）
     env_map = {"CD_LLM_BASE_URL": "base_url",
                "CD_LLM_API_KEY": "api_key",
                "CD_LLM_MODEL": "model"}
@@ -97,7 +106,7 @@ def load_config(app_root) -> dict:
         v = os.environ.get(env)
         if v:
             cfg[key] = v
-            src = "env" if src == "none" else "file+env"
+            sources.append(env)
 
     for k in ("max_corpus_chars", "timeout", "max_repair_rounds", "temperature"):
         try:
@@ -111,7 +120,7 @@ def load_config(app_root) -> dict:
     missing = [k for k in _REQUIRED if not cfg.get(k)]
     cfg["configured"] = not missing
     cfg["missing"] = missing
-    cfg["source"] = src
+    cfg["source"] = "+".join(sources) if sources else "none"
     cfg["path"] = str(p)
     return cfg
 
