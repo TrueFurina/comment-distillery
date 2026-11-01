@@ -96,7 +96,10 @@ def extract_cited(text, patterns):
     # 1) 结构化标记 [源:ID ...] —— 取 "源:" 后到第一个分隔符之间的内容
     #    字符类需排除反斜杠：markdown 表格内竖线必须转义，写作 [源:c123\|权重7\|一级]，
     #    若不排除会捕获到 "c123\"（多一个反斜杠）而误判为幻觉引用。
-    for m in re.finditer(r"\[源\s*[:：]\s*([^\]\|｜\s,，;；\\]+)", text):
+    # ID 组用 * 而非 +：模型确实会写出 `[源:|150|一级]` 这种空 ID 标记。
+    # 若要求至少 1 字符，该标记既不计入 cited、也不进 bad，
+    # 于是正文挂着一条无依据的引用，机验却打印「幻觉 0」——假绿。
+    for m in re.finditer(r"\[源\s*[:：]\s*([^\]\|｜\s,，;；\\]*)", text):
         cited.add(m.group(1).strip().strip("\\"))
     # 2) 兜底正则
     for p in patterns:

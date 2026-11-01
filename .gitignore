@@ -81,3 +81,7 @@ publish_config.local.json
 # ── 归档目录（本机残留，内容与 tests/fixtures/ 重复）──
 # 会话保护机制不允许删除，但也不该进仓库：真值源是 tests/fixtures/。
 /_verify_probe/
+
+# ── 本机 agent 工具运行时目录 ──
+.box-agent/
+.box-agent-scratch/

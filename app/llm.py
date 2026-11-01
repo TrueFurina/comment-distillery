@@ -14,9 +14,12 @@
 
 配置来源（优先级从高到低）：
 
-1. 环境变量  CD_LLM_BASE_URL / CD_LLM_API_KEY / CD_LLM_MODEL
-2. 配置文件  <程序目录>/llm.json
+1. 环境变量  CD_LLM_BASE_URL / CD_LLM_API_KEY / CD_LLM_MODEL  ← 推荐：不落盘、不随项目走
+2. 配置文件  <程序目录>/llm.json（明文，仅本机；已被 .gitignore 忽略，不上库）
 3. 都没有 → is_configured() 为 False，一键流程停在蒸馏包
+
+环境变量优先于同名字段；**建议把 Key 放环境变量**（尤其多人/共享机），
+llm.json 仅作为单用户本机的便利兜底。两者都不需要时，一键只到蒸馏包。
 
 llm.json 形如：
 
@@ -50,6 +53,7 @@ DEFAULTS = {
     "timeout": 600,
     "max_repair_rounds": 2,
     "temperature": 0.3,
+    "seed": None,   # 设置后请求尽量确定，便于复现与审计
 }
 
 _REQUIRED = ("base_url", "api_key", "model")
@@ -166,6 +170,13 @@ def chat(messages, cfg, on_delta=None, should_stop=None, retries=2):
         "temperature": cfg.get("temperature", 0.3),
         "stream": bool(on_delta),
     }
+    # seed 只在显式配置时下发：部分 OpenAI 兼容网关遇未知字段会直接 400，
+    # 而部分网关会忽略 seed——两种情况都不能假装「已复现」。
+    if cfg.get("seed") not in (None, ""):
+        try:
+            payload["seed"] = int(cfg["seed"])
+        except Exception:
+            payload["seed"] = cfg["seed"]
     body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
     headers = {
         "Content-Type": "application/json",

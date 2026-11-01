@@ -246,7 +246,7 @@ button.ghost{border-style:dashed;color:var(--dim)}
           <input type="text" id="m_base" placeholder="https://api.deepseek.com/v1"></div>
         <div class="field"><label>模型名</label>
           <input type="text" id="m_model" placeholder="deepseek-chat"></div>
-        <div class="field"><label>API Key <span class="hint">只存在本机 llm.json，不回显</span></label>
+        <div class="field"><label>API Key <span class="hint">推荐环境变量 CD_LLM_API_KEY（不落盘）；也可填这里存本机 llm.json（明文）</span></label>
           <input type="password" id="m_key" placeholder="留空表示不改动已保存的 Key"></div>
         <div class="field"><label>语料上限（字符） <span class="hint">超了会保留头尾并标注省略</span></label>
           <input type="text" id="m_chars" value="120000"></div>
@@ -266,6 +266,7 @@ button.ghost{border-style:dashed;color:var(--dim)}
         <b>成本提示</b>：一次蒸馏 = 1 次生成 + 最多 2 次修引用。以 2,000 条语料为例，约 6–12 万字符输入，
         按各家中档模型价格大致在几毛到两三元一次。AI 只写指南，<b>不参与采集与机验</b>。<br>
         <b>写盘位置</b>：<code id="m_path">—</code>（已列入 .gitignore，不会被提交）<br>
+        <b>推荐</b>：用环境变量 <code>CD_LLM_API_KEY</code> / <code>CD_LLM_BASE_URL</code> / <code>CD_LLM_MODEL</code> 注入配置，最干净、不落盘、不随项目走。<br>
         <b>注意</b>：配置文件跟着<b>程序</b>走，不是跟着你走。源码运行在仓库根，
         双击 exe 时在 <b>exe 所在目录</b>。换目录/换机器后要重新填，或把 <code>llm.json</code> 一起带过去。
       </div>
@@ -881,10 +882,23 @@ const MEM_IDS = ["a_arg","a_out","a_name","c_arg","c_out","p_in","p_out","p_lowm
 function restoreForm(){
   let saved = {};
   try { saved = JSON.parse(localStorage.getItem(MEMKEY) || "{}") || {}; } catch(e){ saved = {}; }
+  // 表单记忆里可能存着旧版本算坏的路径：参数一旦混入 CR/LF/NUL，
+  // 再回填就会把脏值永久带下去，刷新也修不好。
+  // 这里丢掉控制字符，并顺手清掉存档，让下次重算默认值。
+  const cleanInput = (v) => String(v).replace(/[\u0000-\u001f\u007f]/g, "");
+  let memDirty = false;
   MEM_IDS.forEach(id => {
     const el = document.getElementById(id);
-    if (el && typeof saved[id] === "string" && saved[id]) el.value = saved[id];
+    if (!el || typeof saved[id] !== "string" || !saved[id]) return;
+    const v = cleanInput(saved[id]);
+    // 存档本身是脏的（含控制字符）：直接丢掉这一项，不回填半截值，
+    // 让页面后面用 h.outdir 重新算一遍默认路径。
+    if (v !== saved[id]) { memDirty = true; return; }
+    if (v) el.value = v;
   });
+  if (memDirty) {
+    try { localStorage.removeItem(MEMKEY); } catch(e){}
+  }
   if (typeof saved.c_roots === "boolean"){
     const cb = document.getElementById("c_roots");
     if (cb) cb.checked = saved.c_roots;

@@ -260,6 +260,7 @@ def distill(pack_dir, cfg, on_log=None, on_delta=None, should_stop=None,
     log(f"   初稿 {len(text)} 字符 → {guide.name}")
 
     cited, bad, rnd, numfails = 0, [], 0, []
+    nums_ok = False   # 数字复算是否真的执行过（False 时不许宣称数字无误）
     if verify_fn:
         for rnd in range(1, rounds_cap + 1):
             if should_stop and should_stop():
@@ -268,9 +269,21 @@ def distill(pack_dir, cfg, on_log=None, on_delta=None, should_stop=None,
             log(f"⑤ 机验（第 {rnd} 轮）：引用与语料 ID 求差集…")
             v = verify_fn(str(guide), str(corpus))
             cited, bad = int(v.get("cited", 0)), list(v.get("bad") or [])
+            # 「没有 num_issues」≠「数字都对」：core._verify() 在复算抛异常时
+            # 会写 num_issues=[] 并附 num_error，空列表看起来像「没发现问题」，
+            # 于是这里照样打印「数字复算无误」——真实假绿。
+            v = v or {}
+            num_err = str(v.get("num_error") or "").strip()
+            nums_ok = ("num_issues" in v) and not num_err
             numfails = list(v.get("num_issues") or [])
             if not bad and not numfails:
-                log(f"   ✅ 通过：{cited} 条引用，幻觉 0；数字复算无误")
+                if nums_ok:
+                    log(f"   ✅ 通过：{cited} 条引用，幻觉 0；数字复算无误")
+                else:
+                    log(f"   ✅ 引用通过：{cited} 条引用，幻觉 0")
+                    log("   ⚠️ 数字复算未执行"
+                        + (f"（{num_err}）" if num_err else "（校验器未返回 num_issues）")
+                        + "，本次不宣称「数字无误」")
                 break
             if bad:
                 log(f"   ❌ {len(bad)} 条幻觉引用：{', '.join(bad[:6])}"
@@ -289,7 +302,8 @@ def distill(pack_dir, cfg, on_log=None, on_delta=None, should_stop=None,
     elapsed = round(time.time() - t0, 1)
     passed = (not bad and not numfails) if verify_fn else None
     if verify_fn and passed:
-        log(f"④⑤ 完成（{elapsed}s）：{cited} 条引用全部可溯源，数字复算无误")
+        tail = "数字复算无误" if nums_ok else "数字复算未执行（不宣称数字无误）"
+        log(f"④⑤ 完成（{elapsed}s）：{cited} 条引用全部可溯源，{tail}")
     elif verify_fn and not passed:
         parts = []
         if bad:

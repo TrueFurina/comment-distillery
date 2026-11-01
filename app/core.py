@@ -350,7 +350,52 @@ def finish_after_pack(pack_dir, on_log=None, should_stop=None):
     out["report"] = em
     out["mode"] = "full"
     log(f"   报告：{em['out']}")
+    # report.html 是机器接口名，再存一份按标题命名的，方便人翻目录。
+    named = _title_report_path(d["guide_path"], pack)
+    if named:
+        try:
+            shutil.copyfile(em["out"], str(named))
+            out["report_titled"] = str(named)
+            log(f"   标题副本：{named.name}")
+        except OSError as e:
+            log(f"   标题副本写入失败（不影响主报告）：{e}")
     return out
+
+
+_TITLE_BAD_CHARS = '<>:"/\\|?*'
+
+
+def _title_report_path(guide_path, pack_dir):
+    """按指南标题算出人类可读的报告文件名。
+
+    output/ 里全是 `report.html` 的话，一眼分不清哪份是哪份，
+    所以额外存一份按标题命名的副本。
+    只做副本、不动 report.html —— WebUI 预览、陈旧报告避让、
+    端到端测试都还指着那个固定名。
+    """
+    try:
+        md = Path(guide_path).read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return None
+    m = re.search(r"^#\s+(.+?)\s*$", md, re.M)
+    if not m:
+        return None
+    title = m.group(1).strip()
+    # 标题里的引号直接去掉，别把「只筛选不培养」变成「只筛选-不培养」。
+    # 只去掉文件名非法或容易出歧义的引号；「」这类中文书名号保留。
+    for q in '"':
+        title = title.replace(q, "")
+    for ch in _TITLE_BAD_CHARS:
+        title = title.replace(ch, "-")
+    title = re.sub(r"\s+", " ", title).strip(" .-")
+    if not title:
+        return None
+    if len(title) > 60:
+        title = title[:60].rstrip(" .-") + "\u2026"
+    # 标题自己已经写了「指南」的不再重复拼后缀。
+    if "\u6307\u5357" not in title:
+        title += "-\u8bc4\u8bba\u6df1\u5ea6\u6307\u5357"
+    return Path(pack_dir) / (title + ".html")
 
 
 def _stale_report(pack_dir):

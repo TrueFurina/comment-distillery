@@ -387,7 +387,7 @@ border:1px solid var(--accent);color:var(--accent);white-space:nowrap}
 .toc{background:#f7f9fa;border:1px solid var(--line);border-radius:8px;padding:16px 20px;
 margin:26px 0 4px}
 .toc h4{margin:0 0 8px;font-size:13px;letter-spacing:1px;color:var(--muted)}
-.toc ol{margin:0;padding-left:20px;font-size:14.5px}
+.toc ul{margin:0;padding-left:0;list-style:none;font-size:14.5px}
 .toc li{margin:3px 0}
 .src-list{list-style:none;margin:0 0 18px;padding:0}
 .src-list li{border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin:0 0 10px;
@@ -483,7 +483,7 @@ def run(guide, out=None, corpora=None, field=None, title=None, subtitle=None,
     # ── 目录
     if headings:
         items = "".join(f'<li><a href="#{h}">{esc(t)}</a></li>' for h, t in headings)
-        toc = f'<nav class="toc"><h4>目录</h4><ol>{items}</ol></nav>'
+        toc = f'<nav class="toc"><h4>目录</h4><ul class="toc-list">{items}</ul></nav>'
     else:
         toc = ""
 
