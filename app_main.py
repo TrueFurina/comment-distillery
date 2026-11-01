@@ -143,16 +143,6 @@ def main(argv=None):
                 return args[i + 1]
         return None
 
-    try:
-        import tkinter  # noqa: F401  仅探测可用性
-    except ImportError as e:
-        return _fatal(
-            "启动失败：当前 Python 缺少 tkinter。\n"
-            "Windows 官方 Python 自带 tkinter；若使用裁剪过的解释器，"
-            "请安装 python3-tk 后重试。\n"
-            f"原始错误：{e}"
-        )
-
     from app import core
 
     if "--version" in args:
@@ -177,6 +167,18 @@ def main(argv=None):
         from app.webui import main as webui_main
         rest = [a for a in args if a not in ("--web", "-w")]
         return webui_main(rest)
+
+    # ── 以下路径才需要 tkinter（桌面窗口 / GUI 自检）；
+    #    --version / --selfcheck / --web / --selftest-run 都不碰 GUI，无需它也能跑 ──
+    try:
+        import tkinter  # noqa: F401  仅探测可用性
+    except ImportError as e:
+        return _fatal(
+            "启动失败：当前 Python 缺少 tkinter。\n"
+            "Windows 官方 Python 自带 tkinter；若使用裁剪过的解释器，"
+            "请安装 python3-tk 后重试。\n"
+            f"原始错误：{e}"
+        )
 
     from app.gui import main as gui_main, smoke_test
 
