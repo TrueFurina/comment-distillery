@@ -131,3 +131,39 @@
 改完代码后，**已经在跑的服务进程不会自动加载新代码**。表现为：点"一键"后
 日志一条不打、作业永远 `running`。排查了近一小时，最后发现是进程启动早于改动。
 结论：改完 `app/*.py` 必须重启 Web 服务再测，否则你测的是上一版。
+
+## 九、故障排查（2026-11-02 补）
+
+按本节顺序排查，`python -m app --selfcheck` 是总开关——它直接打印
+`configured / missing / describe`，比看日志快。
+
+### 1. `--selfcheck` 显示「未配置 AI」，但本机明明有 Key
+最常见，按这三步查：
+
+- **env 没真正注入当前进程**。桥接脚本（`set-cd-env.sh` / `set-cd-env.bat`）
+  必须在**同一个 shell 窗口**里先 `source` / 跑 bat，再跑 `python`。
+  Git Bash 里 `source` 了、却在另一个 cmd 窗口跑 python，变量不互通。
+- **Key 名不对**。工具**只认 `CD_LLM_*`**，不会自动读你系统里的
+  `DEEPSEEK_API_KEY` / `OPENAI_API_KEY`（这是设计上的刻意边界，详见
+  `app/llm.py` docstring——避免顺手劫持别处也在用的 Key）。桥接脚本已帮你从
+  `DEEPSEEK_API_KEY` 派生 `CD_LLM_API_KEY`。
+- **只给了 `CD_LLM_API_KEY` 不够**。`base_url` 和 `model` 也是必填项，
+  缺一个 `configured` 仍为 `False`，`missing` 会列出具体缺哪些。
+  桥接脚本默认填了 DeepSeek 的端点与模型；自定义端点时务必补齐。
+
+### 2. 401 / 403 / 404
+不重试，直接报"检查 base_url / model 名 / Key 是否匹配"。典型原因：
+- Key 复制时带了首尾空格或换行；
+- DeepSeek 模型名写错（常用 `deepseek-chat`，不是 `deepseek`）；
+- base_url 漏了 `/v1` 后缀，或多写了斜杠。
+
+### 3. 429 / 5xx / 超时
+退避重试 2 次后仍失败，多半是网络层问题：
+- 公司网络对 API 域名出口受限（本仓库开发机曾出现直连 `github.com:443`
+  黑洞、但 SSH 22 通的情况，同理可能发生在 DeepSeek 端点）——换网络或代理；
+- 代理下需把 `HTTP_PROXY` / `HTTPS_PROXY` 设进环境，工具走标准 `urllib`
+  会自然继承。
+
+### 4. 改完 `app/*.py` 必须重启 Web 服务
+见第八节的运维坑：已在跑的进程不自动加载新代码，表现为作业永远
+`running`、日志不打。重启后再测。
