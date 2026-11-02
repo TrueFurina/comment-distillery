@@ -200,8 +200,8 @@ class TestGuiWiring(unittest.TestCase):
         third = {m for m in imported
                  if m not in {"app", "json", "mimetypes", "os", "tempfile",
                               "threading", "time", "urllib", "webbrowser",
-                              "http", "pathlib", "socket", "ipaddress",
-                              "sys", "argparse"}}
+                             "http", "pathlib", "socket", "ipaddress",
+                             "sys", "argparse", "shutil"}}
         self.assertEqual(third, set(), f"webui.py 引入了第三方依赖：{third}")
 
     # ── 6. 入口不得吞掉自检开关 ──
