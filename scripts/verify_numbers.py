@@ -72,31 +72,46 @@ def load_scores(path, field=None):
     return []
 
 
+_PREP = None
+
+
+def _prep():
+    """按文件路径加载同目录的 prep.py。
+
+    本模块既可能被 CLI 直接运行（`python scripts/verify_numbers.py`），也可能被
+    app/core.py 用 spec_from_file_location 加载；两种情况下都不保证 scripts/ 在
+    sys.path 上，所以不能直接 `import prep`。
+    """
+    global _PREP
+    if _PREP is None:
+        import importlib.util
+        import os
+        here = os.path.dirname(os.path.abspath(__file__))
+        spec = importlib.util.spec_from_file_location(
+            "_cd_prep", os.path.join(here, "prep.py"))
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        _PREP = mod
+    return _PREP
+
+
 def load_scores_direct(path):
-    """直接从 score 列读，不依赖 ID 列。"""
-    for enc in ("utf-8-sig", "gb18030", "gbk", "utf-8"):
-        try:
-            with open(path, encoding=enc, newline="") as f:
-                rd = csv.DictReader(f)
-                names = [(n or "").strip().lower() for n in (rd.fieldnames or [])]
-                idx = None
-                for cand in ("score", "like", "赞", "点赞"):
-                    if cand in names:
-                        idx = names.index(cand)
-                        break
-                if idx is None:
-                    return []
-                out = []
-                for r in rd:
-                    v = list(r.values())[idx]
-                    try:
-                        out.append(int(float(v or 0)))
-                    except Exception:
-                        pass
-                return out
-        except UnicodeDecodeError:
-            continue
-    return []
+    """读 score 列，并走 prep 的同一条清洗（按 id 去重 + 去噪）。
+
+    口径必须和 prep.run() 一致：指南里的「去噪后 N 条 / 赞合计 / 最高赞」都是
+    基于去重去噪后的语料算的。若这里读原始行，任何含重复行或噪音（真实语料约
+    22% 是重复行）的语料都会被误判成「数字写错」——即假阳性，违背本脚本
+    「宁可漏报，不可误报」的立场。
+    """
+    prep = _prep()
+    try:
+        _, names = prep.load_rows(path)
+    except Exception:
+        return []
+    if prep.map_field(names, "score") is None:
+        return []
+    recs, _, _ = prep.load_records(path)
+    return [x["score"] for x in recs]
 
 
 def collect(guide_path, corpus_path):

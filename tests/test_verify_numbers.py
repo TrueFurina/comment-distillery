@@ -34,14 +34,14 @@ from app import glossary  # noqa: E402
 
 # 26 条样例，赞数固定，便于复算
 CORPUS = """id,text,score
-c1,a,100
-c2,b,50
-c3,c,20
-c4,d,10
-c5,e,5
-c6,f,5
-c7,g,2
-c8,h,1
+c1,正常评论一,100
+c2,正常评论二,50
+c3,正常评论三,20
+c4,正常评论四,10
+c5,正常评论五,5
+c6,正常评论六,5
+c7,正常评论七,2
+c8,正常评论八,1
 """
 
 
@@ -105,6 +105,32 @@ class TestVerifyNumbers(unittest.TestCase):
         issues, checked = vn.collect(g, self.corpus)
         self.assertEqual(issues, [])
         self.assertEqual(checked, 0)
+
+    def test_duplicates_and_noise_do_not_cause_false_positive(self):
+        """机验必须与 prep 同口径：去重 + 去噪之后再核对。
+
+        真实语料约 22% 是重复行，还有广告/短评/纯链接噪音。若机验读原始行，
+        就会把按 prep 真值写的「去噪后 N 条 / 赞合计」误判成写错（假阳性）——
+        而本脚本的立场是「宁可漏报，不可误报」。
+        """
+        noisy = write(self.tmp, "noisy.csv",
+                      "id,text,score\n"
+                      "c1,这是一条正常的评论内容,10\n"
+                      "c2,这也是一条正常的评论内容,5\n"
+                      "c1,这是一条正常的评论内容,10\n"   # 重复 id
+                      "c3,加微信领福利,100\n"             # 噪音关键词
+                      "c4,短,3\n"                         # 短于 MIN_LEN
+                      "c5,https://example.com/x,7\n")     # 纯链接
+        # prep 真值：去重丢 1 行、去噪丢 3 行 → 2 条，赞合计 15，最高 10
+        good = write(self.tmp, "good.md", "去噪后 2 条，赞合计 15，最高赞 10。\n")
+        issues, checked = vn.collect(good, noisy)
+        self.assertEqual(issues, [], f"假阳性：{issues}")
+        self.assertGreater(checked, 0)
+
+        bad = write(self.tmp, "bad.md", "去噪后 7 条，赞合计 115，最高赞 11。\n")
+        issues2, _ = vn.collect(bad, noisy)
+        self.assertTrue(any("语料条数写 7" in i for i in issues2), issues2)
+        self.assertTrue(any("赞合计写 115" in i for i in issues2), issues2)
 
 
 class TestGlossary(unittest.TestCase):

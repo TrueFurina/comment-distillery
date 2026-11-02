@@ -125,16 +125,13 @@ def to_int(v):
         return 0
 
 
-def run(input_path, outdir, low_max=DEFAULT_LOW_MAX, low_min_len=DEFAULT_LOW_MIN_LEN):
-    """执行完整预处理，返回 (stats, paths)。
+def load_records(input_path):
+    """读取语料并做与 run() 相同的清洗，返回 (recs, raw, dup_dropped)。
 
-    单一实现：CLI(main) 与桌面 GUI(app/core.py) 共用同一条逻辑，
-    避免"两套实现各自漂移"——本项目对数字漂移零容忍。
-
-    paths 键: all_comments / low_score_long / stats / id_map
+    recs 已按 id 去重、去掉噪音、按 score 降序；raw 是去重前的行数。
+    单一实现：run() 与 scripts/verify_numbers.py 共用，保证「语料条数 / 赞合计 /
+    最高赞」口径一致——否则机验会拿原始行数去核对去噪后的数字，产生假阳性。
     """
-    os.makedirs(outdir, exist_ok=True)
-
     rows, names = load_rows(input_path)
     f_id = map_field(names, "id")
     f_content = map_field(names, "content")
@@ -189,6 +186,20 @@ def run(input_path, outdir, low_max=DEFAULT_LOW_MAX, low_min_len=DEFAULT_LOW_MIN
 
     recs = [x for x in recs if not is_noise(x["content"])]
     recs.sort(key=lambda x: -x["score"])
+    return recs, raw, dup_dropped
+
+
+def run(input_path, outdir, low_max=DEFAULT_LOW_MAX, low_min_len=DEFAULT_LOW_MIN_LEN):
+    """执行完整预处理，返回 (stats, paths)。
+
+    单一实现：CLI(main) 与桌面 GUI(app/core.py) 共用同一条逻辑，
+    避免"两套实现各自漂移"——本项目对数字漂移零容忍。
+
+    paths 键: all_comments / low_score_long / stats / id_map
+    """
+    os.makedirs(outdir, exist_ok=True)
+
+    recs, raw, dup_dropped = load_records(input_path)
 
     # ---- 全量易读文本 ----
     txt_path = os.path.join(outdir, "all_comments.txt")

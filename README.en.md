@@ -389,7 +389,7 @@ comment-distillery/
 │   ├── 01…04/               # runs 1–4: real corpus → deep-dive guide
 │   ├── 05-入站必刷数学/   # runs 6+7: 15-chapter guide + 10-chapter addendum (3 claims corrected)
 │   └── notes/               # design notes: rationale / open-source sprint roadmap
-└── tests/                   # regression tests, 190 cases (run in CI)
+└── tests/                   # regression tests, 191 cases (run in CI)
 ```
 
 > `cases/` ships **artifacts only** (the guides + design docs, 9 md files / 277 KB).
