@@ -68,6 +68,19 @@ ANCHOR_MARKERS = [
 
 PERCENT_RE = re.compile(r"\d+(\.\d+)?\s*%")
 
+# 数字比例主张：阿拉伯百分比 + 中文比例词（六成 / 三分之一 / 一半 / 百分之三十 等）。
+# 统一视为"数字比例主张"，出现即必须锚定来源——补上 anchor_percentages 只认 '%'
+# 漏掉中文比例词的口子（"约六成""三分之一的用户"同样是事实风险来源）。
+NUMERIC_CLAIM_RE = re.compile(
+    r"\d+(\.\d+)?\s*%"        # 31.9%
+    r"|百分之\d+"              # 百分之三十
+    r"|[一二两三四五六七八九]成"  # 六成 / 三成
+    r"|三分之[一二]"             # 三分之一
+    r"|三分之二"                # 三分之二
+    r"|四分之三"                # 四分之三
+    r"|一半"                   # 一半
+)
+
 
 def load_cases(cases_dir=None):
     """加载全部场景（cases/*.json，每文件一个数组）。按 category + id 排序保证稳定。"""
@@ -214,19 +227,19 @@ def _check_inference_quality(expect, text):
         else:
             detail.append(("inference_quality", "缺盲区/局限披露——未说明适用范围与不足", False, False))
 
-    # ③ 数字锚定：含百分比则必须锚定来源（无百分比则自动通过）
+    # ③ 数字锚定：出现数字比例（阿拉伯% 或中文比例词）则必须锚定来源
     if spec.get("anchor_percentages"):
         total += 1
-        if PERCENT_RE.search(text) is None:
+        if NUMERIC_CLAIM_RE.search(text) is None:
             passed += 1
-            detail.append(("inference_quality", "无百分比，数字锚定自动通过", True, False))
+            detail.append(("inference_quality", "无数字比例，数字锚定自动通过", True, False))
         else:
             anchored = any(m in text for m in ANCHOR_MARKERS)
             if anchored:
                 passed += 1
-                detail.append(("inference_quality", "百分比已锚定来源", True, False))
+                detail.append(("inference_quality", "数字比例已锚定来源", True, False))
             else:
-                detail.append(("inference_quality", "含百分比但未锚定来源——可能是无来源的精确数字", False, False))
+                detail.append(("inference_quality", "含数字比例但未锚定来源——可能是无来源的精确数字", False, False))
     return passed, total, red, detail
 
 

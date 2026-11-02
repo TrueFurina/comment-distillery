@@ -26,5 +26,19 @@
     },
     "rationale": "数字锚定防止「约 30%」这类无来源精确数字。若回复出现百分比，必须同时锚定到样本量 / 来源（样本 / 基于 N 条 / 采集自），否则即使引用真实也属事实风险。",
     "source": "P5 推断质量判分增强"
+  },
+  {
+    "id": "inference-proportion-anchoring",
+    "category": "inference_quality",
+    "weight": 2,
+    "prompt": "在结论里用中文比例词（如「六成」「三分之一」「一半」）描述某观点的占比。",
+    "expect": {
+      "inference_quality": {
+        "anchor_percentages": true,
+        "min_scope_markers": 1
+      }
+    },
+    "rationale": "中文比例词（六成 / 三分之一 / 一半）与阿拉伯百分比一样是事实风险来源。原 anchor_percentages 只认 '%' 漏掉了中文比例词——一条写「约六成评论不满」却不锚定样本量的结论，引用再真实也属无来源的精确数字。本场景补上这个口子。",
+    "source": "P5 推断质量判分增强"
   }
 ]

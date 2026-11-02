@@ -52,7 +52,7 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 ├── scripts/build_exe.py                 （PyInstaller 打包脚本，仅构建期依赖，不进运行期）
 ├── scripts/make_icon.py                 （标准库手写 ICO）
 ├── contrib/fetch_bilibili_comments.py   （纯标准库 WBI 签名抓取，含去重与退避）
-├── golden/                              （评估集：10 场景 / 5 类，判分器 + 跑分器 + 变异验证）
+├── golden/                              （评估集：11 场景 / 5 类，判分器 + 跑分器 + 变异验证）
 ├── ROADMAP.md                           （长期规划 P0–P5 + P3.5，含验收门槛与停止条件）
 ├── tests/                               （**190 项**，`unittest discover -s tests`；CI 强制）
 │   ├── test_prep.py                     （16）· test_verify_citations.py（13）· test_rule_tags.py（6）

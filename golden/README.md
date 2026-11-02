@@ -62,7 +62,7 @@ python golden/run_golden.py --replies /tmp/my-replies
 
 ### 对照：理想 vs 弱推断
 
-仓库自带 `golden/replies/example/` 两个"故意写弱"的样本，可直接复跑看效果：
+仓库自带 `golden/replies/example/` 三个"故意写弱"的样本，可直接复跑看效果：
 
 ```bash
 python golden/run_golden.py --replies golden/replies/example --no-save
@@ -72,9 +72,10 @@ python golden/run_golden.py --replies golden/replies/example --no-save
 |---|---|---|---|
 | `inference-scope-hedging`（example） | `inference_quality` | **0/5** | 把"六成评论吐槽"直接推成"口碑全面崩坏"——无边界锚定、无盲区披露 |
 | `inference-numeric-anchoring`（example） | `inference_quality` | **2/5** | 给了 31.9% 却没锚定样本量（软扣分，非归零） |
-| 同两个场景（baseline） | `inference_quality` | **5/5** | 锚定到本批样本、主动披露局限、百分比绑定语料 |
+| `inference-proportion-anchoring`（example） | `inference_quality` | **0/5** | 用中文"六成"却没锚定样本量——正是补上的中文比例词漏判口子 |
+| 同三个场景（baseline） | `inference_quality` | **5/5** | 锚定到本批样本、主动披露局限、数字比例绑定语料 |
 
-> 注意：这两个 example 只覆盖了 2 个场景，所以 `总分` 只反映这 2 个场景的加权结果（16/100），
+> 注意：这三个 example 只覆盖了 3 个场景，所以 `总分` 只反映这 3 个场景的加权结果（11.4/100），
 > 不是全集分数。全集对照请用 `--baseline`（应 100 分）。
 
 ## 场景结构（JSON）
@@ -104,7 +105,7 @@ python golden/run_golden.py --replies golden/replies/example --no-save
 | `regex_must_hit` / `regex_must_not_hit` | 正则命中判定（后者为红线） | 后者 ✅ |
 | `citation_real` | 引用机验（复用 `scripts/verify_citations.py`），差集非空即 0 分 | ✅ |
 | `files_must_exist` / `files_must_not_exist` | 产物路径判定（后者为红线） | 后者 ✅ |
-| `inference_quality` | 推断质量判分（边界意识 / 盲区披露 / 数字锚定），软扣分、无红线 | |
+| `inference_quality` | 推断质量判分（边界意识 / 盲区披露 / 数字锚定（含中文比例词）），软扣分、无红线 | |
 
 **计分**：每场景 0–5 分 = `5 × 通过规则数 / 总规则数`；**命中任一红线直接 0 分**。
 **加权**：`总分 = Σ(score×weight) / Σ(5×weight) × 100`。
@@ -116,7 +117,7 @@ python golden/run_golden.py --replies golden/replies/example --no-save
 `--self-test` 从每份 baseline 派生"故意违反"的变异体（删关键词 / 插禁词 / 把引用 ID 换成不存在的 `c9999999`），
 验证分数**必须下降**、红线类**必须归 0**。**变异体还能拿满分 = 判分器无效，退出码 1。**
 
-当前：10 个场景 / 35 个变异体，全部被正确扣分。
+当前：11 个场景 / 37 个变异体，全部被正确扣分。
 
 ## 已知局限（诚实）
 
@@ -124,7 +125,7 @@ python golden/run_golden.py --replies golden/replies/example --no-save
    被 `must_not_contain: ["凭印象"]` 判为红线——语义完全正确却被判错。
    规避：写 baseline/回复时绕开禁词的否定用法；选用带上下文的短语（如"凭印象补"而非"凭印象"）能降低误伤率。
 2. **`regex_*` 规则的变异无法通用构造**（不知道该删哪段文本才能让它不命中），`--self-test` 记为 skipped。
-    当前 10 个场景均未使用 regex 规则，故不影响有效性。
+    当前 11 个场景均未使用 regex 规则，故不影响有效性。
 3. **判的是形式与可溯源 + 推断质量结构信号**。2026-11-02 新增 `inference_quality` 类别（边界意识 / 盲区披露 / 数字锚定），
    能抓住"引用真实但过度泛化 / 无盲区意识 / 数字无来源"的回复（见 `cases/inference_quality.json`）。
    但仍是**结构信号而非语义级判分**——不调用模型，无法判断推理链本身是否严密，别把它当成质量证明。

@@ -391,7 +391,7 @@ comment-distillery/
 │   ├── build_exe.py         # 打包桌面 exe（PyInstaller，仅构建期依赖）
 │   ├── make_icon.py         # 标准库手写 ICO 生成器（不引入 Pillow）
 │   └── make_skill_zip.py    #   技能包 ZIP（**可复现构建**，给「只会上传文件」的用户）
-├── golden/                  # 评估集：10 场景 / 5 类，判「改规则后是否变强」
+├── golden/                  # 评估集：11 场景 / 5 类，判「改规则后是否变强」
 │   ├── README.md
 │   ├── cases/               # 场景集（纯数据 JSON）
 │   ├── graders.py           # 判分器

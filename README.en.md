@@ -373,7 +373,7 @@ comment-distillery/
 │   ├── build_exe.py         # package the desktop exe (PyInstaller; build-time only)
 │   ├── make_icon.py         # hand-written ICO generator (stdlib only, no Pillow)
 │   └── make_skill_zip.py    # skill ZIP (**reproducible build**, for "I can only upload a file" users)
-├── golden/                  # test set: 10 cases / 5 categories — did it actually get better?
+├── golden/                  # test set: 11 cases / 5 categories — did it actually get better?
 │   ├── README.md
 │   ├── cases/               # scenarios (pure data, JSON)
 │   ├── graders.py           # grader
