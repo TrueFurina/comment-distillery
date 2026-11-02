@@ -50,13 +50,9 @@ MD_TYPES = [("Markdown 指南", "*.md"), ("所有文件", "*.*")]
 
 
 def default_outdir() -> str:
-    """默认输出目录：统一取 `core.default_outdir()`（程序目录下的 output/）。
-
-    早先返回 `Path.home() / "comment-distillery-output"`，导致程序在 E 盘、
-    产物在 C 盘用户目录，同一个项目的文件散在两个盘上。现在只有一个来源，
-    GUI / Web / CLI 全部落到同一个地方。
-    """
-    return str(core.default_outdir())
+    """默认输出目录：用户主目录下（不写 exe 同目录——安装到 Program Files 会没权限）。"""
+    d = Path.home() / "comment-distillery-output"
+    return str(d)
 
 
 def open_in_explorer(path) -> bool:
@@ -88,26 +84,6 @@ def _enable_dpi():
             ctypes.windll.user32.SetProcessDPIAware()
         except Exception:
             pass
-
-
-def _fit_geometry(win, want_w, want_h, margin=60):
-    """把想要的窗口尺寸收进"屏幕真的放得下"的范围。
-
-    为什么非做不可：`geometry("1080x760")` 在 100% 缩放下没问题，但在
-    150% / 200% 的高分屏上是**逻辑像素**，实际会占 1620x1140 —— 超过屏幕后
-    Windows 会把窗口强行压回去，而 tkinter 内部的布局仍按 1080x760 计算，
-    结果就是右侧控件被裁、长路径整行截断（实测 1707x1019 的屏上窗口只剩
-    735x544，页签「关于」都露不全）。
-    这里按真实可用分辨率把尺寸压到能放下，让布局与窗口尺寸保持一致。
-    """
-    try:
-        sw = win.winfo_screenwidth()
-        sh = win.winfo_screenheight()
-    except Exception:
-        return want_w, want_h
-    aw = max(640, sw - margin)
-    ah = max(480, sh - margin - 60)      # 再留出任务栏
-    return min(want_w, aw), min(want_h, ah)
 
 
 # ─────────────────────────── 后台任务封装 ───────────────────────────
@@ -330,211 +306,6 @@ class RunTab(ttk.Frame):
         app = self.winfo_toplevel()
         if hasattr(app, "set_status"):
             app.set_status(text, color)
-
-
-# ─────────────────────────── ⚡ 一键完成 ───────────────────────────
-
-class AutoTab(RunTab):
-    """给一个链接，一次跑完采集 → 预处理 → 蒸馏包。
-
-    和 Web 端同一套语义：终点是**可直接喂给 AI 的包**，不替用户决定用哪个模型。
-    exe 双击进来第一个看到的就是这一页——多数人只想"放进去、拿出来"，
-    不该逼他们先理解五步流水线。
-    """
-
-    def __init__(self, master):
-        super().__init__(
-            master,
-            "⚡ 一键完成 · 给个链接，拿个能用的包",
-            "输入视频链接或 BV 号，自动跑完 采集 → 预处理 → 蒸馏包，"
-            "直接得到可以拖进任意 AI 的成品目录。\n"
-            "也可以填一份现成的 CSV（那样自动跳过采集）。中途可点「停止」，已完成的部分会保留。",
-            run_label="一键跑完", supports_stop=True)
-
-        self.var_arg = tk.StringVar()
-        self.var_out = tk.StringVar(value=default_outdir())
-        self.var_name = tk.StringVar(value="")
-        self.var_roots = tk.BooleanVar(value=True)
-        self.var_low = tk.IntVar(value=8)
-        self.var_len = tk.IntVar(value=120)
-
-        self.entry_row("链接 / BV / CSV", self.var_arg)
-        self.path_row("输出根目录", self.var_out, mode="dir")
-        self.entry_row("包名（可空）", self.var_name)
-
-        f = ttk.Frame(self.fields, style="Card.TFrame")
-        f.pack(fill="x", pady=4)
-        ttk.Label(f, text="", style="Field.TLabel", width=12).pack(side="left")
-        ttk.Checkbutton(f, text="只抓主楼（快 3 倍；楼中楼只在高赞楼里）",
-                        variable=self.var_roots).pack(side="left")
-
-        self.spin_row("低权重阈值", self.var_low, 0, 1000)
-        self.spin_row("长文阈值", self.var_len, 20, 10000)
-
-        self.btn_open = ttk.Button(self.extra, text="打开包目录", style="Ghost.TButton",
-                                   state="disabled", command=self._open_pack)
-        self.btn_open.pack(side="left")
-        self._pack_dir = None
-
-    def _open_pack(self):
-        if self._pack_dir:
-            open_in_explorer(self._pack_dir)
-
-    def build_work(self):
-        arg = self.var_arg.get().strip()
-        out = self.var_out.get().strip()
-        if not arg:
-            raise ValueError("请填视频链接、BV 号，或一份现成的 CSV 路径。")
-        if not out:
-            raise ValueError("请指定输出根目录。")
-        Path(out).mkdir(parents=True, exist_ok=True)
-        name = self.var_name.get().strip() or None
-        roots = self.var_roots.get()
-        low, ln = self.var_low.get(), self.var_len.get()
-
-        def work(t):
-            return one_click(core, arg, out, name, roots, low, ln, t)
-
-        return work
-
-    def on_done(self, res):
-        pack_dir = res.get("pack_dir") or None
-        partial = res.get("partial_csv") or res.get("prep_dir") or None
-        # 停止时没有成品包，但有已抓到的语料：让「打开」按钮指向它，
-        # 否则用户抓了几百条却拿不到手。
-        self._pack_dir = pack_dir or partial
-        self.btn_open.configure(state="normal" if self._pack_dir else "disabled")
-        if pack_dir:
-            self.btn_open.configure(text="打开包目录")
-        elif partial:
-            self.btn_open.configure(text="打开已抓到的语料")
-        # 每次新任务把按钮文字重置：否则上一次"打开已抓到的语料"会带到
-        # 下一次成功完成的跑法上 —— 文字与去向就错位了。
-        self.btn_open.configure(
-            text="打开包目录" if pack_dir else
-                 ("打开已抓到的语料" if partial else "打开包目录"))
-
-        self.log("", "info")
-        for k, v in res.get("steps", []):
-            self.log(f"  {k}：{v}", "hi")
-        if res.get("aborted"):
-            self.log("已停止：未走完三步。", "warn")
-            if partial:
-                self.log(f"已保留：{partial}", "hi")
-                self.log("可以直接拿这份 CSV 去 ② 预处理，或重跑一次拿完整包。", "info")
-            self.set_status("已停止（未走完三步）", WARN)
-            return
-        mode = res.get("mode", "pack-only")
-        rep = (res.get("report") or {}).get("out", "")
-        d = res.get("distill") or {}
-
-        if rep:
-            self.log(f"\n报告：{rep}", "ok")
-            self.log(f"引用 {d.get('cited', 0)} 条全部可溯源，差集为空——可直接交付。", "info")
-            if hasattr(self, "_report_path"):
-                self._report_path = rep
-            self.set_status("一键完成（含报告）", ACC)
-            return
-
-        if mode == "guide-unverified":
-            self.log(f"\n指南：{d.get('guide_path', '')}", "warn")
-            self.log(f"⚠️ 仍有 {len(d.get('bad') or [])} 条幻觉引用，未出报告。", "warn")
-            self.log("按质量门，差集非空的指南不能当交付物；请手工改 ID 或再跑一轮。", "info")
-            self.set_status("机验未过", WARN)
-            return
-
-        self.log(f"\n成品包：{res['pack_dir']}", "ok")
-        self.log(f"共 {len(res.get('files', []))} 个文件。", "info")
-        if res.get("ai_error"):
-            self.log(f"⚠️ AI 蒸馏失败：{res['ai_error']}", "warn")
-        self.log("", "info")
-        self.log("没配置 AI，所以停在蒸馏包。把它整个拖进任意 AI，"
-                 "它就会按 SKILL.md 写出带引用的指南。", "info")
-        self.log("拿到指南后回到「④ 引用校验」卡一道——差集为空才算交付。", "info")
-        self.log("想全自动出报告：在「关于」页填 AI 配置后重跑。", "info")
-        self.set_status("一键完成（蒸馏包）", ACC)
-
-
-def one_click(core, arg, outdir, name, roots_only, low_max, low_min_len, task):
-    """一键流水线的单一实现：GUI 与 Web 共用同一套步骤语义。
-
-    为什么抽出来：Web 端的 `_do_auto` 已经写了一份，GUI 再抄一份就必然漂移
-    （这个仓库已经为"两份实现各写一套"付过代价）。这里只做**业务编排**，
-    采集/预处理/打包仍全部委托 core，不另写逻辑。
-
-    ⚠️ 本函数跑在**后台线程**里，只能调 task.log / task.progress / task.stopped。
-    绝不能碰 task.set_status（那是 RunTab 的方法，Task 没有）或任何 tk 控件：
-    实测踩过 —— 后台线程调 set_status 抛 AttributeError，界面弹「任务失败」，
-    而真正的产物其实已经生成好了。
-    """
-    stamp = time.strftime("%Y%m%d-%H%M%S")
-    base = Path(outdir)
-    base.mkdir(parents=True, exist_ok=True)
-    pack_name = (name or "").strip() or f"distill-{stamp}"
-    steps = []
-
-    t_csv = arg.lower().endswith(".csv")
-    if t_csv:
-        src = Path(arg)
-        if not src.exists():
-            raise FileNotFoundError(f"找不到 CSV：{src}")
-        task.log(f"① 跳过采集：直接使用现成语料 {src.name}")
-        steps.append(("采集", "跳过（用现成 CSV）"))
-    else:
-        task.log("① 采集：开始抓评论…")
-        out_csv = base / f"comments-{stamp}.csv"
-        res = core.crawl_comments(arg, str(out_csv), roots_only=roots_only,
-                                  on_log=task.log, on_progress=task.progress,
-                                  should_stop=task.stopped)
-        src = out_csv
-        steps.append(("采集", f"{res.get('n_total', 0)} 条"
-                              + ("（中途停止）" if res.get("stopped") else "")))
-        if res.get("stopped"):
-            task.log("   采集中途被停止：用已抓到的部分继续，覆盖度会打折")
-
-    if task.stopped():
-        # 停止也要把"已经拿到的东西"交回去：只报"未走完三步"、却不给出
-        # CSV 路径，用户手里有 600 条语料却不知道在哪，等于白抓。
-        return {"steps": steps, "aborted": True, "pack_dir": "",
-                "files": [str(src)] if Path(src).exists() else [],
-                "partial_csv": str(src)}
-
-    task.log("② 预处理：去重、去噪、按权重排序…")
-    prep_dir = base / f"prep-{stamp}"
-    prep_dir.mkdir(parents=True, exist_ok=True)
-    stats, _ = core.prepare(str(src), str(prep_dir), low_max, low_min_len)
-    n_after = stats.get("total_after_denoise", 0)
-    task.log(f"   去噪后 {n_after} 条"
-             f"（一级 {stats.get('n_top_level', 0)} / 楼中楼 {stats.get('n_reply', 0)}）")
-    steps.append(("预处理", f"去噪后 {n_after} 条"))
-
-    if task.stopped():
-        return {"steps": steps, "aborted": True, "pack_dir": "",
-                "files": [str(prep_dir)], "partial_csv": str(src),
-                "prep_dir": str(prep_dir)}
-
-    task.log("③ 打包：语料 + 方法论 + 提示词…")
-    pack = core.export_package(str(src), str(base), pack_name, low_max, low_min_len,
-                               on_log=task.log)
-    steps.append(("蒸馏包", f"{len(pack.get('files', []))} 个文件"))
-
-    # ④⑤ 与 Web 共用 core.finish_after_pack：配了 AI 就继续，没配就停。
-    # 不在这里另写一份——两份实现必然漂移，而"到底算不算跑完"只能有一个说法。
-    fin = core.finish_after_pack(pack["pack_dir"], on_log=task.log,
-                                 should_stop=task.stopped)
-    d = fin.get("distill") or {}
-    if d:
-        steps.append(("蒸馏", f"{d.get('cited', 0)} 引用 / 幻觉 {len(d.get('bad') or [])}"))
-    if (fin.get("report") or {}).get("out"):
-        steps.append(("报告", Path(fin["report"]["out"]).name))
-
-    out = {"steps": steps, "aborted": False,
-           "pack_dir": pack.get("pack_dir", ""),
-           "files": pack.get("files", [])}
-    out.update({k: fin.get(k) for k in
-                ("mode", "ai", "ai_error", "distill", "report")
-                if k in fin})
-    return out
 
 
 # ─────────────────────────── ① 采集 ───────────────────────────
@@ -854,8 +625,15 @@ class VerifyTab(RunTab):
             self.log("", "info")
             self.log("请把这些 ID 换成语料里真实存在的条目，或删掉该条引用后重跑。", "warn")
             self.set_status(f"发现 {len(bad)} 个幻觉引用", ERR)
+        elif not res.get("verified", True):
+            # 没验过 ≠ 验过了：语料 0 个 ID 或指南 0 条引用时，
+            # 只能报"无法验证"，不能报"全部引用均可溯源"。
+            reason = res.get("unverified_reason") or "校验未获得有效输入"
+            self.log(f"⚠️ 无法验证：{reason}", "warn")
+            self.log("本次没有验证任何一条引用 —— 这不是『通过』。", "warn")
+            self.set_status("引用校验未完成", WARN)
         else:
-            self.log("幻觉引用     0 —— 全部引用均可在语料中溯源。", "ok")
+            self.log(f"幻觉引用     0 —— {len(res['cited'])} 条引用均可在语料中溯源。", "ok")
             self.set_status("引用校验通过", ACC)
 
 
@@ -976,21 +754,14 @@ class App(tk.Tk):
         super().__init__()
         self.title(f"comment-distillery v{core.APP_VERSION} · 评论蒸馏工具箱")
         self.configure(bg=BG)
+        self.geometry("1080x760")
+        self.minsize(940, 660)
+
         _setup_style(self)
         self._build_header()
         self._build_statusbar()
         self._build_notebook()
         self.set_status("就绪")
-        # 先按内容真实的请求尺寸开窗，再收进屏幕范围。
-        # 写死 1080x760 在高 DPI 下会低估：实测该机 scaling≈2.0，五个页签的
-        # 内容需要 706~842px 高，而 760 减去页头/状态栏只剩 654 —— 连最矮的
-        # 页签都放不下，「开始采集」按钮和日志框被直接挤掉。
-        self.update_idletasks()
-        need_w = max(1080, self.winfo_reqwidth())
-        need_h = max(760, self.winfo_reqheight())
-        w, h = _fit_geometry(self, need_w, need_h)
-        self.geometry(f"{w}x{h}")
-        self.minsize(min(940, w), min(660, h))
 
     def _build_header(self):
         head = tk.Frame(self, bg=PANEL, height=76)
@@ -1024,14 +795,12 @@ class App(tk.Tk):
         nb = ttk.Notebook(self, style="TNotebook")
         nb.pack(fill="both", expand=True, padx=14, pady=12)
         self.tabs = {
-            "auto": AutoTab(nb),
             "crawl": CrawlTab(nb),
             "prep": PrepTab(nb),
             "pack": PackTab(nb),
             "verify": VerifyTab(nb),
             "about": AboutTab(nb, self),
         }
-        nb.add(self.tabs["auto"], text="⚡ 一键完成")
         nb.add(self.tabs["crawl"], text="① 采集")
         nb.add(self.tabs["prep"], text="② 预处理")
         nb.add(self.tabs["pack"], text="③ 导出蒸馏包")
@@ -1101,37 +870,11 @@ def smoke_test(hold_ms=1500):
     用途：打包后的冒烟验证。只做 import 检查证明不了什么 —— 必须让
     tkinter 真的初始化、所有控件真的构造一遍、事件循环真的转起来，
     才能说"这个 exe 能用"。任何一处控件参数写错都会在这里抛异常。
-
-    顺手把**构建出来的页签**打出来：打包后靠截图判断"功能在不在"不可靠
-    （窗口可能被别的窗口盖住，抓到的像素跟进程不是一回事）。这里直接问
-    tkinter 自己，输出就是产物的事实。
     """
     _enable_dpi()
     app = App()
-    lines = []
-    try:
-        app.update_idletasks()
-        nb = None
-        for c in app.winfo_children():
-            if "notebook" in str(c):
-                nb = c
-        if nb is not None:
-            names = [nb.tab(t, "text") for t in nb.tabs()]
-            lines.append("TABS: " + " | ".join(names))
-            lines.append("SELECTED: " + nb.tab(nb.select(), "text"))
-        else:
-            lines.append("TABS: <没有 notebook>")
-    except Exception as e:            # 冒烟阶段不因读取失败而判失败
-        lines.append(f"TABS: <读取失败 {type(e).__name__}: {e}>")
     app.after(hold_ms, app.destroy)
     app.mainloop()
-    smoke_test.info = lines          # 供调用方（app_main）落盘或打印
-    for ln in lines:
-        try:
-            print(ln)
-        except UnicodeEncodeError:
-            # 控制台编码装不下 ⚡ 之类：降级打印，不能因为"打印失败"让冒烟判失败
-            print(ln.encode("ascii", "replace").decode("ascii"))
     return 0
 
 

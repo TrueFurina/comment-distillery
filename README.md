@@ -124,11 +124,10 @@ bbc-skill            …然后就没有然后了      + 行动清单 + 盲区说
 
 **[⬇ 下载 comment-distillery.exe](https://github.com/TrueFurina/comment-distillery/releases/latest)** —— 约 12 MB，单文件免安装。
 
-打开就是 **⚡ 一键完成**：填个链接，点一下，拿到成品包。想细调再用后面 ①–④ 逐页走：
+四个页签依次走完：
 
 | 页签 | 干什么 |
 |---|---|
-| **⚡ 一键完成** | **给个链接或 BV 号，一次跑完 ①②③**，直接拿到能喂给 AI 的成品包。多数场景用这一个就够 |
 | **① 采集** | B 站链接 → 评论（含楼中楼）→ CSV；支持中途停止，已抓部分照常写出 |
 | **② 预处理** | 去重 / 去噪 / 统计；**先看 `dup_dropped` 再信任何规模数字** |
 | **③ 导出蒸馏包** | 一键打包成一个文件夹：语料 + 方法论 + 可直接粘贴的 `PROMPT.md` |
@@ -167,7 +166,7 @@ python -m app --web --lan --token "$(python -c 'import secrets;print(secrets.tok
 
 ⚠️ 局域网模式给了完整文件读写能力，**只在你信任的私网里用**（它会拒绝公网/外域 Host，但同网段任何拿到令牌的人都能读写文件）。不碰公网、不破"零 Key"铁律。
 
-纯标准库 `http.server`，**默认只监听 127.0.0.1**，不联网、不上传任何数据。打开就是 **⚡ 一键完成**（一次跑完 采集 → 预处理 → 蒸馏包）；想细调再有五个步骤可逐步走：
+纯标准库 `http.server`，**默认只监听 127.0.0.1**，不联网、不上传任何数据。五个步骤在浏览器里走完：
 采集 → 预处理 → 导出蒸馏包 → 引用机验 → **出 HTML 报告**。
 
 它比 exe 还多一个好处：读的是仓库里**当前**的 `SKILL.md`，**永远不存在"产物滞后"**（exe 内的那份是打包时冻结的）。
@@ -215,20 +214,6 @@ python scripts/emit_html.py 你的指南.md --corpus examples/sample_corpus.csv
 | `corpus_ccf.csv` | **规范语料**（Canonical Corpus Format）—— 引用机验与跨语料合并的单一真值源 |
 
 ---
-
-### 五、让工具自己调用 AI（可选 · BYO-AI）
-
-默认仍是 **零 Key**：蒸馏那一步交还你自己的 AI，不需要任何 API Key，也不产生调用成本。
-
-如果你想让 **Web 界面 / 脚本一键自己调 AI**（BYO-AI —— 仍不内置模型、不捆绑 Key，只借你自己的 Key 跑完闭环），只需配置三个环境变量 `CD_LLM_API_KEY` / `CD_LLM_BASE_URL` / `CD_LLM_MODEL`。仓库根提供了免记的一键桥接脚本，从你本机已有的 `DEEPSEEK_API_KEY` 派生，**key 只存一处**：
-
-```sh
-source set-cd-env.sh        # Git Bash / WSL / macOS
-# 或 Windows cmd 直接运行：set-cd-env.bat
-python -m app --selfcheck   # 应显示「已配置 AI：deepseek-chat @ https://api.deepseek.com/v1」
-```
-
-只有指向自定义端点（本地 llama.cpp、公司代理等非 DeepSeek / OpenAI 宿主）时才需要显式覆盖 `CD_LLM_BASE_URL` / `CD_LLM_MODEL`；否则用 DeepSeek 默认值即可。完整说明见 `docs/one-click-byoai.md`。
 
 ## 反直觉发现：高权重 ≠ 高信号
 
@@ -391,7 +376,7 @@ comment-distillery/
 │   ├── build_exe.py         # 打包桌面 exe（PyInstaller，仅构建期依赖）
 │   ├── make_icon.py         # 标准库手写 ICO 生成器（不引入 Pillow）
 │   └── make_skill_zip.py    #   技能包 ZIP（**可复现构建**，给「只会上传文件」的用户）
-├── golden/                  # 评估集：11 场景 / 5 类，判「改规则后是否变强」
+├── golden/                  # 评估集：8 场景 / 4 类，判「改规则后是否变强」
 │   ├── README.md
 │   ├── cases/               # 场景集（纯数据 JSON）
 │   ├── graders.py           # 判分器
@@ -405,9 +390,9 @@ comment-distillery/
 ├── cases/                   # ★ 十一战实战档案（**仅产物层**）
 │   ├── README.md            # 先读这个：目录编号 ≠ 战次编号
 │   ├── 01…04/               # 第 1–4 战：真实语料 → 深度指南
-│   ├── 05-入站必刷数学/   # 第 6+7 战：正卷 15 章 + 增补卷 10 章（含 3 处结论修正）
+│   ├── 05-mustwatch-math/   # 第 6+7 战：正卷 15 章 + 增补卷 10 章（含 3 处结论修正）
 │   └── notes/               # 设计留档：方案论述 / 开源冲刺路线图
-└── tests/                   # 回归测试 191 项（CI 自动跑）
+└── tests/                   # 回归测试 152 项（CI 自动跑）
 ```
 
 > `cases/` **只放产出**（各战指南 + 设计文档，共 9 个 md / 277 KB）。
@@ -435,7 +420,7 @@ comment-distillery/
 - [x] **v1** — 6 步流水线、深度版默认、引用溯源、反例对冲、盲区说明、引用机验
 - [x] **v1.1** — 场景升维：从"评论"扩为"任何群体文本"，统一语料格式 CCF
 - [x] **实战**（十一战 / 45,633 条）— 辩论层（楼中楼）补抓实证：单视频 21,100 条，增补卷修正正卷 3 处结论
-- [x] **v1.3** — golden 评估集：10 场景 / 5 类，baseline 100 分，35 个变异体验证判分器有效（见 [`golden/README.md`](golden/README.md)）
+- [x] **v1.3** — golden 评估集：8 场景 / 4 类，baseline 100 分，31 个变异体验证判分器有效（见 [`golden/README.md`](golden/README.md)）
 - [x] **v1.4** — 交付形态：Windows 桌面 exe（采集→预处理→导出蒸馏包→引用校验）+ 官网（`site/`）
 - [ ] **v2** — 更多语料域的适配示例（问卷 / 访谈 / 工单）
 - [ ] **v2** — 跨语料聚合（同一议题的多来源合并分析）

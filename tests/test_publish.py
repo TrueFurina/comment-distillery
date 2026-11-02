@@ -75,9 +75,18 @@ class TestCompliance(unittest.TestCase):
     def test_guard_allows_csv_corpus(self):
         # 文档示例用法：`--corpus cases/.../*.csv`，corpus 是 .csv 但属正常本地输入，
         # 护栏只查 guide，绝不应误杀这条路径（原实现会直接 SystemExit）。
-        csv_path = next((p for p in (ROOT / "cases").rglob("*.csv")), None)
-        if csv_path is None:
-            self.skipTest("仓库无现成 csv 可供 corpus 护栏复验")
+        #
+        # ⚠️ 别只搜 cases/：本仓库 cases/ 下**没有任何 .csv**，唯一现成的 CSV 在
+        # examples/。原实现只 rglob cases/ → 永远找不到 → 永远 skipTest，
+        # 于是「护栏误杀 --corpus」这个真实回归至今无人看守（149 tests 里那 1 个 skip）。
+        # 多给几个候选根目录，且找不到时**直接失败**而不是 skip：
+        # 仓库里确实有 examples/sample_corpus.csv，跳过了就说明路径又漂了。
+        roots = (ROOT / "cases", ROOT / "examples", ROOT / "tests")
+        csv_path = next((p for p in (q for r in roots for q in r.rglob("*.csv"))), None)
+        self.assertIsNotNone(
+            csv_path,
+            f"未找到任何 csv（已搜 {[str(r) for r in roots]}）——"
+            "测试自身失准，不得静默跳过")
         # 不应抛异常（guide 仍是 .md）
         publish._guard_no_csv(str(SAMPLE), [str(csv_path)])
 

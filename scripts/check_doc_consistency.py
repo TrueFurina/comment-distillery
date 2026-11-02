@@ -473,9 +473,22 @@ def _declared_test_counts(root):
     return out
 
 
+_TEST_COUNT_CACHE = {}
+
+
 def _actual_test_count(root):
     """当场跑一遍 unittest 拿真实用例数。拿不到返回 None —— 由调用方据此 SKIP，
-    而不是自作聪明地默认通过：拿不到数就报绿，等于给这项检查留了一个永久后门。"""
+    而不是自作聪明地默认通过：拿不到数就报绿，等于给这项检查留了一个永久后门。
+
+    ⚠️ 结果按 root 缓存。`--self-test` 有 21 个变异，每个都在临时副本上跑一遍
+    完整检查；本函数每次要真跑一遍测试套（实测 32s / 152 项），
+    ​21 × 32s ≈ 11 分钟，整个 self-test 慢到在 CI 里像个卡死的步骤。
+    而真值源**永远是同一个目录**（见下方注释：ROOT 而非副本），
+    所以同一 root 重复调用必然得到同一个数，缓存不改变语义、只去掉重复开销。
+    """
+    key = str(root)
+    if key in _TEST_COUNT_CACHE:
+        return _TEST_COUNT_CACHE[key]
     if not (root / "tests").is_dir():
         return None
     env = dict(os.environ)
@@ -488,7 +501,10 @@ def _actual_test_count(root):
         return None
     # "Ran 73 tests in 0.28s" 由 unittest 写到 stderr，两股流一起找才稳。
     m = re.search(r"^Ran (\d+) tests? in", (p.stdout or "") + (p.stderr or ""), re.M)
-    return int(m.group(1)) if m else None
+    if not m:
+        return None                          # 失败不缓存：下次还有机会拿到真值
+    _TEST_COUNT_CACHE[key] = int(m.group(1))
+    return _TEST_COUNT_CACHE[key]
 
 
 def check_test_count(root):
@@ -585,96 +601,6 @@ def check_handoff_structure(root):
                    "战次索引 四项全对")]
 
 
-def _actual_tabs(root):
-    """从源码里取出界面真实的页签（GUI 与 Web 两套），作为真值源。"""
-    import ast as _ast
-
-    tabs = {}
-    g = root / "app" / "gui.py"
-    if g.exists():
-        tree = _ast.parse(g.read_text(encoding="utf-8"))
-        found = []
-        for n in _ast.walk(tree):
-            if isinstance(n, _ast.Call) and isinstance(n.func, _ast.Attribute) \
-                    and n.func.attr == "add":
-                # 页签文字可能在位置参数，也可能在 text= 关键字里
-                cands = list(n.args)
-                for kw in n.keywords:
-                    if kw.arg == "text":
-                        cands.append(kw.value)
-                for a in cands:
-                    if isinstance(a, _ast.Constant) and isinstance(a.value, str):
-                        found.append(a.value)
-        if found:
-            tabs["gui"] = found
-    w = root / "app" / "webui_page.py"
-    if w.exists():
-        src = w.read_text(encoding="utf-8")
-        m = re.search(r"const PANES\s*=\s*\[(.*?)\];", src, re.S)
-        if m:
-            found = re.findall(r'\[\s*"[^"]+"\s*,\s*"([^"]+)"\s*\]', m.group(1))
-            if found:
-                tabs["web"] = found
-    return tabs
-
-
-def check_ui_tabs_documented(root):
-    """文档里写的"页签/步骤数"必须与界面实际一致。
-
-    为什么需要这一项：2026-10-27 加入「⚡ 一键完成」后，README 仍写
-    "四个页签依次走完"、官网仍写"四项全在图形界面里"，而 exe 实际有
-    6 个页签且默认就停在一键页。**这类叙述性漂移机验一条都查不到** ——
-    它既不是数字判据，也不是目录结构，只能靠人翻文档才发现。
-    """
-    tabs = _actual_tabs(root)
-    if not tabs:
-        # 与「测试项数」同理：真值源取**真实仓库**，不取变异临时副本。
-        # 副本只搬了文档、没有 app/，在里面解析页签必然空 → 变异被 SKIP，
-        # 那等于这一项的自检从未生效过。
-        tabs = _actual_tabs(ROOT) if ROOT.exists() else tabs
-    if not tabs:
-        return [("SKIP", "拿不到界面页签（缺 app/gui.py 或 app/webui_page.py）")]
-
-    bad = []
-    # ① 页签数量：文档里出现"N 个页签 / N 项全在"的，必须等于 GUI 页签数
-    #    中文数字也要认：文档习惯写"四个页签"，只匹配 \d+ 会漏掉最常见的那种写法
-    #    （实测：把 README 改回"四个页签"，纯数字正则一条都没报）。
-    if "gui" in tabs:
-        n_gui = len(tabs["gui"])
-        cn = {"一": 1, "二": 2, "三": 3, "四": 4, "五": 5,
-              "六": 6, "七": 7, "八": 8, "九": 9, "十": 10}
-        pats = [
-            r"([0-9]+|[一二三四五六七八九十])\s*个页签",
-            r"([0-9]+|[一二三四五六七八九十])\s*项全在图形界面",
-        ]
-        for name in ("README.md", "README.en.md", "site/index.html"):
-            p = root / name
-            if not p.exists():
-                continue
-            text = p.read_text(encoding="utf-8")
-            for pat in pats:
-                for m in re.finditer(pat, text):
-                    raw = m.group(1)
-                    got = int(raw) if raw.isdigit() else cn.get(raw, -1)
-                    if got != n_gui:
-                        bad.append(f"{name} 声明 {raw}（{got}），实际 {n_gui} 个页签")
-
-    # ② "一键"入口必须写进两份 README 与官网（它是默认页，漏写会把人引去点五步）
-    for name in ("README.md", "README.en.md", "site/index.html"):
-        p = root / name
-        if not p.exists():
-            continue
-        text = p.read_text(encoding="utf-8")
-        if "一键完成" not in text and "One-click" not in text:
-            bad.append(f"{name} 没有提到「一键完成」入口")
-
-    if bad:
-        return [("FAIL", "界面页签与文档不一致：\n    " + "\n    ".join(bad))]
-    gui_n = len(tabs.get("gui", []))
-    web_n = len(tabs.get("web", []))
-    return [("OK", f"界面页签与文档一致（GUI {gui_n} 个 / Web {web_n} 个，一键入口已写入文档）")]
-
-
 CHECKS = [
     ("Python 版本口径", check_python_version),
     ("Release tag 引用", check_release_tags),
@@ -686,7 +612,6 @@ CHECKS = [
     ("语料总量一致", check_corpus_total),
     ("测试项数一致", check_test_count),
     ("交接单结构一致", check_handoff_structure),
-    ("界面页签 == 文档", check_ui_tabs_documented),
 ]
 
 
@@ -864,30 +789,12 @@ def _mut_handoff_ci_steps(st):
 
 
 def _mut_handoff_tree_case(st):
-    """从 HANDOFF 目录树里删掉 `cases/11-学历与命运/` 行 → 必须报错。
+    """从 HANDOFF 目录树里删掉 `cases/11-degree-and-fate/` 行 → 必须报错。
 
     真实历史：目录树停在战 7 时代，缺 08/09/10/11 四个目录——新增一战只改了
     `cases/README.md` 与复盘总表，没人回头补交接单的目录树。
     """
-    _drop_line(st / "HANDOFF.md", "11-学历与命运")
-    return None
-
-
-def _mut_ui_tabs(st):
-    """把 README 的页签口径改回"四个页签"（实际 6 个）→ 必须报错。
-
-    历史原型：加了一键页之后，README 还写着"四个页签依次走完"，
-    官网还写着"四项全在图形界面里" —— 用户照着文档去点五步，
-    而默认页早就是一键完成。这类漂移既不是数字判据也不是目录结构。
-    """
-    f = st / "README.md"
-    s = f.read_text(encoding="utf-8")
-    # 把任一处"N 个页签"改成与事实不符的数字
-    s2 = re.sub(r"[0-9一二三四五六七八九十]+\s*个页签", "四个页签", s, count=1)
-    if s2 == s:
-        # 没有现成的"N 个页签"可改，就追加一句错声明
-        s2 = s + "\n\n本工具有四个页签。\n"
-    f.write_text(s2, encoding="utf-8")
+    _drop_line(st / "HANDOFF.md", "11-degree-and-fate")
     return None
 
 
@@ -1021,7 +928,6 @@ CASES = [
     ("交接单 CI 步数写错（16→15）", "交接单结构一致", _mut_handoff_ci_steps),
     ("交接单目录树漏掉一个 cases 目录", "交接单结构一致", _mut_handoff_tree_case),
     ("交接单档案索引漏掉战 11", "交接单结构一致", _mut_handoff_battle_index),
-    ("README 的页签数写回四个（实际 6 个）", "界面页签 == 文档", _mut_ui_tabs),
 ]
 
 

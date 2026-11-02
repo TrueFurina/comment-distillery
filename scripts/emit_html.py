@@ -387,7 +387,7 @@ border:1px solid var(--accent);color:var(--accent);white-space:nowrap}
 .toc{background:#f7f9fa;border:1px solid var(--line);border-radius:8px;padding:16px 20px;
 margin:26px 0 4px}
 .toc h4{margin:0 0 8px;font-size:13px;letter-spacing:1px;color:var(--muted)}
-.toc ul{margin:0;padding-left:0;list-style:none;font-size:14.5px}
+.toc ol{margin:0;padding-left:20px;font-size:14.5px}
 .toc li{margin:3px 0}
 .src-list{list-style:none;margin:0 0 18px;padding:0}
 .src-list li{border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin:0 0 10px;
@@ -464,7 +464,10 @@ def run(guide, out=None, corpora=None, field=None, title=None, subtitle=None,
         meta = load_corpus(corpora, field)
         res = verify.run(str(guide_p), [str(c) for c in corpora], field, [])
         verify_info = {"ran": True, "cited": len(res["cited"]),
-                       "bad": list(res["bad"]), "real": len(res["real"])}
+                       "bad": list(res["bad"]), "real": len(res["real"]),
+                       # 空跑（0 引用 / 0 ID）不得在报告里写成"机验通过"
+                       "verified": bool(res["real"]) and bool(res["cited"]),
+                       "unverified_reason": res.get("unverified_reason")}
     elif corpora:
         meta = load_corpus(corpora, field)
 
@@ -483,13 +486,21 @@ def run(guide, out=None, corpora=None, field=None, title=None, subtitle=None,
     # ── 目录
     if headings:
         items = "".join(f'<li><a href="#{h}">{esc(t)}</a></li>' for h, t in headings)
-        toc = f'<nav class="toc"><h4>目录</h4><ul class="toc-list">{items}</ul></nav>'
+        toc = f'<nav class="toc"><h4>目录</h4><ol>{items}</ol></nav>'
     else:
         toc = ""
 
     # ── 信任条
     n_cite = len(cites.unique)
-    if verify_info["ran"]:
+    if verify_info["ran"] and not verify_info.get("verified", True):
+        # 机验跑了但地基为空（0 引用 / 0 ID）：差集必然为空，那是"没验"不是"验过"。
+        # ⚠️ 这个分支必须在 `if verify_info["ran"]` 的**内层**优先判断，
+        # 放到 elif 层会被外层 ran 分支吞掉，永远不执行（已实测踩过一次）。
+        cls, txt = "warn", (
+            f'<span class="n">⚠️</span> 机验空跑 —— '
+            f'{esc(verify_info.get("unverified_reason") or "无有效输入")}，'
+            f'<b>未验证任何引用</b>，不得据此声称可溯源')
+    elif verify_info["ran"]:
         bad = verify_info["bad"]
         if bad:
             cls, txt = "bad", (

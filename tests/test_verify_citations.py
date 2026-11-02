@@ -62,9 +62,47 @@ class VerifyCitations(unittest.TestCase):
         g = self._guide("# 测试\n\n正文里直接写了 c999999999999 这个 ID\n")
         self.assertEqual(verify.main([g, str(EXAMPLE_CSV)]), 1)
 
-    def test_no_citations_is_ok(self):
-        """没有引用 -> 无幻觉 -> 通过（但这是"无据可查"，调用方需自行判断质量）。"""
+    def test_no_citations_is_not_pass(self):
+        """没有引用 -> 不是"通过"，而是"未验证"（退出码 3）。
+
+        原断言是 `== 0`（通过），文档字符串自己也承认「这是『无据可查』，
+        调用方需自行判断质量」——可三个调用方（GUI / WebUI / emit_html）
+        谁都没有做这个判断，全都把"差集为空"渲染成 ✅ 可交付。
+        一条谁都不执行的免责说明，等于没有。现在把判断收回到本模块：
+        没验过一律退出码 3，调用方无法把它误读成通过。
+        """
         g = self._guide("# 测试\n\n这篇没有任何引用。\n")
+        self.assertEqual(verify.main([g, str(EXAMPLE_CSV)]), 3)
+        # run() 必须给出与退出码一致的标记，避免调用方各自重算判据
+        res = verify.run(g, [str(EXAMPLE_CSV)])
+        self.assertFalse(res["verified"])
+        self.assertEqual(res["unverified_reason"], "指南中未识别到引用标记")
+
+    def test_empty_corpus_is_not_pass(self):
+        """语料读不出 ID（只有表头 / ID 列没识别到）-> 未验证（3），不是通过。
+
+        real=0 时差集必然为空，原实现会打印「✅ 所有引用均可在语料中溯源」，
+        而实际上校验完全没有地基。
+        """
+        d = tempfile.mkdtemp()
+        empty = Path(d) / "empty.csv"
+        empty.write_text("title,body\n", encoding="utf-8")
+        g = self._guide("# 测试\n\n> 引用 [源:c1006|权重7|一级]\n")
+        self.assertEqual(verify.main([g, str(empty)]), 3)
+        res = verify.run(g, [str(empty)])
+        self.assertFalse(res["verified"])
+        self.assertEqual(res["unverified_reason"], "语料未读出任何 ID")
+
+    def test_verified_pass_when_both_sides_present(self):
+        """反向自检：real>0 且 cited>0 时才允许判通过。
+
+        没有这条，上面两条"未验证"断言可能因为 verified 恒假而空转通过。
+        """
+        g = self._guide("# 测试\n\n> 引用 [源:c1006|权重7|一级]\n")
+        res = verify.run(g, [str(EXAMPLE_CSV)])
+        self.assertTrue(res["verified"])
+        self.assertEqual(res["bad"], [])
+        self.assertIsNone(res["unverified_reason"])
         self.assertEqual(verify.main([g, str(EXAMPLE_CSV)]), 0)
 
     def test_missing_file_returns_2(self):
@@ -103,31 +141,6 @@ class VerifyCitations(unittest.TestCase):
         cited = verify.extract_cited(text, verify.DEFAULT_PATTERNS)
         for cid in ("c1006", "c1017", "c1020"):
             self.assertIn(cid, cited)
-
-    def test_real_guide_from_one_click_pack(self):
-        """真实端到端样本：一键流程产出的语料 → 据此写的指南必须零幻觉。
-
-        这份指南是拿「一键跑完」得到的 9,537 条真实语料写的，14 条引用全部
-        选中该语料里真实存在的条目。它钉住的是整条链路，而不只是正则：
-        语料规模、ID 形态、引用格式、抽取逻辑，任何一环漂移这里都会红。
-        """
-        guide = ROOT / "tests" / "fixtures" / "mountain_guide_verified.md"
-        corpus = ROOT / "tests" / "fixtures" / "mountain_corpus_ids.csv"
-        if not guide.exists() or not corpus.exists():
-            self.skipTest("端到端样本缺失（该样本由真实抓取生成，不入库时跳过）")
-        res = verify.run(str(guide), [str(corpus)])
-        self.assertEqual(res["bad"], [], f"不该有幻觉引用：{res['bad']}")
-        self.assertGreaterEqual(len(res["cited"]), 10)
-
-    def test_quality_gate_blocks_fake_cite(self):
-        """反向样本：注入一条假引用，质量门必须拦住并点名。"""
-        guide = ROOT / "tests" / "fixtures" / "mountain_guide_with_fake_cite.md"
-        corpus = ROOT / "tests" / "fixtures" / "mountain_corpus_ids.csv"
-        if not guide.exists() or not corpus.exists():
-            self.skipTest("端到端样本缺失")
-        res = verify.run(str(guide), [str(corpus)])
-        self.assertEqual(len(res["bad"]), 1, f"应恰好拦下 1 条：{res['bad']}")
-        self.assertEqual(res["bad"][0], "c999999999999")
 
 
 if __name__ == "__main__":

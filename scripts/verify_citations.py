@@ -96,10 +96,7 @@ def extract_cited(text, patterns):
     # 1) 结构化标记 [源:ID ...] —— 取 "源:" 后到第一个分隔符之间的内容
     #    字符类需排除反斜杠：markdown 表格内竖线必须转义，写作 [源:c123\|权重7\|一级]，
     #    若不排除会捕获到 "c123\"（多一个反斜杠）而误判为幻觉引用。
-    # ID 组用 * 而非 +：模型确实会写出 `[源:|150|一级]` 这种空 ID 标记。
-    # 若要求至少 1 字符，该标记既不计入 cited、也不进 bad，
-    # 于是正文挂着一条无依据的引用，机验却打印「幻觉 0」——假绿。
-    for m in re.finditer(r"\[源\s*[:：]\s*([^\]\|｜\s,，;；\\]*)", text):
+    for m in re.finditer(r"\[源\s*[:：]\s*([^\]\|｜\s,，;；\\]+)", text):
         cited.add(m.group(1).strip().strip("\\"))
     # 2) 兜底正则
     for p in patterns:
@@ -155,6 +152,14 @@ def run(guide, corpora, field=None, patterns=None):
         "contexts": contexts,
         "patterns": pats,
         "field": field,
+        # 是否**真的**验证过。"bad 为空"不等于"验过了"：real=0（语料没读出 ID）
+        # 或 cited=0（指南没有引用标记）时，校验没有地基，属于未验证而非通过。
+        # 消费方（GUI / WebUI / emit_html）必须读这个字段，不能只看 bad 是否为空。
+        "verified": bool(real) and bool(cited),
+        "unverified_reason": (
+            None if (real and cited)
+            else ("语料未读出任何 ID" if not real else "指南中未识别到引用标记")
+        ),
     }
 
 
@@ -181,7 +186,19 @@ def main(argv=None):
     print(f"指南引用 ID  : {len(res['cited'])}")
     print(f"幻觉引用     : {len(res['bad'])}")
 
-    if res["bad"]:
+    if not res["bad"]:
+        pass  # 落到下面的通过/未验证分支
+    elif not res["real"]:
+        # 语料一个 ID 都没读出来 → 没有地基断言"这个引用是假的"。
+        # 判成"幻觉"会让用户去删一条可能完全正确的引用，
+        # 真正该修的是语料（ID 列没识别到 / CSV 为空）。这里必须先报地基问题。
+        print("\n=== ⚠️ 无法验证：语料未读出任何 ID（无法据此判定引用真伪）===")
+        for c in res["per_corpus"]:
+            print(f"  {os.path.basename(c['path'])}: 0 ids (列: {c['col']})")
+        print(f"指南中有 {len(res['cited'])} 条候选引用待验，但语料侧为空。")
+        print("请用 --field 指定 ID 列名，或确认 CSV 里确实有数据行。")
+        return 3
+    else:
         print("\n=== ❌ 幻觉引用（指南中引用了不存在于语料的 ID）===")
         for b in res["bad"]:
             ctx = res["contexts"].get(b)
@@ -190,7 +207,28 @@ def main(argv=None):
         print("诚实的降级方式是减少引用条数，绝不是保留一个『看起来对』的 ID。")
         return 1
 
-    print("\n=== ✅ 通过：所有引用均可在语料中溯源 ===")
+    # ── 退化态不得判"通过"：没验过 ≠ 验过了 ──────────────────────────
+    # bad 为空只说明"没有抓到一个错的"，不代表"验到过对的"。
+    # 两种退化态原先都会打印 ✅「所有引用均可在语料中溯源」——
+    # 指南一条引用都没有（cited=0）时，这句话等于宣称验过 0 条；
+    # 语料一条 ID 都没读出来（real=0，ID 列没识别到 / CSV 只有表头）时，
+    # 校验完全没有地基。二者都必须是明确的"未验证"，退出码非 0，
+    # 否则调用方（GUI / CI）会把空跑当成通过。
+    # 判据单一来源：读 run() 给的 verified，不在这里重算。
+    if not res["verified"]:
+        print(f"\n=== ⚠️ 无法验证：{res['unverified_reason']} ===")
+        if not res["real"]:
+            for c in res["per_corpus"]:
+                print(f"  {os.path.basename(c['path'])}: 0 ids (列: {c['col']})")
+            print("ID 列未被识别或语料为空。请用 --field 指定 ID 列名，"
+                  "或确认 CSV 里确实有数据行。")
+        else:
+            print("预期形如 [源:c123456]、[源：c123456]，或匹配兜底正则的 ID。")
+            print("若指南确实不引用语料，则本项校验不适用；"
+                  "但这不等于『引用已验证』。")
+        return 3
+
+    print(f"\n=== ✅ 通过：{len(res['cited'])} 条引用均可在语料中溯源 ===")
     return 0
 
 

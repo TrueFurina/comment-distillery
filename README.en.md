@@ -127,11 +127,10 @@ If you'd rather not touch a terminal:
 
 **[⬇ Download comment-distillery.exe](https://github.com/TrueFurina/comment-distillery/releases/latest)** — ~12 MB, single file, no installer.
 
-Opens straight into **⚡ One-click**: paste a link, press once, get a ready-to-use pack. Use the four tabs below when you need finer control:
+Four tabs, in order:
 
 | Tab | What it does |
 |---|---|
-| **⚡ One-click** | paste a link or BV id → runs ①②③ in one go → a finished pack ready to hand to any AI |
 | **1. Collect** | Bilibili link → comments (incl. nested replies) → CSV; can stop midway and still writes what it got |
 | **2. Prep** | dedupe / denoise / stats. **Check `dup_dropped` before trusting any scale number** |
 | **3. Export pack** | one click → a folder with corpus + methodology + a paste-ready `PROMPT.md` |
@@ -200,20 +199,6 @@ python scripts/emit_html.py your_guide.md --corpus examples/sample_corpus.csv
 | `corpus_ccf.csv` | **canonical corpus** (Canonical Corpus Format) — the single source of truth for citation checks and cross-corpus merges |
 
 ---
-
-### 5. Let the tool call AI itself (optional · BYO-AI)
-
-The default stays **zero-key**: the distillation step is handed back to your own AI — no API key needed, no per-call cost.
-
-If you want the **web UI / scripts to call AI end-to-end on their own** (BYO-AI — still no bundled model, no baked-in key; it just borrows *your* key to close the loop), configure three env vars: `CD_LLM_API_KEY` / `CD_LLM_BASE_URL` / `CD_LLM_MODEL`. The repo ships a one-line bridge script that derives them from your existing `DEEPSEEK_API_KEY`, so the key lives in exactly one place:
-
-```sh
-source set-cd-env.sh        # Git Bash / WSL / macOS
-# or on Windows cmd: set-cd-env.bat
-python -m app --selfcheck   # should report "AI configured: deepseek-chat @ https://api.deepseek.com/v1"
-```
-
-You only need to override `CD_LLM_BASE_URL` / `CD_LLM_MODEL` for a custom endpoint (local llama.cpp, a corporate proxy, or any non-DeepSeek/OpenAI host); otherwise the DeepSeek defaults apply. Full docs in `docs/one-click-byoai.md`.
 
 ## Counter-intuitive finding: weight ≠ signal
 
@@ -373,7 +358,7 @@ comment-distillery/
 │   ├── build_exe.py         # package the desktop exe (PyInstaller; build-time only)
 │   ├── make_icon.py         # hand-written ICO generator (stdlib only, no Pillow)
 │   └── make_skill_zip.py    # skill ZIP (**reproducible build**, for "I can only upload a file" users)
-├── golden/                  # test set: 11 cases / 5 categories — did it actually get better?
+├── golden/                  # test set: 8 cases / 4 categories — did it actually get better?
 │   ├── README.md
 │   ├── cases/               # scenarios (pure data, JSON)
 │   ├── graders.py           # grader
@@ -387,9 +372,9 @@ comment-distillery/
 ├── cases/                   # ★ ten real-world runs (artifacts only)
 │   ├── README.md            # read first: directory numbering ≠ run numbering
 │   ├── 01…04/               # runs 1–4: real corpus → deep-dive guide
-│   ├── 05-入站必刷数学/   # runs 6+7: 15-chapter guide + 10-chapter addendum (3 claims corrected)
+│   ├── 05-mustwatch-math/   # runs 6+7: 15-chapter guide + 10-chapter addendum (3 claims corrected)
 │   └── notes/               # design notes: rationale / open-source sprint roadmap
-└── tests/                   # regression tests, 191 cases (run in CI)
+└── tests/                   # regression tests, 152 cases (run in CI)
 ```
 
 > `cases/` ships **artifacts only** (the guides + design docs, 9 md files / 277 KB).
@@ -418,7 +403,7 @@ See [`docs/compliance.md`](docs/compliance.md).
 - [x] **v1** — 6-step pipeline, deep-by-default, provenance, counter-examples, blind spots, citation gate
 - [x] **v1.1** — domain generalization: from "comments" to "any crowd text"; Canonical Corpus Format
 - [x] **field validation** (10 runs / 45,633 items) — the reply-layer (nested comments) study: 21,100 items on one video, and the supplement volume corrected 3 conclusions of the main guide
-- [x] **v1.3** — golden test set: 10 cases / 5 categories, baseline scores 100, and 35 mutants prove the grader actually deducts (see [`golden/README.md`](golden/README.md))
+- [x] **v1.3** — golden test set: 8 cases / 4 categories, baseline scores 100, and 31 mutants prove the grader actually deducts (see [`golden/README.md`](golden/README.md))
 - [x] **v1.4** — delivery: Windows desktop exe (collect → prep → export pack → verify) + website (`site/`)
 - [ ] **v2** — adaptation examples for more domains (surveys / interviews / tickets)
 - [ ] **v2** — cross-corpus aggregation (merge multiple sources on one topic)

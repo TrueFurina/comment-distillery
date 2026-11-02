@@ -133,6 +133,28 @@ class EmitHtml(unittest.TestCase):
         self.assertFalse(res["verify"]["ran"])
         self.assertIn("未跑机验", html)
 
+    def test_trustbar_empty_run_is_not_pass(self):
+        """机验跑了但地基为空（0 ID / 0 引用）→ 信任条必须 warn，不得写"机验通过"。
+
+        回归锁：这两条分支原先在 emit_html 里被写成 `elif` 接在外层
+        `if verify_info["ran"]` 之后——外层一旦为真，elif 永不执行，
+        于是空跑报告照样印「机验通过 · 差集 0」。实测踩过：
+        分支写在正确层级是这条断言唯一能拦住的东西。
+        """
+        d = tempfile.mkdtemp()
+        csv = Path(d) / "empty.csv"
+        csv.write_text("id,text\n", encoding="utf-8")     # 只有表头
+        g = Path(d) / "g.md"
+        g.write_text("# 标题\n\n正文没有任何引用。\n", encoding="utf-8")
+        out = str(Path(d) / "o.html")
+        res = emit.run(str(g), out, corpora=[str(csv)])
+        html = Path(out).read_text(encoding="utf-8")
+        self.assertTrue(res["verify"]["ran"], "前提：机验确实跑了")
+        self.assertFalse(res["verify"]["verified"], "空跑不得被标记为已验证")
+        self.assertIn("机验空跑", html)
+        self.assertIn("未验证任何引用", html)
+        self.assertNotIn("机验通过", html, "空跑报告绝不能声称机验通过")
+
     # ── 4. 安全 / 编码 ─────────────────────────────────────────────
     def test_html_is_escaped(self):
         md = "危险内容 <script>alert(1)</script> 与 & 符号"
