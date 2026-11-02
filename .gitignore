@@ -21,6 +21,7 @@ distill/
 /cases/**/distill/
 /cases/**/distill_full/
 /cases/**/memory-snapshot/
+/cases/**/记忆快照/
 
 # ── 凭证：绝不提交 ──
 .env
