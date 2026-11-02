@@ -1,0 +1,24 @@
+# Render Blueprint —— 声明式创建「评论蒸馏器」在线 demo（免费 Web Service）。
+#
+# 用法：Render 控制台 → New → Blueprint → 选本仓库 → Render 读这个文件自动建服务。
+# 之后每次 push 到 main，Render 自动重新部署（autoDeploy: true）；
+# 若关掉 autoDeploy，则由 .github/workflows/deploy-render.yml 用 Deploy Hook 触发。
+#
+# 关键点：
+#   - 本项目零第三方依赖，buildCommand 只需占位，不需要 pip install。
+#   - 服务必须监听 $PORT 并绑 0.0.0.0：--demo 负责绑 0.0.0.0，--port 默认读 PORT。
+#   - --demo = --public 但不校验令牌（平台代理会注入 Authorization 头，空令牌的
+#     「开放访问」会被令牌闸门误拦成 401）。沙箱与路径白名单仍然生效。
+services:
+  - type: web
+    name: comment-distillery
+    runtime: python
+    plan: free
+    region: singapore
+    buildCommand: echo "zero third-party dependencies"
+    startCommand: python -m app.webui --no-browser --demo
+    healthCheckPath: /api/hello
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.6
