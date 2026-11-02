@@ -15,6 +15,7 @@ golden/
 ├── graders.py          判分器（只判分，不关心回复是谁产生的）
 ├── run_golden.py       跑分器（编排 + 报告落盘 + 变异验证）
 ├── replies/baseline/   理想回复（应拿满分；也是变异验证的原料）
+├── replies/example/    弱推断对照样本（演示 --replies 如何抓住过度泛化 / 无来源数字）
 └── results/            跑分报告（gitignore，随时可重生成）
 ```
 
@@ -34,6 +35,47 @@ python golden/run_golden.py --self-test
 # 4) 跨版本对比
 python golden/run_golden.py --compare results/a.json results/b.json
 ```
+
+## 给真实回复做体检（`--replies` 实战）
+
+`--replies` 是这套评估集的**主用途**：把你蒸馏出的真实回复拿去跑分，不绑定任何 CLI 或模型。
+它直接复用 `grade()`，包括 `inference_quality` 三个推断质量维度——所以"引用真实但推断薄弱"的回复会被扣分。
+
+### 步骤
+
+```bash
+# 0) 先看有哪些场景、各自属于哪类（case_id 就是你要创建的 txt 文件名）
+python -c "import sys; sys.path.insert(0,'golden'); import graders; \
+           [print(c['id'], '->', c['category']) for c in graders.load_cases()]"
+
+# 1) 建一个目录，把每个场景的回复存成 <case_id>.txt
+mkdir -p /tmp/my-replies
+#    例如针对 inference-scope-hedging 场景：
+#    echo "你的结论文本…" > /tmp/my-replies/inference-scope-hedging.txt
+#    （只跑你关心的场景即可——没提供的场景会被列为 no_reply，不计入总分，
+#      不会悄悄被当成 0 分拉低成绩）
+
+# 2) 跑分
+python golden/run_golden.py --replies /tmp/my-replies
+#    默认会把报告落盘到 golden/results/；加 --no-save 只打印不落盘
+```
+
+### 对照：理想 vs 弱推断
+
+仓库自带 `golden/replies/example/` 两个"故意写弱"的样本，可直接复跑看效果：
+
+```bash
+python golden/run_golden.py --replies golden/replies/example --no-save
+```
+
+| 样本 | 类别 | 评分 | 被抓的原因 |
+|---|---|---|---|
+| `inference-scope-hedging`（example） | `inference_quality` | **0/5** | 把"六成评论吐槽"直接推成"口碑全面崩坏"——无边界锚定、无盲区披露 |
+| `inference-numeric-anchoring`（example） | `inference_quality` | **2/5** | 给了 31.9% 却没锚定样本量（软扣分，非归零） |
+| 同两个场景（baseline） | `inference_quality` | **5/5** | 锚定到本批样本、主动披露局限、百分比绑定语料 |
+
+> 注意：这两个 example 只覆盖了 2 个场景，所以 `总分` 只反映这 2 个场景的加权结果（16/100），
+> 不是全集分数。全集对照请用 `--baseline`（应 100 分）。
 
 ## 场景结构（JSON）
 
