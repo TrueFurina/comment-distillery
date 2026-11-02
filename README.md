@@ -391,7 +391,7 @@ comment-distillery/
 │   ├── build_exe.py         # 打包桌面 exe（PyInstaller，仅构建期依赖）
 │   ├── make_icon.py         # 标准库手写 ICO 生成器（不引入 Pillow）
 │   └── make_skill_zip.py    #   技能包 ZIP（**可复现构建**，给「只会上传文件」的用户）
-├── golden/                  # 评估集：8 场景 / 4 类，判「改规则后是否变强」
+├── golden/                  # 评估集：10 场景 / 5 类，判「改规则后是否变强」
 │   ├── README.md
 │   ├── cases/               # 场景集（纯数据 JSON）
 │   ├── graders.py           # 判分器
@@ -435,7 +435,7 @@ comment-distillery/
 - [x] **v1** — 6 步流水线、深度版默认、引用溯源、反例对冲、盲区说明、引用机验
 - [x] **v1.1** — 场景升维：从"评论"扩为"任何群体文本"，统一语料格式 CCF
 - [x] **实战**（十一战 / 45,633 条）— 辩论层（楼中楼）补抓实证：单视频 21,100 条，增补卷修正正卷 3 处结论
-- [x] **v1.3** — golden 评估集：8 场景 / 4 类，baseline 100 分，31 个变异体验证判分器有效（见 [`golden/README.md`](golden/README.md)）
+- [x] **v1.3** — golden 评估集：10 场景 / 5 类，baseline 100 分，35 个变异体验证判分器有效（见 [`golden/README.md`](golden/README.md)）
 - [x] **v1.4** — 交付形态：Windows 桌面 exe（采集→预处理→导出蒸馏包→引用校验）+ 官网（`site/`）
 - [ ] **v2** — 更多语料域的适配示例（问卷 / 访谈 / 工单）
 - [ ] **v2** — 跨语料聚合（同一议题的多来源合并分析）

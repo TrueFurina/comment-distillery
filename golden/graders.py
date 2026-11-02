@@ -18,6 +18,9 @@ comment-distillery / golden / graders.py
   citation_real       引用机验：回复中被引用的 ID 必须全部存在于语料（复用 scripts/verify_citations.py）
   files_must_exist    相对 base_dir 的产物必须存在
   files_must_not_exist 红线：禁区产物不得存在
+  inference_quality  推断质量判分（软扣分，无红线）：边界意识 / 盲区披露 / 数字锚定。
+                     抓住"引用真实但推理空泛 / 过度泛化 / 无盲区意识 / 数字无来源"的回复，
+                     弥补原评估集只判形式与可溯源的局限（golden/README.md 已知局限 #3）。
 
 零依赖，仅标准库。
 """
@@ -36,6 +39,34 @@ CASES_DIR = Path(__file__).resolve().parent / "cases"
 REPLIES_BASELINE_DIR = Path(__file__).resolve().parent / "replies" / "baseline"
 
 MAX_SCORE = 5
+
+# ── 推断质量判分（inference_quality）───────────────────────────────────
+# 设计意图：原评估集只能卡"形式与可溯源"（golden/README.md 已知局限 #3）——一条
+# "引用真实但推理空泛 / 过度泛化 / 无盲区意识"的回复能拿满分。这里补一套**结构信号**
+# 级的推断质量判分，全部软扣分、无红线，避免误伤真正高质量但措辞不同的指南。
+# 这些是启发式（不调用模型），属"质量提示"而非"质量证明"，和整套评估集的定位一致。
+
+# 边界 / 适用范围意识：好结论从不假装普适，会锚定到"这批样本"。
+SCOPE_MARKERS = [
+    "在这批样本", "在这批评论", "在这份语料", "本批", "本次采集",
+    "样本中", "在我们的样本里", "这批数据", "针对本采集", "本批评论",
+    "在本次", "本采集",
+]
+
+# 盲区 / 局限披露：好推断会明确"我没覆盖什么 / 不能推广到哪"。
+BLIND_SPOT_MARKERS = [
+    "局限", "盲区", "不代表", "未必普适", "无法推断", "样本偏差",
+    "未涵盖", "不能推广", "谨慎看待", "存疑", "需注意", "不代表全部",
+    "受样本限制", "未必适用", "不意味着", "不应推广",
+]
+
+# 数字锚定：若出现百分比，必须锚定到样本量 / 来源，防止无来源的精确数字。
+ANCHOR_MARKERS = [
+    "样本", "条评论", "条样本中", "基于", "据本批", "采集自", "语料中",
+    "在这", "条数据", "本批的", "条评论中",
+]
+
+PERCENT_RE = re.compile(r"\d+(\.\d+)?\s*%")
 
 
 def load_cases(cases_dir=None):
@@ -151,6 +182,54 @@ def _check_citation(expect, text):
     return total, total, [], [("citation_real", f"{len(cited)} 条引用全部可溯源", True, False)]
 
 
+def _check_inference_quality(expect, text):
+    """推断质量判分：边界意识 / 盲区披露 / 数字锚定。
+
+    返回 (passed, total, red, detail)。**全部软扣分、无红线**——不命中只是
+    扣该子项分，不归零，以容忍真实高质量但措辞不同的指南（规避已知局限 #1 的误伤）。
+    """
+    spec = expect.get("inference_quality")
+    if not spec:
+        return 0, 0, [], []
+    passed, total, red, detail = 0, 0, [], []
+
+    # ① 边界 / 适用范围意识
+    if spec.get("min_scope_markers"):
+        total += 1
+        n = sum(1 for m in SCOPE_MARKERS if m in text)
+        if n >= spec["min_scope_markers"]:
+            passed += 1
+            detail.append(("inference_quality", f"边界意识标记×{n}（≥{spec['min_scope_markers']}）", True, False))
+        else:
+            detail.append(("inference_quality",
+                           f"边界意识标记不足（{n}/{spec['min_scope_markers']}）——结论可能过度泛化", False, False))
+
+    # ② 盲区 / 局限披露
+    if spec.get("require_blind_spot"):
+        total += 1
+        hit = any(m in text for m in BLIND_SPOT_MARKERS)
+        if hit:
+            passed += 1
+            detail.append(("inference_quality", "盲区/局限披露存在", True, False))
+        else:
+            detail.append(("inference_quality", "缺盲区/局限披露——未说明适用范围与不足", False, False))
+
+    # ③ 数字锚定：含百分比则必须锚定来源（无百分比则自动通过）
+    if spec.get("anchor_percentages"):
+        total += 1
+        if PERCENT_RE.search(text) is None:
+            passed += 1
+            detail.append(("inference_quality", "无百分比，数字锚定自动通过", True, False))
+        else:
+            anchored = any(m in text for m in ANCHOR_MARKERS)
+            if anchored:
+                passed += 1
+                detail.append(("inference_quality", "百分比已锚定来源", True, False))
+            else:
+                detail.append(("inference_quality", "含百分比但未锚定来源——可能是无来源的精确数字", False, False))
+    return passed, total, red, detail
+
+
 def grade(case, reply_text, base_dir=None):
     """
     给单个场景打分，返回 dict：
@@ -163,10 +242,11 @@ def grade(case, reply_text, base_dir=None):
     p1, t1, r1, d1 = _check_text_rules(expect, reply_text)
     p2, t2, r2, d2 = _check_citation(expect, reply_text)
     p3, t3, r3, d3 = _check_files(expect, base_dir or REPO_ROOT)
+    p4, t4, r4, d4 = _check_inference_quality(expect, reply_text)
 
-    passed, total = p1 + p2 + p3, t1 + t2 + t3
-    red = r1 + r2 + r3
-    details = d1 + d2 + d3
+    passed, total = p1 + p2 + p3 + p4, t1 + t2 + t3 + t4
+    red = r1 + r2 + r3 + r4
+    details = d1 + d2 + d3 + d4
 
     if red:
         score = 0
@@ -220,4 +300,7 @@ if __name__ == "__main__":
                 ("must_contain", "must_not_contain", "regex_must_hit", "regex_must_not_hit",
                  "files_must_exist", "files_must_not_exist")) \
             + (1 if e.get("must_contain_any") else 0) + (1 if e.get("citation_real") else 0)
+        iq = e.get("inference_quality")
+        if iq:
+            n += sum(1 for k in ("min_scope_markers", "require_blind_spot", "anchor_percentages") if iq.get(k))
         print(f"{c['category']:16s} {c['id']:34s} weight={c['weight']} rules={n}")

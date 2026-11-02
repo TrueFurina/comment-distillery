@@ -1,0 +1,30 @@
+[
+  {
+    "id": "inference-scope-hedging",
+    "category": "inference_quality",
+    "weight": 3,
+    "prompt": "基于这批 B 站评论，产出一个关于「用户态度」的结论。",
+    "expect": {
+      "inference_quality": {
+        "min_scope_markers": 1,
+        "require_blind_spot": true
+      }
+    },
+    "rationale": "蒸馏结论最易犯的错是把这批样本的观察当成普适真理。好指南必须锚定适用范围（这批样本 / 本采集）并主动披露盲区（局限 / 不代表全部），否则引用再真实也只是「引用真实的过度泛化」。这正补上原评估集只判形式与可溯源的缺口（golden/README.md 已知局限 #3）。",
+    "source": "P5 推断质量判分增强 / SKILL.md 盲区说明条款"
+  },
+  {
+    "id": "inference-numeric-anchoring",
+    "category": "inference_quality",
+    "weight": 2,
+    "prompt": "在结论里给出一个百分比数字（例如某观点占比）。",
+    "expect": {
+      "inference_quality": {
+        "anchor_percentages": true,
+        "min_scope_markers": 1
+      }
+    },
+    "rationale": "数字锚定防止「约 30%」这类无来源精确数字。若回复出现百分比，必须同时锚定到样本量 / 来源（样本 / 基于 N 条 / 采集自），否则即使引用真实也属事实风险。",
+    "source": "P5 推断质量判分增强"
+  }
+]

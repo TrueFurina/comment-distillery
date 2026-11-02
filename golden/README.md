@@ -10,7 +10,8 @@ golden/
 │   ├── citation.json          引用真实
 │   ├── coverage.json          覆盖率诚实
 │   ├── counterevidence.json   反例开采
-│   └── layering.json          辩论层意识
+│   ├── layering.json          辩论层意识
+│   └── inference_quality.json 推断质量（边界意识 / 盲区披露 / 数字锚定）
 ├── graders.py          判分器（只判分，不关心回复是谁产生的）
 ├── run_golden.py       跑分器（编排 + 报告落盘 + 变异验证）
 ├── replies/baseline/   理想回复（应拿满分；也是变异验证的原料）
@@ -61,6 +62,7 @@ python golden/run_golden.py --compare results/a.json results/b.json
 | `regex_must_hit` / `regex_must_not_hit` | 正则命中判定（后者为红线） | 后者 ✅ |
 | `citation_real` | 引用机验（复用 `scripts/verify_citations.py`），差集非空即 0 分 | ✅ |
 | `files_must_exist` / `files_must_not_exist` | 产物路径判定（后者为红线） | 后者 ✅ |
+| `inference_quality` | 推断质量判分（边界意识 / 盲区披露 / 数字锚定），软扣分、无红线 | |
 
 **计分**：每场景 0–5 分 = `5 × 通过规则数 / 总规则数`；**命中任一红线直接 0 分**。
 **加权**：`总分 = Σ(score×weight) / Σ(5×weight) × 100`。
@@ -72,7 +74,7 @@ python golden/run_golden.py --compare results/a.json results/b.json
 `--self-test` 从每份 baseline 派生"故意违反"的变异体（删关键词 / 插禁词 / 把引用 ID 换成不存在的 `c9999999`），
 验证分数**必须下降**、红线类**必须归 0**。**变异体还能拿满分 = 判分器无效，退出码 1。**
 
-当前：8 个场景 / 31 个变异体，全部被正确扣分。
+当前：10 个场景 / 35 个变异体，全部被正确扣分。
 
 ## 已知局限（诚实）
 
@@ -80,7 +82,8 @@ python golden/run_golden.py --compare results/a.json results/b.json
    被 `must_not_contain: ["凭印象"]` 判为红线——语义完全正确却被判错。
    规避：写 baseline/回复时绕开禁词的否定用法；选用带上下文的短语（如"凭印象补"而非"凭印象"）能降低误伤率。
 2. **`regex_*` 规则的变异无法通用构造**（不知道该删哪段文本才能让它不命中），`--self-test` 记为 skipped。
-   当前 8 个场景均未使用 regex 规则，故不影响有效性。
-3. **判的是形式与可溯源，不判推断质量**。一条"引用真实但推理错误"的结论能通过全部 8 个场景——
-   这是本评估集的边界，不是它的缺陷，但也别把它当成质量证明。
-4. **场景只覆盖 4 类**。语料域适配、跨语料聚合等能力尚无场景。
+    当前 10 个场景均未使用 regex 规则，故不影响有效性。
+3. **判的是形式与可溯源 + 推断质量结构信号**。2026-11-02 新增 `inference_quality` 类别（边界意识 / 盲区披露 / 数字锚定），
+   能抓住"引用真实但过度泛化 / 无盲区意识 / 数字无来源"的回复（见 `cases/inference_quality.json`）。
+   但仍是**结构信号而非语义级判分**——不调用模型，无法判断推理链本身是否严密，别把它当成质量证明。
+4. **场景覆盖 5 类**。语料域适配、跨语料聚合等能力尚无场景。

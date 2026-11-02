@@ -32,7 +32,8 @@ class TestCaseSet(unittest.TestCase):
 
     def test_four_categories_present(self):
         cats = {c["category"] for c in graders.load_cases(CASES)}
-        self.assertEqual(cats, {"citation", "coverage", "counterevidence", "layering"})
+        self.assertEqual(cats, {"citation", "coverage", "counterevidence",
+                                "layering", "inference_quality"})
 
     def test_every_case_has_rules_and_rationale(self):
         for c in graders.load_cases(CASES):

@@ -373,7 +373,7 @@ comment-distillery/
 │   ├── build_exe.py         # package the desktop exe (PyInstaller; build-time only)
 │   ├── make_icon.py         # hand-written ICO generator (stdlib only, no Pillow)
 │   └── make_skill_zip.py    # skill ZIP (**reproducible build**, for "I can only upload a file" users)
-├── golden/                  # test set: 8 cases / 4 categories — did it actually get better?
+├── golden/                  # test set: 10 cases / 5 categories — did it actually get better?
 │   ├── README.md
 │   ├── cases/               # scenarios (pure data, JSON)
 │   ├── graders.py           # grader
@@ -418,7 +418,7 @@ See [`docs/compliance.md`](docs/compliance.md).
 - [x] **v1** — 6-step pipeline, deep-by-default, provenance, counter-examples, blind spots, citation gate
 - [x] **v1.1** — domain generalization: from "comments" to "any crowd text"; Canonical Corpus Format
 - [x] **field validation** (10 runs / 45,633 items) — the reply-layer (nested comments) study: 21,100 items on one video, and the supplement volume corrected 3 conclusions of the main guide
-- [x] **v1.3** — golden test set: 8 cases / 4 categories, baseline scores 100, and 31 mutants prove the grader actually deducts (see [`golden/README.md`](golden/README.md))
+- [x] **v1.3** — golden test set: 10 cases / 5 categories, baseline scores 100, and 35 mutants prove the grader actually deducts (see [`golden/README.md`](golden/README.md))
 - [x] **v1.4** — delivery: Windows desktop exe (collect → prep → export pack → verify) + website (`site/`)
 - [ ] **v2** — adaptation examples for more domains (surveys / interviews / tickets)
 - [ ] **v2** — cross-corpus aggregation (merge multiple sources on one topic)

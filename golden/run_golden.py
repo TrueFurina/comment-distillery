@@ -128,6 +128,29 @@ def build_mutants(case, baseline):
         m, n = re.subn(r"\[源\s*[:：]\s*([^\]\|｜\s,，;；\\]+)", "[源:c9999999", baseline, count=1)
         if n:
             mutants.append(("把首条引用 ID 替换为不存在的 c9999999", m, "zero"))
+    # 推断质量规则变异：删掉对应标记词，验证分数必须下降（软扣分，非红线）。
+    # 仅当 baseline 真的含这些词时才派生变异（否则变异体==baseline，无意义）。
+    iq = e.get("inference_quality")
+    if iq:
+        if iq.get("min_scope_markers"):
+            m = baseline
+            for w in graders.SCOPE_MARKERS:
+                m = m.replace(w, "")
+            if m != baseline:
+                mutants.append(("删除全部边界意识标记词", m, "drop"))
+        if iq.get("require_blind_spot"):
+            m = baseline
+            for w in graders.BLIND_SPOT_MARKERS:
+                m = m.replace(w, "")
+            if m != baseline:
+                mutants.append(("删除全部盲区/局限披露词", m, "drop"))
+        if iq.get("anchor_percentages"):
+            m = baseline
+            for w in graders.ANCHOR_MARKERS:
+                m = m.replace(w, "")
+            if m != baseline:
+                mutants.append(("删除全部数字锚定词（保留百分比）", m, "drop"))
+
     # 注：regex_* 规则的变异无法通用构造（不知道该删哪段文本才能让它不命中），
     # 统一由 self_test() 记为 skipped，不在此处伪造变异体。
     return mutants
