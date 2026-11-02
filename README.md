@@ -12,6 +12,7 @@
 
 | 你是 | 做什么 |
 |---|---|
+| 想立刻上手试一下 | **[🖥 打开在线 Demo](https://comment-distillery.apps.workbuddy.host/?sharecode=NXMUMDBG2E)** —— 不用装任何东西，点「一键」就能看到产出 |
 | 想先看看它到底产出什么 | **[📄 直接打开一份成品 HTML 指南](https://truefurina.github.io/comment-distillery/samples/sample-guide.html)** —— 点正文里的「源」角标可跳到附录原句 |
 | 不想碰命令行 | **⬇ [下载 Windows 桌面工具](https://github.com/TrueFurina/comment-distillery/releases/latest)**（~12 MB · 免安装 · **连 Python 都不用装**） |
 | 不用 Windows / 不想装 exe | **`python -m app --web`** —— 浏览器里走完全流程（纯标准库，**跨平台**，免打包免签名，见下） |

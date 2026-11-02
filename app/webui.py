@@ -75,13 +75,20 @@ _PUBLIC = False
 _ACCESS_TOKEN = ""
 _SANDBOX = None
 _LAN = False
+_DEMO = False
 
 
-def set_public(token, sandbox):
-    """进入公开托管模式。sandbox 为空则取 <cwd>/out/public。"""
-    global _PUBLIC, _ACCESS_TOKEN, _SANDBOX
+def set_public(token, sandbox, demo=False):
+    """进入公开托管模式。sandbox 为空则取 <cwd>/out/public。
+
+    demo=True 时跳过令牌校验：托管平台的代理会注入 Authorization 头，
+    空令牌的「开放访问」会被令牌闸门误拦成 401。仅用于公开演示部署，
+    沙箱与路径白名单仍然生效。
+    """
+    global _PUBLIC, _ACCESS_TOKEN, _SANDBOX, _DEMO
     _PUBLIC = True
     _ACCESS_TOKEN = token or ""
+    _DEMO = demo
     _SANDBOX = (Path(sandbox).resolve() if sandbox
                 else (Path.cwd() / "out" / "public").resolve())
     _SANDBOX.mkdir(parents=True, exist_ok=True)
@@ -966,6 +973,8 @@ class Handler(BaseHTTPRequestHandler):
         """三种模式统一入口：
         本地模式 -> 本机 Host/Origin 校验；公开模式 -> 令牌；局域网模式 -> 私网 Host + 令牌。"""
         if _PUBLIC:
+            if _DEMO:
+                return True
             return self._token_gate("公开模式需要访问令牌")
         if _LAN:
             return self._lan_only()
@@ -1230,8 +1239,9 @@ def main(argv=None):
     ap = argparse.ArgumentParser(
         prog="python -m app.webui",
         description="启动本地 Web 界面（纯标准库，跨平台，免打包）")
-    ap.add_argument("--port", type=int, default=DEFAULT_PORT,
-                    help=f"端口（默认 {DEFAULT_PORT}；被占用则自动换一个）")
+    ap.add_argument("--port", type=int,
+                    default=int(os.environ.get("PORT") or DEFAULT_PORT),
+                    help=f"端口（默认 {DEFAULT_PORT}；也读 PORT 环境变量，便于托管平台注入）")
     ap.add_argument("--no-browser", action="store_true", help="不自动打开浏览器")
     ap.add_argument("--allow-root", action="append", default=[], metavar="DIR",
                     help="追加一个允许访问的根目录（可重复）")
@@ -1239,6 +1249,9 @@ def main(argv=None):
                     help="监听地址（默认 127.0.0.1；公开模式会自动改 0.0.0.0）")
     ap.add_argument("--public", action="store_true",
                     help="公开托管模式：绑定 0.0.0.0 + 令牌鉴权（替代本机校验），文件限制在沙箱")
+    ap.add_argument("--demo", action="store_true",
+                    help="公开演示模式：等价 --public 但不校验令牌（托管平台会注入 Authorization 头，"
+                         "空令牌的开放访问会被误拦）；沙箱与路径白名单仍生效")
     ap.add_argument("--lan", action="store_true",
                     help="局域网模式：绑定 0.0.0.0 + 令牌鉴权 + 私网 Host 白名单，保留文件选择器（功能全开）")
     ap.add_argument("--token", default="",
@@ -1247,6 +1260,10 @@ def main(argv=None):
                     help="公开模式文件系统沙箱目录（默认 <cwd>/out/public）")
     args = ap.parse_args(argv)
 
+    if args.demo:
+        args.public = True
+        args.token = ""
+
     for r in args.allow_root:
         add_root(r)
 
@@ -1254,9 +1271,23 @@ def main(argv=None):
         print("⚠️ --public 与 --lan 互斥，同时给出时按公开模式处理（沙箱 + 禁用文件选择器）")
     if args.public:
         if not args.token:
-            print("⚠️ 公开模式必须提供 --token，否则任何人都无法访问本服务")
-        set_public(args.token, args.public_dir or None)
+            print("⚠️ 公开模式未设 --token：任何能访问该端口的人都能直接使用"
+                  "（演示用；正式部署请设令牌）")
+        set_public(args.token, args.public_dir or None, demo=args.demo)
         args.host = "0.0.0.0"
+        # 公开 demo：把示例语料复制进沙箱。否则 /api/hello 给出的样例路径在沙箱外，
+        # 前端点「用示例」时 /api/start 按沙箱内的 basename 查找会 404。
+        try:
+            import shutil
+
+            _ex = core.resource_root() / "examples"
+            if _ex.is_dir() and _SANDBOX is not None:
+                for _n in ("sample_corpus.csv", "sample_guide.md"):
+                    _src = _ex / _n
+                    if _src.is_file():
+                        shutil.copy2(_src, _SANDBOX / _n)
+        except Exception as _e:  # noqa: BLE001 - 示例缺失不应阻断启动
+            print(f"⚠️ 公开模式复制示例语料失败（不影响启动）：{_e}")
     elif args.lan:
         if not args.token:
             print("⚠️ 局域网模式必须提供 --token，否则同网段任何人都能直接用本服务")
