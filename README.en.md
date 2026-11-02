@@ -388,7 +388,7 @@ comment-distillery/
 │   ├── README.md            # read first: directory numbering ≠ run numbering
 │   ├── 01…04/               # runs 1–4: real corpus → deep-dive guide
 │   ├── 05-入站必刷数学/   # runs 6+7: 15-chapter guide + 10-chapter addendum (3 claims corrected)
-│   └── notes/               # design notes: rationale / open-source sprint roadmap
+│   └── 项目笔记/            # design notes: rationale / open-source sprint roadmap
 └── tests/                   # regression tests, 191 cases (run in CI)
 ```
 
