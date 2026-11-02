@@ -197,11 +197,13 @@ class TestGuiWiring(unittest.TestCase):
                     imported.add(a.name.split(".")[0])
             elif isinstance(n, ast.ImportFrom) and n.module:
                 imported.add(n.module.split(".")[0])
+        # csv / shutil 是标准库（公开 demo 的「贴文本落 CSV」与「复制示例到沙箱」），
+        # 不是第三方依赖；白名单原先漏了它们，这里补齐。
         third = {m for m in imported
                  if m not in {"app", "json", "mimetypes", "os", "tempfile",
                               "threading", "time", "urllib", "webbrowser",
-                             "http", "pathlib", "socket", "ipaddress",
-                             "sys", "argparse", "shutil"}}
+                              "http", "pathlib", "socket", "ipaddress",
+                              "sys", "argparse", "csv", "shutil"}}
         self.assertEqual(third, set(), f"webui.py 引入了第三方依赖：{third}")
 
     # ── 6. 入口不得吞掉自检开关 ──

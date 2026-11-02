@@ -77,6 +77,35 @@ _SANDBOX = None
 _LAN = False
 _DEMO = False
 
+# 公开 demo 的「贴文本」上传：字符上限 + 每 IP 频率限制（防刷）。
+MAX_UPLOAD_CHARS = 500_000
+_UPLOAD_HITS: dict = {}
+_UPLOAD_LOCK = threading.Lock()
+
+
+def _client_key(handler) -> str:
+    """取客户端标识：优先转发头（平台代理会覆盖它），否则 socket 地址。"""
+    fwd = handler.headers.get("x-forwarded-for") or ""
+    if fwd:
+        return fwd.split(",")[0].strip()
+    try:
+        return handler.client_address[0] or "unknown"
+    except Exception:
+        return "unknown"
+
+
+def _rate_ok(key: str, bucket: str, limit: int, window: int) -> bool:
+    """极简滑动窗口限流（仅用于公开 demo 的上传/启动防刷）。"""
+    now = time.time()
+    with _UPLOAD_LOCK:
+        dq = _UPLOAD_HITS.setdefault((bucket, key), [])
+        while dq and now - dq[0] > window:
+            dq.pop(0)
+        if len(dq) >= limit:
+            return False
+        dq.append(now)
+        return True
+
 
 def set_public(token, sandbox, demo=False):
     """进入公开托管模式。sandbox 为空则取 <cwd>/out/public。
@@ -1081,7 +1110,7 @@ class Handler(BaseHTTPRequestHandler):
         if not self._gate():
             return
         u = urllib.parse.urlsplit(self.path)
-        if u.path not in ("/api/start", "/api/cancel",
+        if u.path not in ("/api/start", "/api/cancel", "/api/upload",
                           "/api/llm", "/api/llm/test"):
             return self._err(404, "未找到：" + u.path)
         try:
@@ -1094,6 +1123,9 @@ class Handler(BaseHTTPRequestHandler):
             jid = body.get("job") or ""
             ok = _cancel(jid)
             return self._json({"ok": ok, "job": jid})
+
+        if u.path == "/api/upload":
+            return self._api_upload(body)
 
         if u.path == "/api/llm":
             # 只写配置，不触网：避免"填完就要等一个超时才知道 Key 错了"。
@@ -1158,6 +1190,45 @@ class Handler(BaseHTTPRequestHandler):
         parent = d.parent if d.parent != d else None
         self._json({"path": str(d), "parent": str(parent) if parent else "",
                     "entries": dirs + fils})
+
+    def _api_upload(self, body):
+        """公开 demo：把访客粘贴的文本落成沙箱内的一份 CSV（id,text,score）。
+
+        安全边界：
+        - 只写沙箱、只按行切分、**不执行任何内容**；
+        - 字符数上限 + 行数上限 + 每 IP 频率限制；
+        - 返回的只是文件名，`/api/start` 会按沙箱内 basename 找到它。
+        """
+        if not _PUBLIC:
+            return self._err(403, "本接口仅公开 demo 模式可用")
+        text = str(body.get("text") or "")
+        if not text.strip():
+            return self._err(400, "文本为空")
+        if len(text) > MAX_UPLOAD_CHARS:
+            return self._err(413, f"文本过长（上限 {MAX_UPLOAD_CHARS} 字符）")
+        ip = _client_key(self)
+        if not _rate_ok(ip, "upload", 20, 3600):
+            return self._err(429, "上传过于频繁，请稍后再试")
+        rows = [ln.strip() for ln in text.splitlines() if ln.strip()]
+        if not rows:
+            return self._err(400, "没有可用的文本行")
+        if len(rows) > 20000:
+            return self._err(413, "行数过多（上限 20000 行）")
+        import csv as _csv
+
+        stamp = time.strftime("%Y%m%d-%H%M%S")
+        name = f"upload-{stamp}.csv"
+        p = _SANDBOX / name
+        try:
+            p.parent.mkdir(parents=True, exist_ok=True)
+            with open(p, "w", encoding="utf-8", newline="") as f:
+                w = _csv.writer(f)
+                w.writerow(["id", "text", "score"])
+                for i, ln in enumerate(rows, 1):
+                    w.writerow([f"u{i}", ln, 1])
+        except OSError as e:
+            return self._err(500, f"写入失败：{e}")
+        return self._json({"ok": True, "file": name, "count": len(rows)})
 
     def _serve_file(self, raw, inline):
         try:

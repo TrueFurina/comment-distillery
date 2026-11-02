@@ -212,6 +212,14 @@ button.ghost{border-style:dashed;color:var(--dim)}
         <div class="field"><label>包名 <span class="hint">留空自动按时间生成</span></label>
           <input type="text" id="a_name" placeholder="例如：早餐真相-2190条"></div>
       </div>
+      <div class="field full" id="paste_box" style="margin-top:12px">
+        <label>或者：直接粘贴你的文本 <span class="hint">一行一条（评论 / 问卷 / 访谈）；只落本次演示的沙箱，不联网、不上传别处</span></label>
+        <textarea id="a_paste" rows="6" placeholder="把一群人七嘴八舌的原文粘到这里，一行一条。例：&#10;这个面霜太油了&#10;敏感肌用着刺痛&#10;回购第三次了"></textarea>
+        <div class="acts" style="margin-top:8px">
+          <button class="mini" id="a_upload">使用我的文本</button>
+          <span class="hint" id="a_upload_hint"></span>
+        </div>
+      </div>
       <div class="acts">
         <label class="chk"><input type="checkbox" id="a_roots" checked>只抓主楼（快 3 倍）</label>
         <label class="chk"><input type="checkbox" id="a_gloss">生成黑话提示
@@ -832,6 +840,25 @@ async function boot(){
   $("#dok").onclick = okPick;
   $("#mask").onclick = e => { if (e.target.id === "mask") closePicker(); };
   document.addEventListener("keydown", e => { if (e.key === "Escape") closePicker(); });
+
+  // 「粘贴文本」上传（公开 demo 的主要输入方式；本地模式也可用）
+  const upBtn = $("#a_upload");
+  if (upBtn) upBtn.onclick = async () => {
+    const t = $("#a_paste").value.trim();
+    const hint = $("#a_upload_hint");
+    if (!t){ hint.textContent = "先粘贴点文本"; return; }
+    upBtn.disabled = true; hint.textContent = "上传中…";
+    try {
+      const r = await post("/api/upload", {text: t});
+      if (r.error){ hint.textContent = r.error; return; }
+      $("#a_arg").value = r.file;
+      hint.textContent = "已接收 " + r.count + " 行 → " + r.file + "，现在点「一键跑完」";
+    } catch(e){
+      hint.textContent = "上传失败：" + e.message;
+    } finally {
+      upBtn.disabled = false;
+    }
+  };
 
   try {
     const h = await api("/api/hello");
