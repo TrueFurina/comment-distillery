@@ -51,6 +51,9 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 ├── scripts/verify_numbers.py            （数字机验：查"引用真但算错"——引用机验的盲区）
 ├── scripts/build_exe.py                 （PyInstaller 打包脚本，仅构建期依赖，不进运行期）
 ├── scripts/make_icon.py                 （标准库手写 ICO）
+├── scripts/sync_hf_space.py             （HF Spaces 同步器：建 Space + 上传仓库 + 写 front matter README；**免信用卡的备用部署路径**——自动工作流已移除，需手动跑）
+├── Dockerfile / .dockerignore           （交互式 demo 容器镜像，供 HF Spaces 等免卡平台使用）
+├── render.yaml                          （Render 蓝图配置，**仅作留档**：Render 免费实例需绑定信用卡，已不采用）
 ├── scripts/clean_scratch.py             （★ 安全清理 output/ 与 out/：白名单+保护名单双闸门，默认 dry-run；交付物即使 --yes 也不删）
 ├── scripts/backup_reports.py            （★ 交付物本地快照：output/_backup/<ts>/，支持 --list/--restore/--keep，补 .gitignore 不可备份的缺口）
 ├── contrib/fetch_bilibili_comments.py   （纯标准库 WBI 签名抓取，含去重与退避）
@@ -75,6 +78,9 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 ├── docs/overturned.md                   （被推翻结论台账 OT-1…OT-5，含"再次推翻的条件"）
 ├── docs/2026-10-27-工程复盘.md           （本轮工程复盘：为何"测试全绿但点不动" / 我犯的四个验证错误 / 一键流程的取舍）
 ├── docs/distribution.md                 （★ 分发作战清单：gh 命令 / awesome PR 文案 / 帖子骨架）
+├── docs/deployment.md                   （★ 双入口部署现状：WorkBuddy 交互 demo + Pages 静态；含「为何弃用 Render」）
+├── docs/deploy-hf-space.md              （HF Spaces 手动部署手册；免信用卡的备用路径，需自行跑 sync_hf_space.py）
+├── docs/deploy-render.md                （Render 部署手册，**仅作留档**：免费实例需绑卡，已弃用）
 ├── SKILL.md / README.md / README.en.md / CHANGELOG.md
 │
 └── cases/                               ← 实战档案（**产物层已公开进仓库**；原始语料/中间产物按 compliance §2 不公开）
