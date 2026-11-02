@@ -1,0 +1,16 @@
+.git
+.github
+tests
+out
+output
+__pycache__
+*.pyc
+*.pyo
+docs
+site
+deliverables
+assets
+golden
+cases
+.pytest_cache
+*.egg-info

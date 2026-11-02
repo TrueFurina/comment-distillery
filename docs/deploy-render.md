@@ -1,5 +1,8 @@
 # 把交互式 demo 部署到 Render（GitHub Actions 自动部署）
 
+> ⚠️ **Render 的免费 Web Service 现在要求绑定银行卡。** 不想绑卡请走
+> [`deploy-hf-space.md`](deploy-hf-space.md)（Hugging Face Spaces，邮箱注册、免卡免费）。
+
 > 目标：**交互式 demo 不再依赖任何单一托管平台**。仓库是唯一真源，
 > push 到 `main` 后由 GitHub Actions 触发 Render 重新部署，并做健康检查。
 
