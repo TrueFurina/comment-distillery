@@ -301,18 +301,25 @@ def finish_after_pack(pack_dir, on_log=None, should_stop=None):
     log = on_log or (lambda m: None)
     pack = Path(pack_dir)
     out = {"mode": "pack-only", "pack_dir": str(pack), "ai": {}, "distill": None,
-           "report": None, "ai_error": ""}
+           "report": None, "ai_error": "", "needs_ai_setup": False}
 
     status = llm_status()
     out["ai"] = {"configured": bool(status.get("configured")),
                  "model": status.get("model", "")}
 
     if not status.get("configured"):
+        # ⚠️ 必须说清「没有报告」，不能只说「跳过蒸馏」。
+        # 2026-11-02 的教训：用户看到"跑完了"却拿不到 report.html，以为程序坏了。
         log("")
-        log("④ 跳过 AI 蒸馏：" + status.get("describe", "未配置"))
-        log("   把包目录拖进任意 AI 就能拿到带引用的指南（零成本）。")
-        log("   想全自动出报告：去「AI 设置」填 endpoint / Key / 模型名后重跑。")
+        log("⚠️  ④ 已跳过 AI 蒸馏 —— 本次**不会产出报告**")
+        log("    原因：" + status.get("describe", "未配置"))
+        log("    现在只有蒸馏包（report.html 需要 AI 写指南后才会生成）。")
+        log("    两条路选一条：")
+        log("      · 零成本：把包目录拖进任意 AI，按包内 PROMPT.md 让它写指南")
+        log("      · 全自动：去「AI 设置」填 endpoint / Key / 模型名，然后重跑")
         out["skipped_reason"] = "no-ai"
+        out["needs_ai_setup"] = True
+        out["missing"] = list(status.get("missing") or [])
         return out
 
     if should_stop and should_stop():
