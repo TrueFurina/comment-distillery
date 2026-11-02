@@ -6,7 +6,13 @@ corpus/
 corpora/
 raw/
 out/
-output/
+# output/ 是**交付物目录**（distill-* / 报告索引.html / comments-*.csv），不是 scratch。
+# 2026-11-02 曾把整个 output/ 当垃圾清走，丢了 5 份报告 —— 详见 output/README.md。
+# 这里用 `output/*` 而非 `output/`，好让那条防护说明本身能进版本管理；
+# 交付物仍被忽略（合规：不得二次分发原始语料），但清理动作已由
+# scripts/clean_scratch.py 的白名单兜住，清理前请先跑 scripts/backup_reports.py。
+output/*
+!output/README.md
 distill/
 *.corpus.csv
 # ── 实战档案 cases/：只公开「产物层」（各战指南 + 设计文档），原始语料不公开 ──

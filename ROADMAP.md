@@ -2,7 +2,7 @@
 
 > 制定：2026-09-26（第七战收口后）
 > 前置阅读：`HANDOFF.md`（冷启动）· `docs/retrospective.md`（十一战沉淀）
-> 与旧文档的关系：`cases/项目笔记/comment-distillery开源冲刺路线图.md`（M0–M4）聚焦**开源分发**，其 M1/M2 内容并入本文 P3/P4；**两份冲突时以本文件为准**。
+> 与旧文档的关系：`cases/项目笔记/comment-distillery开源冲刺路线图：先校准预期再给可开源冲星路径.md`（M0–M4）聚焦**开源分发**，其 M1/M2 内容并入本文 P3/P4；**两份冲突时以本文件为准**。
 
 ---
 
@@ -77,7 +77,7 @@
 | `tests/test_rule_tags.py` | 6 个用例；CI 新增两步 |
 
 **验收结果（实测）**：SKILL.md 规则区 **22/22 条目带溯源标记，裸铁律 0**（⚠️ 09-26 当时记为 24/24，
-后经语料域降档/战次收口等改动，2026-10-23 复测为 22/22，此处以实测为准）；变异验证 **3/3 拦截**；全量回归 **191 tests OK**。
+后经语料域降档/战次收口等改动，2026-10-23 复测为 22/22，此处以实测为准）；变异验证 **3/3 拦截**；全量回归 **201 tests OK**。
 
 **实际执行中的偏离**：ROADMAP 原写"仅 1 战的先进 `cases/项目笔记/`，标注待复现"，实际为**保留在 SKILL.md 末尾独立的「待复现观察」章节**。理由：`cases/` 已被 `.gitignore` 排除，移进去等于让 skill 使用者完全看不到。已记入 `docs/rule-provenance.md` §4。
 
@@ -117,7 +117,7 @@
 
 | 项 | 内容 | 状态 |
 |---|---|---|
-| 桌面 exe | Windows 单文件（约 11 MB，免安装）：① 采集 B站评论（含楼中楼）② 预处理 ③ 导出蒸馏包 ④ 引用机验 | ✅ `dist/comment-distillery.exe` |
+| 桌面 exe | Windows 单文件（约 12 MB，免安装）：① 采集 B站评论（含楼中楼）② 预处理 ③ 导出蒸馏包 ④ 引用机验 | ✅ 已发布到 [Releases](https://github.com/TrueFurina/comment-distillery/releases/latest)；本地 `dist/` 由 `scripts/build_exe.py` 重建，**不进仓库** |
 | 官网 | 单文件静态页（`site/index.html`），内容全部取自仓库真实数据，GitHub Pages 发布 | ✅ |
 | 构建可复现 | `scripts/make_icon.py`（标准库手写 ICO）+ `scripts/build_exe.py`（PyInstaller）+ CI 工作流真跑一遍打包与双冒烟 | ✅ |
 | 零依赖承诺不破 | GUI 用 `tkinter`（标准库）；PyInstaller **仅构建期**依赖，不进运行期 | ✅ CI 守卫扩展到 `app/` |

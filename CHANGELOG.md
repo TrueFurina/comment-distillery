@@ -2,6 +2,46 @@
 
 本项目遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## [Unreleased] — 2026-11-02
+
+> **这一批是「资料差点永久丢失」级的事故整改**，触发点是：一次「清理 scratch」
+> 把整个 `output/` 目录移进了归档，连带带走 **5 份已交付的蒸馏报告 + 报告索引.html**。
+> 而 `output/` 被 `.gitignore` 忽略，git 里**没有任何备份可回滚**。
+> 根因不是手滑，是**「哪些能删」这条规则从来只存在于人的记忆里，没写成代码**。
+
+### Fixed
+- **`output/` 被当成 scratch 整体清空（交付物丢失）**：`output/` 与 `out/` 都被 `.gitignore`
+  忽略，看起来像临时目录，实际存着 `distill-*/`（`report.html` + `guide.md` +
+  `corpus_ccf.csv` + 按标题命名的报告副本 + `stats.json`）、`报告索引.html`、`comments-*.csv`。
+  蒸馏依赖 LLM，**同一视频同一模型跑两轮引用数与标题都会不同**（实测 `BV1U4nZ6aE9W`
+  第一轮 62 条引用、第二轮 51 条），所以「应用下次运行会重建」只对目录结构成立，
+  **不会重建历史报告内容**。现在：
+  - 新增 `output/README.md`：把「这一项能不能删」列成表，且该文件已在 `.gitignore` 中用
+    `!output/README.md` 单独放行，能随仓库分发
+  - 新增 `scripts/clean_scratch.py`：**白名单 + 保护名单**双闸门。只有命中
+    `e2e*/dbg*/tmp*/ctl/p13*` 等调试模式的条目才会被删；`distill-*` / `报告索引*` /
+    `comments-*.csv` / `prep-*` / `.writable` 属保护名单，**即使传 `--yes` 也不删**。
+    默认 dry-run，必须显式 `--yes`。
+  - 新增 `scripts/backup_reports.py`：把交付物快照到 `output/_backup/<时间戳>/`，
+    支持 `--list` / `--restore <ts>` / `--keep N`，给不可版本化的产物提供本地可逆备份。
+  - `.gitignore` 由 `output/` 改为 `output/*` + `!output/README.md`，让防护说明本身能进版本库。
+- **未配置 AI 时静默停在「仅出包」，用户以为程序坏了**：`core.one_click()` 原来只打一句
+  「跳过 AI 蒸馏」，然后正常返回，界面看起来是「跑完了」，但**没有 report.html**。
+  现在明确写出「本次**不会产出报告**」，给出两条可执行路径（拖进任意 AI / 去 AI 设置填 Key），
+  并在返回结构里加 `needs_ai_setup` 与 `missing` 字段，供界面弹出引导。
+- **文档声称 `dist/comment-distillery.exe` 可用，但该文件从来不在仓库里**：
+  `dist/` 被 `.gitignore` 忽略（§3 已知），是构建产物。`HANDOFF.md`（3 处）、
+  `ROADMAP.md`、`docs/distribution.md` 都把它写成「现成的、12 MB 可直接用」，
+  新人 clone 后发现没有该文件，会误判仓库损坏。现已统一改为
+  **「从 Releases 下载；本地需要就用 `scripts/build_exe.py` 重建」**，并显式说明
+  「工作区没有该 exe 属正常」。
+
+### Added
+- `output/README.md` —— 交付物目录的删除规则说明（含误删后的恢复路径）
+- `scripts/clean_scratch.py` —— 带保护名单的安全清理（dry-run 默认）
+- `scripts/backup_reports.py` —— 交付物本地快照 / 恢复 / 轮转
+- `README.md` 新增「`output/` 是交付物目录，不是 scratch」小节
+
 ## [Unreleased] — 2026-10-27
 
 > **为什么要单独记一笔**：这一批全部是**「双击打开后用不了」**级的缺陷，
@@ -438,7 +478,7 @@
   - 仅剩需仓库所有者执行的：awesome 列表 PR（3 个已核实仓库）/ 社区发帖。文案已就位。
 - **`cases/` 实战档案公开（产物层）** — 七战的最终产物首次进仓库：**9 个 md / 277 KB**，含 6 份各战深度指南 + 设计留档（方案论述 / 开源冲刺路线图）+ 导读 README。
   - **只公开产物层**：原始评论 CSV 与流水线中间产物（`all_comments.txt` / `id_map.json` / `stats.json`）**不公开**，依据 `docs/compliance.md` §2「不得二次分发原始语料」。实现方式为 `.gitignore` 按扩展名反向白名单（`/cases/**/*.{csv,txt,json,py,svg}` 全忽略）。
-  - `cases/README.md` 导读明确两件易错事：**目录编号 ≠ 战次编号**（`05-入站必刷数学` 实为第 6+7 战；第 5 战是回归测试、在 `examples/`）；第 6 战增补卷与正卷的**结论冲突是有意保留**的真实痕迹，非文档错误。
+  - `cases/README.md` 导读明确两件易错事：**目录编号 ≠ 战次编号**（`05-火柴人VS数学评论区的共识：可视化的震撼、教育的失责与数学本质之辩` 实为第 6+7 战；第 5 战是回归测试、在 `examples/`）；第 6 战增补卷与正卷的**结论冲突是有意保留**的真实痕迹，非文档错误。
 - **P2 方法论去过拟合** — SKILL.md 里多数规则只被 1 战验证过，个案被写成铁律会误导后续使用者。现在每条规则带溯源标记，且**机验强制**：
   - `docs/rule-provenance.md` — 规则溯源台账：**9 条铁律**（≥2 战独立验证）/ **5 条待复现**（仅 1 战）/ 7 条环境事实。每条待复现项附**复现判据**（第二次遇到什么证据才算成立）。
   - `docs/overturned.md` — 被推翻结论台账 OT-1…OT-5，每条写明「曾经相信 / 被什么打穿 / 现在怎么做 / **再次推翻的条件**」。附元观察：五次失效的共同点是**用代理指标代替真值**（点赞数↔认可度、文本长度↔思考深度、楼层深度↔观点完整性、ID 格式↔引用真实、行数↔语料规模）。

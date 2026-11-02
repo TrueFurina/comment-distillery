@@ -864,12 +864,12 @@ def _mut_handoff_ci_steps(st):
 
 
 def _mut_handoff_tree_case(st):
-    """从 HANDOFF 目录树里删掉 `cases/11-学历与命运/` 行 → 必须报错。
+    """从 HANDOFF 目录树里删掉 `cases/11-学历仍是敲门砖但门在变形，以及一场关于你信命吗的哲学辩论/` 行 → 必须报错。
 
     真实历史：目录树停在战 7 时代，缺 08/09/10/11 四个目录——新增一战只改了
     `cases/README.md` 与复盘总表，没人回头补交接单的目录树。
     """
-    _drop_line(st / "HANDOFF.md", "11-学历与命运")
+    _drop_line(st / "HANDOFF.md", "11-学历仍是敲门砖但门在变形，以及一场关于你信命吗的哲学辩论")
     return None
 
 

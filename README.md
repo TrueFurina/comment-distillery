@@ -406,13 +406,34 @@ comment-distillery/
 ├── cases/                   # ★ 十一战实战档案（**仅产物层**）
 │   ├── README.md            # 先读这个：目录编号 ≠ 战次编号
 │   ├── 01…04/               # 第 1–4 战：真实语料 → 深度指南
-│   ├── 05-入站必刷数学/   # 第 6+7 战：正卷 15 章 + 增补卷 10 章（含 3 处结论修正）
+│   ├── 05-火柴人VS数学评论区的共识：可视化的震撼、教育的失责与数学本质之辩/   # 第 6+7 战：正卷 15 章 + 增补卷 10 章（含 3 处结论修正）
 │   └── 项目笔记/            # 设计留档：方案论述 / 开源冲刺路线图
-└── tests/                   # 回归测试 191 项（CI 自动跑）
+└── tests/                   # 回归测试 201 项（CI 自动跑）
 ```
 
 > `cases/` **只放产出**（各战指南 + 设计文档，共 9 个 md / 277 KB）。
 > 原始语料与流水线中间产物按 [`docs/compliance.md`](docs/compliance.md) §2「不得二次分发原始语料」**不公开**。
+
+### `output/` 是交付物目录，不是 scratch
+
+`output/` 与 `out/` 都被 `.gitignore` 忽略，看起来像临时目录，但里面是**不可复现的交付物**：
+
+- `distill-*/` —— 蒸馏包，含 `report.html`、`guide.md`、`corpus_ccf.csv`、`stats.json`，以及**按标题命名的报告副本**
+- `报告索引.html` —— 全部报告的总入口
+- `comments-*.csv` —— 采集到的原始语料（重新采集不等于同一批数据）
+
+蒸馏依赖 LLM，**同一视频同一模型跑两轮，引用数与标题都会不同**，所以「应用会重建」只对目录结构成立，
+不会重建历史报告。清空即永久丢失（git 里没有备份）。
+
+清理请走这两步，不要直接 `rm -rf`：
+
+```bash
+python scripts/backup_reports.py      # 1) 先快照交付物到 output/_backup/<时间戳>/
+python scripts/clean_scratch.py       # 2) 预演（dry-run），确认后加 --yes
+```
+
+`clean_scratch.py` 内置保护名单，`distill-*` / `报告索引*` / `comments-*.csv` / `prep-*`
+即使传 `--yes` 也不会被删。详见 [`output/README.md`](output/README.md)。
 
 ---
 

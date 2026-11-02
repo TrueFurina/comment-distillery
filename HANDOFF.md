@@ -51,16 +51,19 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 ├── scripts/verify_numbers.py            （数字机验：查"引用真但算错"——引用机验的盲区）
 ├── scripts/build_exe.py                 （PyInstaller 打包脚本，仅构建期依赖，不进运行期）
 ├── scripts/make_icon.py                 （标准库手写 ICO）
+├── scripts/clean_scratch.py             （★ 安全清理 output/ 与 out/：白名单+保护名单双闸门，默认 dry-run；交付物即使 --yes 也不删）
+├── scripts/backup_reports.py            （★ 交付物本地快照：output/_backup/<ts>/，支持 --list/--restore/--keep，补 .gitignore 不可备份的缺口）
 ├── contrib/fetch_bilibili_comments.py   （纯标准库 WBI 签名抓取，含去重与退避）
 ├── golden/                              （评估集：11 场景 / 5 类，判分器 + 跑分器 + 变异验证）
 ├── ROADMAP.md                           （长期规划 P0–P5 + P3.5，含验收门槛与停止条件）
-├── tests/                               （**190 项**，`unittest discover -s tests`；CI 强制）
+├── tests/                               （**201 项**，`unittest discover -s tests`；CI 强制）
 │   ├── test_prep.py                     （16）· test_verify_citations.py（13）· test_rule_tags.py（6）
 │   ├── test_golden.py                   （12）· test_app_core.py（23，桌面工具逻辑层）
 │   ├── test_emit_html.py                （12）· test_make_skill_zip.py（15，含可复现构建）
 │   ├── test_webui.py                    （54，含本地 / --lan / --public 三模式安全边界）
 │   ├── test_publish.py                  （17，含密钥与合规护栏）
 │   ├── test_verify_numbers.py           （12，数字机验 + 黑话提示的判据）
+│   ├── test_clean_scratch.py            （11，★ 交付物保护名单回归：distill-*/报告索引/comments-*.csv 即使 --yes 也不可删）
 │   ├── test_gui_wiring.py               （10，纯 AST —— 本机与 CI 都无 tkinter，GUI 改动靠它兜底）
 │   ├── smoke_distill.py                 （同进程冒烟：假 AI 编 ID → 机验拦截 → 修复 → 出报告）
 │   ├── e2e_web.py                       （真起 HTTP 服务走完一键：验路由与作业接线，非仅函数）
@@ -76,18 +79,18 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 │
 └── cases/                               ← 实战档案（**产物层已公开进仓库**；原始语料/中间产物按 compliance §2 不公开）
     ├── README.md                        （★ 先读：目录编号 ≠ 战次编号）
-    ├── 01-AI替代程序员/        （1504 条 · 11 章指南 · 流水线首测）        ✅ 指南已公开
-    ├── 02-山·舆论双场/                     （3425 条 · 8 章 · 两场核心争议专场）      ✅ 指南已公开
-    ├── 03-清北劝退/          （5052 条 · 13 章 · 楼中楼捞出一级缺失的 7 个议题）✅ 指南已公开
-    ├── 04-薪资与43岁/                 （8941 条 · 23 章 · 双视频合并 · 首次抓到幻觉引用）✅ 指南已公开
-    ├── 05-入站必刷数学/               （21100 条 · 正卷 15 章 + 增补卷 10 章）  ✅ 两卷均已公开
-    ├── 08-早餐迷思/                    （2190 条 · 8 章 · 高赞≠高信号最极端样本）✅ 指南已公开
-    ├── 09-27届计算机秋招/          （489 条 · 8 章 · 楼中楼占比 85% 历史最高）✅ 指南已公开
-    ├── 10-就业幻象/              （235 条 · 7 章 · 语料内自带水军质疑）    ✅ 指南已公开
-    ├── 11-学历与命运/              （2697 条 · 8 章 · 双视频合并 · 首次记录 AI 总结机器人刷屏）✅ 指南已公开
+    ├── 01-AI不会淘汰程序员这个身份只会淘汰只会把需求翻译成代码的那一层人/        （1504 条 · 11 章指南 · 流水线首测）        ✅ 指南已公开
+    ├── 02-《山》AI仿真人电影引爆的核心战争：版权边界与手搓语义背后的创作权力归属/                     （3425 条 · 8 章 · 两场核心争议专场）      ✅ 指南已公开
+    ├── 03-清北同学几乎无人不discouraged：优绩主义陷阱与五层自救方案/          （5052 条 · 13 章 · 楼中楼捞出一级缺失的 7 个议题）✅ 指南已公开
+    ├── 04-程序员低薪与43岁坠落的三重祛魅：结构性困境而非个人失败/                 （8941 条 · 23 章 · 双视频合并 · 首次抓到幻觉引用）✅ 指南已公开
+    ├── 05-火柴人VS数学评论区的共识：可视化的震撼、教育的失责与数学本质之辩/               （21100 条 · 正卷 15 章 + 增补卷 10 章）  ✅ 两卷均已公开
+    ├── 08-该不该吃早餐没有标准答案：三层变量模型下的共识争议与分人行动/                    （2190 条 · 8 章 · 高赞≠高信号最极端样本）✅ 指南已公开
+    ├── 09-27届计算机秋招的困境：三层挤压、能力之争与AI面试作弊的反噬链/          （489 条 · 8 章 · 楼中楼占比 85% 历史最高）✅ 指南已公开
+    ├── 10-26届硕士投2k简历伪人横行的结论：找不到工作是四个不同的问题/              （235 条 · 7 章 · 语料内自带水军质疑）    ✅ 指南已公开
+    ├── 11-学历仍是敲门砖但门在变形，以及一场关于你信命吗的哲学辩论/              （2697 条 · 8 章 · 双视频合并 · 首次记录 AI 总结机器人刷屏）✅ 指南已公开
     └── 项目笔记/
-        ├── 评论指南Skill方案论述.md      ✅ 已公开（设计留档）
-        ├── comment-distillery开源冲刺路线图.md ✅ 已公开（设计留档）
+        ├── 评论转建设性干货指南Skill方案论述：需求缘起、差异定位与两个待决策点.md      ✅ 已公开（设计留档）
+        ├── comment-distillery开源冲刺路线图：先校准预期再给可开源冲星路径.md ✅ 已公开（设计留档）
         ├── 思考快照/            ❌ 不公开（会话记忆，非项目资产）
         └── migrate_to_E.py             ❌ 不公开（一次性迁移脚本，含本机路径）
 ```
@@ -98,9 +101,12 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 
 | 入口 | 面向谁 | 命令 / 方式 |
 |---|---|---|
-| **桌面 exe**（`dist/comment-distillery.exe`，~12 MB） | 非技术用户 | 双击；四页签：采集 → 预处理 → 导出蒸馏包 → 引用校验 |
+| **桌面 exe** | 非技术用户 | 从 [Releases](https://github.com/TrueFurina/comment-distillery/releases/latest) 下载 `comment-distillery.exe`（~12 MB）后双击；四页签：采集 → 预处理 → 导出蒸馏包 → 引用校验 |
 | **装进 Agent** | Agent 用户 | `npx skills add TrueFurina/comment-distillery` |
 | **命令行脚本** | 开发者 / CI | `python scripts/prep.py …` / `python contrib/fetch_bilibili_comments.py …` |
+
+> ⚠️ **`dist/` 不进仓库**（`.gitignore` 忽略 `/dist/`）。工作区里没有 `dist/comment-distillery.exe` **属正常**，别当成缺文件。
+> 需要本地 exe 就跑 `python scripts/build_exe.py` 重建；分发一律走 GitHub Release。
 
 **关键设计决策：exe 不内置 LLM。** 它只产出「蒸馏包」（语料 + `SKILL.md` + 可直接粘贴的 `PROMPT.md`），蒸馏那一步交还用户自选的 AI。收益：零 API Key、零调用成本，且方法论永远引用仓库当前 `SKILL.md`，**不会随 exe 固化而过期**。
 
@@ -198,13 +204,14 @@ HEAD     见 `git log -1`（最后核验 2026-09-26 为 2cae432；**本文件每
          先前写法把 hash 写死，导致每次提交都要改一次，是自找的漂移源）
 origin   git@github.com:TrueFurina/comment-distillery.git   (SSH)
 CI       .github/workflows/ci.yml  **16 个质量门步骤**全绿
-         （compileall / 零依赖守卫 / 编码守卫 / 文档一致性机验 / 文档一致性变异验证 / unittest 191 项 /
+         （compileall / 零依赖守卫 / 编码守卫 / 文档一致性机验 / 文档一致性变异验证 / unittest 201 项 /
           无裸铁律 / 判据变异验证 / golden 变异 / golden 基线 / prep 冒烟 / 引用机验冒烟 /
           HTML 报告冒烟 / Web 界面冒烟 / **技能包 ZIP 冒烟** / 冒烟产出展示）
          另有 build-exe.yml（真打包 + --verify 资源核验 + 三道冒烟 + 文档一致性）与
          pages.yml（官网发布；站点自检已统一走 check_doc_consistency.py，不再内联第三份实现）
 安装     npx skills add TrueFurina/comment-distillery   （--list 实测 Found 1 skill）
-桌面     双击 dist/comment-distillery.exe（**12.0 MB** 单文件，未签名 → SmartScreen 会提示，属正常）
+桌面     从 Releases 下载 comment-distillery.exe（**12.0 MB** 单文件，未签名 → SmartScreen 会提示，属正常）
+         （本地 `dist/` 是构建产物、不进仓库；要自建用 `python scripts/build_exe.py`）
 迁移     E:\Program\comment-distillery，cases/ 已 gitignore，仅本地留存
 ```
 

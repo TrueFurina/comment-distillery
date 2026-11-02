@@ -27,12 +27,12 @@ comment-distillery / publish.py
     python scripts/publish.py --init-config
 
     # 先 dry-run 看四个渠道会发什么（不真正发送）
-    python scripts/publish.py cases/11-学历与命运/《学历·命运》评论深度指南.md \
+    python scripts/publish.py cases/11-学历仍是敲门砖但门在变形，以及一场关于你信命吗的哲学辩论/学历·命运的结论：学历仍是敲门砖但门在变形，叠加你信命吗的哲学辩论.md \
         --platform all --dry-run
 
     # 真实发布到自有域名（写文件 + sitemap，需你之后 commit & push 才上线）
-    python scripts/publish.py cases/11-学历与命运/《学历·命运》评论深度指南.md \
-        --platform github --corpus cases/11-学历与命运/*.csv
+    python scripts/publish.py cases/11-学历仍是敲门砖但门在变形，以及一场关于你信命吗的哲学辩论/学历·命运的结论：学历仍是敲门砖但门在变形，叠加你信命吗的哲学辩论.md \
+        --platform github --corpus cases/11-学历仍是敲门砖但门在变形，以及一场关于你信命吗的哲学辩论/*.csv
 
     # 真实发布到 CSDN / B站 / 知乎（需先在配置里填好 Cookie）
     python scripts/publish.py <指南.md> --platform csdn,bilibili,zhihu

@@ -387,9 +387,9 @@ comment-distillery/
 ├── cases/                   # ★ ten real-world runs (artifacts only)
 │   ├── README.md            # read first: directory numbering ≠ run numbering
 │   ├── 01…04/               # runs 1–4: real corpus → deep-dive guide
-│   ├── 05-入站必刷数学/   # runs 6+7: 15-chapter guide + 10-chapter addendum (3 claims corrected)
+│   ├── 05-火柴人VS数学评论区的共识：可视化的震撼、教育的失责与数学本质之辩/   # runs 6+7: 15-chapter guide + 10-chapter addendum (3 claims corrected)
 │   └── 项目笔记/            # design notes: rationale / open-source sprint roadmap
-└── tests/                   # regression tests, 191 cases (run in CI)
+└── tests/                   # regression tests, 201 cases (run in CI)
 ```
 
 > `cases/` ships **artifacts only** (the guides + design docs, 9 md files / 277 KB).
