@@ -58,7 +58,7 @@ class VerifyCitations(unittest.TestCase):
         self.assertEqual(verify.main([g, str(EXAMPLE_CSV)]), 1)
 
     def test_fallback_regex_catches_bare_ids(self):
-        """即便没有 [源:] 标记，裸 ID 也应被兜底正则捕获。"""
+        """即便没有 [源:] 标记，裸 c 前缀 ID 仍应被兜底正则捕获。"""
         g = self._guide("# 测试\n\n正文里直接写了 c999999999999 这个 ID\n")
         self.assertEqual(verify.main([g, str(EXAMPLE_CSV)]), 1)
 
@@ -103,6 +103,28 @@ class VerifyCitations(unittest.TestCase):
         cited = verify.extract_cited(text, verify.DEFAULT_PATTERNS)
         for cid in ("c1006", "c1017", "c1020"):
             self.assertIn(cid, cited)
+
+    def test_long_numeric_non_id_not_flagged(self):
+        """正文里的长数字（日期/时间戳/手机号/人数）不得被当成幻觉引用误报。
+
+        曾经默认扫描 \\b\\d{8,}\\b，导致「数据截止 20240901123000 共 4 条」里的
+        时间戳被误判为幻觉引用，卡掉本来合格的指南。结构化 [源:ID] 才是强制引用方式，
+        纯数字 ID 写作 [源:12345678] 仍走主正则，所以移除纯长数字兜底是安全的。
+        """
+        g = self._guide(
+            "# 测试\n\n数据截止 20240901123000，本批共 12345678 条评论。\n"
+            "> 「真实引用」[源:c1006|权重7|一级]\n"
+        )
+        res = verify.run(g, [str(EXAMPLE_CSV)])
+        self.assertEqual(res["bad"], [], f"时间戳/长数字不应被误报：{res['bad']}")
+        self.assertNotIn("20240901123000", res["cited"])
+        self.assertNotIn("12345678", res["cited"])
+
+    def test_pure_numeric_id_via_marker_still_checked(self):
+        """纯数字 ID 只要走结构化 [源:ID] 标记，仍会被核验（移除的是"裸长数字兜底"，不是标记）。"""
+        g = self._guide("# 测试\n\n> 「不存在的纯数字 ID」[源:123456789012|权重1|一级]\n")
+        res = verify.run(g, [str(EXAMPLE_CSV)])
+        self.assertIn("123456789012", res["bad"])
 
     def test_real_guide_from_one_click_pack(self):
         """真实端到端样本：一键流程产出的语料 → 据此写的指南必须零幻觉。

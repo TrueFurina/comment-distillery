@@ -16,7 +16,7 @@ comment-distillery / verify_citations.py
 
 引用识别:
     1) 结构化标记：[源:ID ...]  /  [源:ID|权重N|...]  —— 首选，取第一个分隔符前的 ID
-    2) 兜底扫描：--pattern 指定的正则（默认同时尝试常见形态 c\\d{6,} 与纯长数字）
+    2) 兜底扫描：--pattern 指定的正则（默认仅 c\\d{6,}）
 
 零依赖，仅标准库。
 """
@@ -29,7 +29,12 @@ import sys
 # 与 prep.py 保持一致的字段别名（只取 ID 相关）
 ID_ALIASES = ["评论id", "comment_id", "commentid", "cid", "id", "评论编号", "条目id", "item_id"]
 
-DEFAULT_PATTERNS = [r"c\d{6,}", r"\b\d{8,}\b"]
+# 默认只兜底 c 前缀的长 ID。纯长数字 \\b\\d{8,}\\b 故意不进默认：
+# 正文里的日期、时间戳、手机号、人数等任意 8 位以上数字都会被它当成引用，
+# 查不到就误报成幻觉引用——这是强制质量门上的假阳性，会卡掉本来合格的指南。
+# 结构化 [源:ID] 标记才是强制引用方式（纯数字 ID 写作 [源:12345678] 仍能被主正则
+# 捕获），足以覆盖真实引用。需要兜底时显式 --pattern 即可。
+DEFAULT_PATTERNS = [r"c\d{6,}"]
 
 
 def utf8_stdout():
@@ -165,7 +170,8 @@ def main(argv=None):
     ap.add_argument("corpora", nargs="+", help="一个或多个语料 CSV（引用必须来自它们的并集）")
     ap.add_argument("--field", default=None, help="指定语料中的 ID 列名（默认自动识别）")
     ap.add_argument("--pattern", action="append", default=None,
-                    help="自定义兜底 ID 正则，可重复；默认 c\\d{6,} 与 \\b\\d{8,}\\b")
+                    help="自定义兜底 ID 正则，可重复；默认仅 c\\d{6,}（结构化 [源:ID] 为强制引用方式，"
+                         "不再默认扫描纯长数字以免日期/时间戳被误判为幻觉引用）")
     args = ap.parse_args(argv)
 
     try:
