@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 """python -m app 入口。
 
-    python -m app                    # 桌面窗口（tkinter）
-    python -m app --web              # 本地 Web 界面（纯标准库，跨平台，免打包）
+    python -m app                    # 本地 Web 界面（默认：起服务 + 自动开浏览器）
+    python -m app --gui              # 桌面窗口（tkinter，旧版兼容路径）
+    python -m app --web              # 显式本地 Web 界面（纯标准库，跨平台，免打包）
     python -m app --selfcheck        # 随包资源自检（不开窗口）
     python -m app --selftest-gui     # 建窗→自动关，验证 GUI 真能起来
     python -m app --selftest-run <BV|链接>   # 端到端跑一次真实流水线
@@ -12,6 +13,8 @@
 早先这里只认 ``--web``，把其它参数全当"多余"丢掉、直接开图形界面，
 于是 ``-m app --selftest-gui`` 变成"打开一个真窗口然后永远不退"——
 打包冒烟与 CI 都卡在这里，还得靠 Ctrl+C 收场。
+单前端收敛后，无参启动默认走 Web（起服务 + 开浏览器），
+tkinter 只留 ``--gui`` 显式路径，供老用户 / 无浏览器环境。
 """
 
 import sys

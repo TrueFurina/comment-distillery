@@ -15,7 +15,7 @@
 | 想立刻上手试一下 | **[🖥 打开在线 Demo](https://comment-distillery.apps.workbuddy.host/?sharecode=NXMUMDBG2E)** —— 不用装任何东西，点「一键」就能看到产出 |
 | 想先看看它到底产出什么 | **[📄 直接打开一份成品 HTML 指南](https://truefurina.github.io/comment-distillery/samples/sample-guide.html)** —— 点正文里的「源」角标可跳到附录原句 |
 | 不想碰命令行 | **⬇ [下载 Windows 桌面工具](https://github.com/TrueFurina/comment-distillery/releases/latest)**（~12 MB · 免安装 · **连 Python 都不用装**） |
-| 不用 Windows / 不想装 exe | **`python -m app --web`** —— 浏览器里走完全流程（纯标准库，**跨平台**，免打包免签名，见下） |
+| 不用 Windows / 不想装 exe | **`python -m app`（或 `--web`）** —— 浏览器里走完全流程（纯标准库，**跨平台**，免打包免签名；单前端收敛后**默认即是 Web**，见下） |
 | 在用 ChatGPT / Claude 网页版 | **⬇ [下载 Skill ZIP](https://github.com/TrueFurina/comment-distillery/releases/latest)**（约 69 KB）—— 解压后整个文件夹拖进对话，或把 `PROMPT.md` 粘进去 |
 | 已经在用 AI Agent | `npx skills add TrueFurina/comment-distillery`（Claude Code / Cursor / Codex / Copilot 等 40+ 家） |
 | 想看它到底怎么做的 | **[🌐 官网](https://truefurina.github.io/comment-distillery/)** · 或继续读下面的[真实产出节选](#真实产出长什么样) |
@@ -133,7 +133,7 @@ bbc-skill            …然后就没有然后了      + 行动清单 + 盲区说
 | **① 采集** | B 站链接 → 评论（含楼中楼）→ CSV；支持中途停止，已抓部分照常写出 |
 | **② 预处理** | 去重 / 去噪 / 统计；**先看 `dup_dropped` 再信任何规模数字** |
 | **③ 导出蒸馏包** | 一键打包成一个文件夹：语料 + 方法论 + 可直接粘贴的 `PROMPT.md` |
-| **④ 引用校验** | 幻觉引用差集检测 —— 差集非空就不许交付 |
+| **④ 引用校验** | 幻觉引用差集检测 —— 差集非空就不许交付；另报**引用集中度**（ID 全真但仍可能反复用同几条，日志会提示） |
 
 **蒸馏那一步交给你自己选的那个 AI**（Claude / ChatGPT / Codex / WorkBuddy…），所以**不需要任何 API Key**，也不产生调用成本；方法论永远跟你手上那份 `SKILL.md` 一致，不会过期。
 
@@ -145,9 +145,15 @@ bbc-skill            …然后就没有然后了      + 行动清单 + 盲区说
 exe 只覆盖 Windows。其余系统（macOS / Linux）或不想装 exe 时，用这个：
 
 ```bash
-python -m app --web            # 自动打开浏览器；Ctrl+C 结束
+python -m app                  # 默认即 Web：起服务 + 自动开浏览器（单前端，唯一 UI）
+python -m app --web            # 同上，显式指定（兼容旧习惯）
+python -m app --gui            # 旧版桌面窗口（tkinter，保留为 --gui 兼容路径）
 python -m app --web --port 9000 --no-browser
 ```
+
+> **单前端收敛**：无参 / `--web` 都起 Web 界面（服务 + 自动开浏览器）。tkinter 桌面窗口
+> 仍可用但需显式 `--gui`，不再是无参默认——避免"改源码、双击 exe 却还是旧界面"这类
+> 双面漂移。网页版读的是仓库里**当前** `SKILL.md`，永远不存在"产物滞后"。
 
 > **Windows 懒人入口**：仓库根的 **`launch-webui.bat`** 双击即开（自动找 Python、自动开浏览器、
 > 只绑 127.0.0.1）。右键它 →「发送到 → 桌面快捷方式」→ 属性里把图标换成 `assets/icon.ico`，就是一个带图标的桌面入口。
@@ -230,6 +236,16 @@ python -m app --selfcheck   # 应显示「已配置 AI：deepseek-chat @ https:/
 ```
 
 只有指向自定义端点（本地 llama.cpp、公司代理等非 DeepSeek / OpenAI 宿主）时才需要显式覆盖 `CD_LLM_BASE_URL` / `CD_LLM_MODEL`；否则用 DeepSeek 默认值即可。完整说明见 `docs/one-click-byoai.md`。
+
+**配置位置**：环境变量方式不落盘；也可在 Web 的「🤖 AI 设置」页填 endpoint / Key / 模型，
+保存到**用户配置目录** `%APPDATA%\comment-distillery\llm.json`（Linux/macOS 为
+`~/.config/comment-distillery/llm.json`）。**配置跟着人走，不跟着程序走**——源码与 exe 共用
+同一份，换目录、换机器都不用重填；若旧版本在程序目录放过 `llm.json`，首次保存会自动并入迁移。
+Key 写入本地明文文件，故推荐用环境变量注入（不落盘）。
+
+**用量可观测（非计费）**：每次蒸馏调用会把 token / 字符数追加到
+`%APPDATA%\comment-distillery\llm-usage.jsonl`（本地台账，仅统计，不估单价、不代付）。
+「🤖 AI 设置」页会显示累计调用次数与 token，便于估算实际花费。
 
 ## 反直觉发现：高权重 ≠ 高信号
 

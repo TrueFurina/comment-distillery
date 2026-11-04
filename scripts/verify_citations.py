@@ -108,6 +108,24 @@ def extract_cited(text, patterns):
     return cited
 
 
+def count_citations(text, patterns=None):
+    """统计每个 ID 被引用的**次数**（引用分布/集中度用）。
+
+    `extract_cited` 返回集合（只看真假），这里返回计数，用于回答
+    "AI 是否反复用同几条引用"——那是引用机验的盲区：ID 全真，但
+    论证集中在少数几条上，读者以为覆盖很广。
+    """
+    from collections import Counter
+    pats = patterns if patterns else DEFAULT_PATTERNS
+    counts = Counter()
+    for m in re.finditer(r"\[源\s*[:：]\s*([^\]\|｜\s,，;；\\]*)", text):
+        counts[m.group(1).strip().strip("\\")] += 1
+    for p in pats:
+        for m in re.finditer(p, text):
+            counts[m.group(0)] += 1
+    return counts
+
+
 def run(guide, corpora, field=None, patterns=None):
     """执行引用机验，返回结果 dict（不打印、不退出进程）。
 
@@ -155,6 +173,8 @@ def run(guide, corpora, field=None, patterns=None):
         "contexts": contexts,
         "patterns": pats,
         "field": field,
+        # 引用分布（集中度机验用）：{id: 被引次数}。增量键，不破坏既有消费方。
+        "counts": count_citations(text, pats),
     }
 
 
