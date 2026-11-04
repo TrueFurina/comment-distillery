@@ -366,7 +366,67 @@ def finish_after_pack(pack_dir, on_log=None, should_stop=None):
             log(f"   标题副本：{named.name}")
         except OSError as e:
             log(f"   标题副本写入失败（不影响主报告）：{e}")
+
+    # ⑥ 自动发布（一键自动化）：按 publish_config.local.json 的启用渠道发。
+    # 任何渠道失败都只记日志、不打断蒸馏主流程；缺登录 Cookie 时优雅降级为本地草稿。
+    log("")
+    log("⑥ 自动发布…")
+    pub_res = auto_publish(d["guide_path"], [str(pack / "corpus_ccf.csv")], on_log=log)
+    out["publish"] = pub_res
     return out
+
+
+# ────────────────────────────── 自动发布 ──────────────────────────────
+def auto_publish(guide_path, corpora=None, on_log=None):
+    """蒸馏完成后自动发布（「一键自动化」核心）。
+
+    只调用 scripts/publish.py 已有的适配器，按 publish_config.local.json 的启用渠道发：
+      · github 默认开：写本地 site/cases + sitemap（需用户自行 commit & push 才上线）；
+      · csdn / bilibili / zhihu：缺登录 Cookie 时优雅降级（落本地草稿 out/<slug>.<平台>.*），
+        不抛异常、不打断前面四步的成果。
+
+    任何渠道失败都只记日志，绝不影响蒸馏主流程。返回 ran/ok/fail 摘要供前端展示。
+    """
+    log = on_log or (lambda m: None)
+    try:
+        pub = _load("cd_publish", "scripts/publish.py")
+    except Exception as e:
+        log(f"   ⑥ 自动发布跳过：发布模块加载失败（{e}）")
+        return {"ran": False, "reason": "no-module"}
+    if not pub.CONFIG_PATH.exists():
+        log("   ⑥ 自动发布跳过：未配置 publish_config.local.json"
+            "（先 `python scripts/publish.py --init-config` 填 Cookie）")
+        return {"ran": False, "reason": "no-config"}
+    try:
+        guide = pub.pick_guide(str(guide_path))
+    except Exception as e:
+        log(f"   ⑥ 自动发布跳过：指南解析失败（{e}）")
+        return {"ran": False, "reason": "bad-guide"}
+    try:
+        art = pub.build_article(guide, list(corpora) if corpora else None)
+    except Exception as e:
+        log(f"   ⑥ 自动发布跳过：报告渲染失败（{e}）")
+        return {"ran": False, "reason": "render-fail"}
+    art.canonical_url = art.url
+    cfg = pub.load_config()
+    results = []
+    for name in pub.ADAPTERS:
+        pcfg = cfg.get(name, {}) or {}
+        if not pcfg.get("enabled", name == "github"):
+            continue
+        try:
+            res = pub.ADAPTERS[name]().publish(art, pcfg, False)
+            results.append(res)
+            log(f"   [publish:{name}] {'OK' if res.ok else 'ERR'} "
+                f"{res.url or ''} {res.msg or ''}".strip())
+        except Exception as e:
+            log(f"   [publish:{name}] 异常 {e}")
+    ok = [r for r in results if r.ok]
+    fail = [r for r in results if not r.ok]
+    log(f"   ⑥ 自动发布：成功 {len(ok)} / 失败 {len(fail)}"
+        + (f"（失败：{', '.join(r.platform for r in fail)}）" if fail else ""))
+    return {"ran": True, "ok": len(ok), "fail": len(fail),
+            "failed": [r.platform for r in fail]}
 
 
 _TITLE_BAD_CHARS = '<>:"/\\|?*'

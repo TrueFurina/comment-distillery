@@ -305,9 +305,11 @@ class CsdnAdapter:
         if not cfg.get("enabled"):
             return Result(self.name, False, msg="配置未启用（enabled=false）")
         cookie = cfg.get("cookie", "")
-        if not cookie:
-            return Result(self.name, False, msg="未配置 CSDN cookie（登录后从浏览器复制）")
         content = art.markdown + canonical_footer(art.url)
+        if not cookie:
+            d = _write_draft(art, "csdn", "md", content)
+            return Result(self.name, False,
+                          msg=f"未配置 CSDN cookie；已生成可粘贴草稿 {d.name}")
         payload = {
             "title": art.title,
             "content": content,
@@ -335,14 +337,18 @@ class CsdnAdapter:
             try:
                 data = json.loads(text)
             except Exception:
-                return Result(self.name, False, msg=f"HTTP {status} 非 JSON：{text[:200]}")
+                d = _write_draft(art, "csdn", "md", content)
+                return Result(self.name, False,
+                              msg=f"HTTP {status} 非 JSON：{text[:200]}；已生成可粘贴草稿 {d.name}")
             if data.get("code") == 200:
                 url = (data.get("data") or {}).get("url", "")
                 return Result(self.name, True, url or art.url, f"code=200")
+            d = _write_draft(art, "csdn", "md", content)
             return Result(self.name, False,
-                          msg=f"code={data.get('code')} msg={data.get('msg')}")
+                          msg=f"code={data.get('code')} msg={data.get('msg')}；已生成可粘贴草稿 {d.name}")
         except Exception as e:
-            return Result(self.name, False, msg=f"请求失败：{e}")
+            d = _write_draft(art, "csdn", "md", content)
+            return Result(self.name, False, msg=f"请求失败：{e}；已生成可粘贴草稿 {d.name}")
 
 
 class BilibiliAdapter:
@@ -356,8 +362,10 @@ class BilibiliAdapter:
             return Result(self.name, False, msg="未配置 B站 cookie")
         bili_jct = _cookie_val(cookie, "bili_jct")
         if not bili_jct:
+            content = art.html_body + canonical_footer(art.url)
+            d = _write_draft(art, "bilibili", "html", content)
             return Result(self.name, False,
-                          msg="cookie 缺少 bili_jct（CSRF）；请在浏览器复制完整 Cookie")
+                          msg="cookie 缺少 bili_jct（CSRF）；已生成可粘贴草稿 " + d.name)
         base = "https://api.bilibili.com/x/article/creative"
         content = art.html_body + canonical_footer(art.url)
         draft_fields = {
@@ -386,8 +394,9 @@ class BilibiliAdapter:
             status, text = http_post_form(f"{base}/draft/addupdate", draft_fields, headers)
             data = _safe_json(text, status)
             if data.get("code") != 0:
+                d = _write_draft(art, "bilibili", "html", content)
                 return Result(self.name, False,
-                              msg=f"draft code={data.get('code')} msg={data.get('message')}")
+                              msg=f"draft code={data.get('code')} msg={data.get('message')}；已生成可粘贴草稿 {d.name}")
             aid = (data.get("data") or {}).get("aid")
             if not cfg.get("submit", True) or not aid:
                 return Result(self.name, True, art.url,
@@ -398,10 +407,12 @@ class BilibiliAdapter:
             if d2.get("code") == 0:
                 return Result(self.name, True, f"https://www.bilibili.com/read/cv{aid}",
                               f"已发布 aid={aid}")
+            d = _write_draft(art, "bilibili", "html", content)
             return Result(self.name, False,
-                          msg=f"submit code={d2.get('code')} msg={d2.get('message')}")
+                          msg=f"submit code={d2.get('code')} msg={d2.get('message')}；已生成可粘贴草稿 {d.name}")
         except Exception as e:
-            return Result(self.name, False, msg=f"请求失败：{e}")
+            d = _write_draft(art, "bilibili", "html", content)
+            return Result(self.name, False, msg=f"请求失败：{e}；已生成可粘贴草稿 {d.name}")
 
 
 class ZhihuAdapter:
@@ -457,6 +468,18 @@ def _cookie_val(cookie: str, key: str) -> str:
         if part.startswith(f"{key}="):
             return part[len(key) + 1:]
     return ""
+
+
+def _write_draft(art: Article, platform: str, ext: str, content: str) -> Path:
+    """外部平台鉴权失败/接口异常时，落一份可手动粘贴的本地草稿。
+
+    out/ 已被 .gitignore 屏蔽，绝不入库；只作「一键」降级产物：
+    用户拿到草稿去对应平台后台粘贴发布即可，不用自己重新渲染。
+    """
+    draft = ROOT / f"out/{art.slug}.{platform}.{ext}"
+    draft.parent.mkdir(parents=True, exist_ok=True)
+    draft.write_text(content, encoding="utf-8")
+    return draft
 
 
 def _safe_json(text: str, status):

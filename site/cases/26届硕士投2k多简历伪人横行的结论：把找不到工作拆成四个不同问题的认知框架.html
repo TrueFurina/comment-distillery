@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>《26 届硕士投了 2k 多简历》评论深度指南</title>
+<style>
+:root{color-scheme:light;--paper:#fff;--canvas:#f2f5f7;--ink:#3c4650;--heading:#20272e;
+--muted:#6b7683;--accent:#0f6e56;--accent-wash:#e7f4ef;--line:#e6eaee;--warn:#a32d2d;
+--warn-wash:#fbe9e9;--code:#f5f7f9}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:20px}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--canvas);color:var(--ink);
+font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",
+"Segoe UI",sans-serif;font-size:17px;line-height:1.85;-webkit-font-smoothing:antialiased}
+.paper{max-width:860px;margin:24px auto;padding:44px 46px 28px;background:var(--paper);
+border-radius:8px;box-shadow:0 8px 30px rgba(37,56,75,.05);overflow-wrap:anywhere}
+h1{font-size:32px;line-height:1.45;font-weight:700;color:var(--heading);margin:0 0 6px}
+h2{font-size:24px;line-height:1.55;font-weight:700;color:var(--heading);
+margin:44px 0 18px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+h3{font-size:19px;line-height:1.6;font-weight:700;color:var(--heading);margin:30px 0 10px}
+h4{font-size:17px;font-weight:700;color:var(--heading);margin:22px 0 8px}
+p{margin:0 0 16px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+strong{font-weight:700;color:var(--heading)}
+code{font-family:ui-monospace,Consolas,"Cascadia Code",monospace;font-size:.86em;
+background:var(--code);border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:8px;
+padding:14px 16px;overflow-x:auto;margin:0 0 18px}
+pre code{background:none;border:none;padding:0}
+blockquote{margin:0 0 16px;padding:2px 0 2px 18px;border-left:3px solid var(--accent);
+color:var(--ink)}
+ul,ol{margin:0 0 16px;padding-left:26px}
+li{margin:4px 0}
+table{width:100%;border-collapse:collapse;font-size:15px;line-height:1.7;margin:0 0 20px}
+th,td{border-bottom:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}
+th{background:var(--accent-wash);color:var(--heading);font-weight:700}
+hr{border:none;border-top:1px solid var(--line);margin:32px 0}
+.brand{font-size:12px;letter-spacing:2px;color:var(--muted);font-weight:700;margin-bottom:14px}
+.subtitle{font-size:20px;color:var(--muted);margin:0 0 14px}
+.lead{font-size:17px;line-height:1.9;margin:0 0 12px}
+.meta{font-size:12.5px;color:var(--muted);margin:0;line-height:1.7}
+.trustbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:22px 0 4px;
+padding:12px 16px;border-radius:8px;font-size:13.5px;font-weight:700;
+background:var(--accent-wash);border:1px solid var(--accent);color:var(--accent)}
+.trustbar.bad{background:var(--warn-wash);border-color:var(--warn);color:var(--warn)}
+.trustbar.warn{background:#fdf6e6;border-color:#c99a2e;color:#8a6412}
+.trustbar .n{font-size:17px;font-variant-numeric:tabular-nums}
+.cite{display:inline-block;font-size:11px;font-weight:700;line-height:1.5;vertical-align:2px;
+margin:0 1px;padding:0 5px;border-radius:4px;background:var(--accent-wash);
+border:1px solid var(--accent);color:var(--accent);white-space:nowrap}
+.cite:hover{background:var(--accent);color:#fff;text-decoration:none}
+.toc{background:#f7f9fa;border:1px solid var(--line);border-radius:8px;padding:16px 20px;
+margin:26px 0 4px}
+.toc h4{margin:0 0 8px;font-size:13px;letter-spacing:1px;color:var(--muted)}
+.toc ul{margin:0;padding-left:0;list-style:none;font-size:14.5px}
+.toc li{margin:3px 0}
+.src-list{list-style:none;margin:0 0 18px;padding:0}
+.src-list li{border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin:0 0 10px;
+background:#fcfdfd;scroll-margin-top:20px}
+.src-list li:target{border-color:var(--accent);background:var(--accent-wash)}
+.src-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;margin-bottom:4px}
+.src-id{font-family:ui-monospace,Consolas,monospace;font-size:13px;font-weight:700;
+color:var(--accent)}
+.src-meta{font-size:12px;color:var(--muted)}
+.src-back{font-size:12px;margin-left:auto}
+.src-text{margin:0;font-size:15.5px;line-height:1.75;color:var(--ink)}
+.src-miss{color:var(--warn);font-weight:700}
+footer{border-top:1px solid var(--line);margin-top:40px;padding-top:16px;font-size:12.5px;
+color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 12px;justify-content:space-between}
+@media(max-width:720px){.paper{margin:0;border-radius:0;padding:28px 20px 20px}
+body{font-size:16.5px}h1{font-size:26px}h2{font-size:21px}}
+@media print{body{background:#fff}.paper{margin:0 auto;box-shadow:none;max-width:none}
+.toc,.src-back{display:none}
+h2,h3{break-after:avoid}blockquote,.src-list li,table{break-inside:avoid}}
+</style>
+</head>
+<body>
+<main class="paper">
+<header class="intro">
+<div class="brand">COMMENT-DISTILLERY</div>
+<h1>《26 届硕士投了 2k 多简历》评论深度指南</h1>
+
+
+<p class="meta">来源：<code>26届硕士投2k多简历伪人横行的结论：把找不到工作拆成四个不同问题的认知框架.md</code> · 生成于 2026-11-05</p>
+</header>
+<div class="trustbar warn"><span class="n">77</span> 条引用 · <b>未跑机验</b>（未提供 --corpus，无法核对引用真实性）</div>
+<nav class="toc"><h4>目录</h4><ul class="toc-list"><li><a href="#h2-1">方法与边界（先读这段）</a></li><li><a href="#h2-2">TL;DR —— 如果只读一段</a></li><li><a href="#h2-3">一、认知框架：把"找不到工作"拆成四个不同的问题</a></li><li><a href="#h2-4">二、争议清单</a></li><li><a href="#h2-5">三、长尾真信号</a></li><li><a href="#h2-6">四、行动清单</a></li><li><a href="#h2-7">五、精华句（原样摘录，未改写）</a></li><li><a href="#h2-8">六、盲区诚实说明（必读）</a></li><li><a href="#h2-9">七、元方法论（可复用三条）</a></li><li><a href="#h2-10">附录：可复现命令</a></li></ul></nav>
+<article>
+<blockquote><strong>合规前置</strong>：本文仅供个人学习研究，<strong>禁止</strong>用于商业舆情监控或批量用户画像。<br>原始评论著作权归原作者与平台所有，本文仅为观点提炼，<strong>不二次分发原始语料</strong>；文中不出现任何可识别个人身份的信息（仅保留评论 ID + 权重 + 层级用于溯源）。</blockquote>
+<h2 id="h2-1">方法与边界（先读这段）</h2>
+<table><thead><tr><th>项</th><th>值</th></tr></thead><tbody><tr><td>语料</td><td>B 站视频 <code>BV1N1ai6cEE1</code> 评论区，原始 240 条 → 去重去噪后 <strong>235 条</strong>（一级 49 / 楼中楼 186）</td></tr><tr><td>重复行</td><td><code>dup_dropped = 0</code></td></tr><tr><td>互动</td><td>点赞总和 2,256；均值 9.6；最高 285；独立作者 157 人</td></tr><tr><td>时间切片</td><td>2026-09-28（<strong>秋招进行中，且是三份语料里最新的一份</strong>）</td></tr><tr><td>通读策略</td><td>235 条 &lt; 1500 → <strong>全量逐条通读</strong></td></tr><tr><td>特别提示</td><td>本语料含<strong>明显的跑题噪声</strong>（大量评论在讨论 UP 外貌）与<strong>语料内自带的水军质疑</strong>，均已在盲区章节如实披露</td></tr></tbody></table>
+<p><strong>⚠️ 规模警告</strong>：235 条是小样本。<strong>本文所有结论都应被视为"一群人的说法"，而非"就业市场的事实"。</strong></p>
+<hr>
+<h2 id="h2-2">TL;DR —— 如果只读一段</h2>
+<p>这个视频的标题是"伪人横行"，但评论区自己给出了更精准的诊断——<strong>问题不在"有没有工作"，而在"工作的定义被偷换了"</strong>：</p>
+<blockquote>现在不缺工作啊，缺的是优质工作 <code><a class="cite" id="cite-c318880795792" href="#src-c318880795792" title="c318880795792">源</a></code></blockquote>
+<blockquote>工作好找，合心意的工作难找 <code><a class="cite" id="cite-c318928638544" href="#src-c318928638544" title="c318928638544">源</a></code></blockquote>
+<p>而一句 10 赞的反问，把这件事为什么让人痛苦说透了：</p>
+<blockquote>不想要好工作我读什么书刷什么题考什么研啊，闲得蛋疼么 <code><a class="cite" id="cite-c318912080768" href="#src-c318912080768" title="c318912080768">源</a></code></blockquote>
+<p>三条支撑事实：</p>
+<ol><li><strong>专业已经压过学历</strong> <code><a class="cite" id="cite-c315327135697" href="#src-c315327135697" title="c315327135697">源</a></code>——这是本份语料权重最高的实质性判断</li><li><strong>学历通胀到了荒诞的程度</strong>：成都银行二十多个岗位、四十多个清北来抢 <code><a class="cite" id="cite-c318877573104" href="#src-c318877573104" title="c318877573104">源</a></code></li><li><strong>但"没工作"和"没好工作"必须分开统计</strong>：一位被裁的世界百强技术岗同事，投 1k 份简历只得到 2 个面试 <code><a class="cite" id="cite-c318937883664" href="#src-c318937883664" title="c318937883664">源</a></code>——<strong>这是"有工作经验的人"的真实转化率，比应届生的体感更能说明市场温度</strong></li></ol>
+<hr>
+<h2 id="h2-3">一、认知框架：把"找不到工作"拆成四个不同的问题</h2>
+<p>评论区里大量互相矛盾的说法，其实是因为大家在回答四个不同的问题：</p>
+<pre><code>"我找不到工作" ──┬─ Q1  有没有岗位？      → 有（但质量分布变了）
+                 ├─ Q2  岗位配不配学历？  → 越来越不配（专业 &gt; 学历）
+                 ├─ Q3  岗位配不配预期？  → 裂缝在这里（"好工作"的定义）
+                 └─ Q4  我是不是被统计了？→ 灵活就业/慢就业不计入失业</code></pre>
+<h3>Q1：到底有没有岗位？（争议最激烈）</h3>
+<p><strong>"好找"派</strong>：</p>
+<blockquote>其实工作特别好找，千万不要眼高手低，好的工作谁都想去，自然竞争大 <code><a class="cite" id="cite-c315354037793" href="#src-c315354037793" title="c315354037793">源</a></code></blockquote>
+<blockquote>工科随便找吧 <code><a class="cite" id="cite-c318906375136" href="#src-c318906375136" title="c318906375136">源</a></code></blockquote>
+<p><strong>"不好找"派（直接点破口径）</strong>：</p>
+<blockquote>你指的好找的工作是月薪4k？ <code><a class="cite" id="cite-c318920847712" href="#src-c318920847712" title="c318920847712">源</a></code></blockquote>
+<blockquote>我是做ic的……难找的一批，就那么几个风口专业 <code><a class="cite" id="cite-c315366278769" href="#src-c315366278769" title="c315366278769">源</a></code></blockquote>
+<blockquote>211本，没找到工作，学校直接把档案移交人才中心 <code><a class="cite" id="cite-c315380681649" href="#src-c315380681649" title="c315380681649">源</a></code></blockquote>
+<p><strong>"结构性分化"派（最有解释力）</strong>：</p>
+<blockquote>我是微电子的，专业的同学没有没找到工作的，半导体厂大大方方去，就是要倒班 <code><a class="cite" id="cite-c315357714065" href="#src-c315357714065" title="c315357714065">源</a></code></blockquote>
+<blockquote>双非工科很多是特色专业，天生有行业壁垒保护 <code><a class="cite" id="cite-c315356785233" href="#src-c315356785233" title="c315356785233">源</a></code></blockquote>
+<blockquote>广东的工科没的说，机械去具身智能，电子也能去，化学也能去……2本到手8k+，9本多500 <code><a class="cite" id="cite-c318925767504" href="#src-c318925767504" title="c318925767504">源</a></code></blockquote>
+<p><strong>裁决</strong>：<strong>"工作好找"与"工作难找"可以同时为真</strong>，因为它们在说不同的工作。这不是诡辩——同一份语料里，"微电子同学没有没找到工作的"和"211 本没找到工作"是两条并存的事实。</p>
+<h3>Q2：专业 vs 学历（本份语料最高信号的判断）</h3>
+<blockquote>现在中国很明显是属于<strong>专业＞学历</strong>了 <code><a class="cite" id="cite-c315327135697-2" href="#src-c315327135697" title="c315327135697">源2</a></code></blockquote>
+<blockquote>同26硕，现在感觉<strong>强势专业大于学校层次</strong>，实习经历也卡的很紧，像我们此类冷门专业硕还没有实习，学校层次已经不能加成太多了 <code><a class="cite" id="cite-c318941811104" href="#src-c318941811104" title="c318941811104">源</a></code></blockquote>
+<blockquote>企业招聘的时候不止看学历学校，<strong>更看是否有对口的实习经验；实习经验丰富的普本可能比985的硕更容易拿到校招offer</strong> <code><a class="cite" id="cite-c318938654912" href="#src-c318938654912" title="c318938654912">源</a></code></blockquote>
+<p><strong>学历贬值的极端对照（两条，方向相反）</strong>：</p>
+<blockquote>工科硕算好的啦，家里几个表弟华南师范的在国企物业当保安，华东政法的研究生去了钢厂当锅炉工。普本的基本家里蹲烦了就去东莞进厂咯 <code><a class="cite" id="cite-c318903914064" href="#src-c318903914064" title="c318903914064">源</a></code> —— <strong>本语料最高赞，285</strong></blockquote>
+<blockquote>我是天坑专业的985硕，今年秋招一份简历没投，all in 考公 <code><a class="cite" id="cite-c318877909008" href="#src-c318877909008" title="c318877909008">源</a></code></blockquote>
+<p><strong>⚠️ 反例对冲（必须列出，最高赞那条被直接质疑了）</strong>：</p>
+<blockquote>我刚参加完校招，确实找不到什么很好很理想的工作，<strong>但肯定不至于像楼主说的当保安和锅炉工吧</strong> <code><a class="cite" id="cite-c318908244096" href="#src-c318908244096" title="c318908244096">源</a></code></blockquote>
+<blockquote>有点夸张吧 <code><a class="cite" id="cite-c318905631808" href="#src-c318905631808" title="c318905631808">源</a></code></blockquote>
+<blockquote>可能有点夸张，但是现实比比皆是 <code><a class="cite" id="cite-c315372512129" href="#src-c315372512129" title="c315372512129">源</a></code> / 一点都不夸张 <code><a class="cite" id="cite-c318932240192" href="#src-c318932240192" title="c318932240192">源</a></code></blockquote>
+<p><strong>裁决</strong>：285 赞那条是<strong>身边见闻的集合</strong>，不是统计。它的价值在于<strong>标示了学历与岗位错配的极端尾部真实存在</strong>，而不在于"概率有多高"。评论区自己也完成了这个校准。</p>
+<h3>Q3：那道最痛的裂缝（"优质工作"的定义）</h3>
+<blockquote>三四年前双非能去四大行吗？今年或去年成都银行的二十多个岗位四十多个清北来抢 <code><a class="cite" id="cite-c318877573104-2" href="#src-c318877573104" title="c318877573104">源2</a></code></blockquote>
+<blockquote>我就是成都银行的，每天累惨了 <code><a class="cite" id="cite-c318904175600" href="#src-c318904175600" title="c318904175600">源</a></code></blockquote>
+<blockquote>校招去四大行还是可以的，不过基本都是当柜员，我同学干了一年受不了直接跑路了 <code><a class="cite" id="cite-c315348486945" href="#src-c315348486945" title="c315348486945">源</a></code></blockquote>
+<blockquote>按西财本硕的同学说，成都银行确实只能给分行柜员的工作……我这行面试要求已经社招化了，钱还比社招的人少 <code><a class="cite" id="cite-c318879901888" href="#src-c318879901888" title="c318879901888">源</a></code></blockquote>
+<p><strong>最后这条是全场最锋利的一句</strong>——"<strong>校招的门槛已经按社招来，但薪资还按校招给</strong>"。它解释了一个普遍困惑：为什么大家都觉得"要求变高了但钱没变"。</p>
+<h3>Q4：被统计口径藏起来的那一批</h3>
+<blockquote>经典即没失业也没就业 <code><a class="cite" id="cite-c318913811232" href="#src-c318913811232" title="c318913811232">源</a></code></blockquote>
+<blockquote>211本，没找到工作，学校直接把档案移交人才中心（不写申请不让留校，申请还要导员批过） <code><a class="cite" id="cite-c315380681649-2" href="#src-c315380681649" title="c315380681649">源2</a></code></blockquote>
+<p><strong>这意味着"失业率"这个指标本身无法描述这群人的处境</strong>——他们不在失业统计里，也不在就业统计里。</p>
+<hr>
+<h2 id="h2-4">二、争议清单</h2>
+<h3>争议 A：考公是不是最优解？（分歧极大，且有硬反例）</h3>
+<p><strong>支持方</strong>：</p>
+<blockquote>我是天坑专业的985硕，今年秋招一份简历没投 all in 考公 <code><a class="cite" id="cite-c318877909008-2" href="#src-c318877909008" title="c318877909008">源2</a></code></blockquote>
+<blockquote>我是去年就业的，但我肯定是没有投简历，我是直接去参加的公考。我真的发现了，如果你真的想找工作，你只能去参加考试 <code><a class="cite" id="cite-c318903042592" href="#src-c318903042592" title="c318903042592">源</a></code></blockquote>
+<blockquote>985硕，身边考公的基本都上岸了，我的看法是做题能力强，考公依旧nb，面试专门报班训练就好 <code><a class="cite" id="cite-c318908978928" href="#src-c318908978928" title="c318908978928">源</a></code></blockquote>
+<blockquote>如果能重来，我一定 all in 考公 <code><a class="cite" id="cite-c315379530033" href="#src-c315379530033" title="c315379530033">源</a></code></blockquote>
+<p><strong>反对方（硬反例，0 赞但极有分量）</strong>：</p>
+<blockquote>我是真考过，我本科厦门大学毕业，<strong>应届140安徽乡镇没进面</strong>……反正直接放弃考试去央企摆烂了，现在依旧闲的一比，双休五险一金样样不少，我是不懂你们究竟有啥考公的执念和自信 <code><a class="cite" id="cite-c315355953857" href="#src-c315355953857" title="c315355953857">源</a></code></blockquote>
+<blockquote>一年根本没有十次（考试），一年算上事业单位最多四五次，还得专业正好有对应的岗位、地理位置可接受，你就考吧，反正浪费青春浪费应届生身份的不是我 <code><a class="cite" id="cite-c315356624801" href="#src-c315356624801" title="c315356624801">源</a></code></blockquote>
+<blockquote>你现在考公卷的飞起，浙江这边卷到140+进不去面都见怪不怪了，想冲第一得奔着150去，80行测+70申论 <code><a class="cite" id="cite-c318914868432" href="#src-c318914868432" title="c318914868432">源</a></code></blockquote>
+<blockquote>申论对理工科来说真不容易，这玩意没人知道标准是什么 <code><a class="cite" id="cite-c318914868432-2" href="#src-c318914868432" title="c318914868432">源2</a></code></blockquote>
+<blockquote>在你 all in 的那一刻可能就已经输了，但是这对大多数人来说没办法 <code><a class="cite" id="cite-c318907256528" href="#src-c318907256528" title="c318907256528">源</a></code></blockquote>
+<p><strong>⚠️ 支持方的反驳也很硬</strong>：</p>
+<blockquote>零和博弈跟压力大小有啥关系……从考题难度来讲，高考考研明显是大于考公的。高考一年就一次，考公你一年全国赶考能考多少次 <code><a class="cite" id="cite-c318908716304" href="#src-c318908716304" title="c318908716304">源</a></code> <code><a class="cite" id="cite-c318910516160" href="#src-c318910516160" title="c318910516160">源</a></code></blockquote>
+<p><strong>裁决</strong>：考公<strong>不是"难度低"，而是"方差小、可重复"</strong>——它对"做题能力强"的人确实更友好，但对<strong>专业冷门、岗位稀少、地域受限</strong>的人，"能考的岗"数量本身就是天花板。<strong>"all in"的风险不在考不上，而在消耗应届生身份。</strong></p>
+<h3>争议 B：国企/央企是避风港吗？（评论区给出了完整的尽调清单）</h3>
+<p><strong>不是无条件避风港</strong>：</p>
+<blockquote>要看是几级央企。<strong>最底层的央企比外包压榨还狠</strong> <code><a class="cite" id="cite-c318884437664" href="#src-c318884437664" title="c318884437664">源</a></code></blockquote>
+<blockquote>就知道个央企了，你进去也就是个外包工，待遇还没外面好，失业裁员出来一样 <code><a class="cite" id="cite-c318899224848" href="#src-c318899224848" title="c318899224848">源</a></code></blockquote>
+<blockquote>待遇差的央企可太多了 <code><a class="cite" id="cite-c318896516352" href="#src-c318896516352" title="c318896516352">源</a></code></blockquote>
+<p>（另：同期相邻语料中有人提醒"央国企也有过下岗潮，不如能捞一笔是一笔，还有想办法搞点副业"——该条不在本视频语料内，故不附引用）</p>
+<p><strong>⚠️ 而评论区自发给出了"进国企前的尽调清单"（这是本语料最实用的一组内容）</strong>：</p>
+<blockquote>如果你是本地人，我建议你<strong>去找内部人打听里面的加班情况跟待遇</strong>。国企很多时候生活幸福情况跟钱关系不大……<strong>那种加班的国企我一个没找，还在等</strong> <code><a class="cite" id="cite-c318944749648" href="#src-c318944749648" title="c318944749648">源</a></code></blockquote>
+<blockquote>你们那年终奖有10个吗？有的话就能干 <code><a class="cite" id="cite-c318944828784" href="#src-c318944828784" title="c318944828784">源</a></code></blockquote>
+<blockquote>不太好跳槽啊，这种东西别干太长 <code><a class="cite" id="cite-c318944561728" href="#src-c318944561728" title="c318944561728">源</a></code></blockquote>
+<blockquote>校友咋不投投中广核这种，工资会高很多，但是工作地方偏，强度也大。<strong>钢厂都是冶金学院拿来大保底的</strong>，没地方去就签钢厂 <code><a class="cite" id="cite-c315379058641" href="#src-c315379058641" title="c315379058641">源</a></code></blockquote>
+<blockquote>看看能不能找个有色厂子？钢铁工资低 <code><a class="cite" id="cite-c315382312865" href="#src-c315382312865" title="c315382312865">源</a></code></blockquote>
+<blockquote>秋招还没结束，多投点岗位……签三方了吗？没签先拖着，继续找，现在才9月份，不着急 <code><a class="cite" id="cite-c318935175584" href="#src-c318935175584" title="c318935175584">源</a></code> <code><a class="cite" id="cite-c318926434528" href="#src-c318926434528" title="c318926434528">源</a></code></blockquote>
+<blockquote>如果是湖南人想留湖南，绝对的T1级别 <code><a class="cite" id="cite-c318924657040" href="#src-c318924657040" title="c318924657040">源</a></code></blockquote>
+<h3>争议 C：努力还有用吗？（两条方向相反的硬证据）</h3>
+<p><strong>"别怪大环境"派</strong>：</p>
+<blockquote>实习干了8个月，专升本找到了13k，<strong>别总怪大环境</strong> <code><a class="cite" id="cite-c318920857024" href="#src-c318920857024" title="c318920857024">源</a></code></blockquote>
+<p><strong>"时代压倒个人"派</strong>：</p>
+<blockquote>时代问题，个人努力在时代面前微不足道 <code><a class="cite" id="cite-c318912260032" href="#src-c318912260032" title="c318912260032">源</a></code></blockquote>
+<blockquote>25年毕业，那年很地狱，这几年还算好点……<strong>花有重开日，人无再少年，和我没关系了</strong> <code><a class="cite" id="cite-c318920150064" href="#src-c318920150064" title="c318920150064">源</a></code></blockquote>
+<p><strong>⚠️ 但最有说服力的既不是这两条，而是一段 0 赞的长文——它把"低头"变成了一条可执行的上升路径</strong>：</p>
+<blockquote>我今年入职又各种原因离职好几个工作了……我想着先挣钱再说别的，<strong>先别饿死</strong>。我都准备好去刷盘子啥的或者当服务生了，保安我去年也都干了大半年——先干着再找没毛病啊……甚至中间还被骗过上了骗子小半个月的课。我反正是接受自己去干很低端的工作了，挣得少是少，别饿死，再学点感兴趣的，逐渐的再起势……<strong>就这期间找到了一个厂子里的技术岗的工作，人家知道我没干过但是觉得能用，人家也愿意教我就在那学着了</strong>……很多人挣不到钱还不愿意去干最低端的工作，就一直在那等等等，那就废了，<strong>一等就没头了</strong> <code><a class="cite" id="cite-c318916355024" href="#src-c318916355024" title="c318916355024">源</a></code></blockquote>
+<p><strong>⚠️ 反例对冲（这条路径也有代价，必须列出）</strong>：</p>
+<blockquote>你这是不是只说了学历没把自己实力和主观能动性计算进去 <code><a class="cite" id="cite-c315378527329" href="#src-c315378527329" title="c315378527329">源</a></code>（对"学历差就更惨"叙事的质疑）</blockquote>
+<p>以及"先就业再择业"的风险：</p>
+<blockquote>学长打比赛上来的，现在实习4-5000，五险没金，双休8h，通勤来回2.5h……他一开始积极加班，现在直接摆烂了……<strong>他说在里面学不到啥东西，能力得不到提升</strong>，月底他就要跑路了 <code><a class="cite" id="cite-c315379939233" href="#src-c315379939233" title="c315379939233">源</a></code></blockquote>
+<p><strong>裁决</strong>：两条路径都不完整。<strong>"接受低端工作"解决了现金流与"空转焦虑"，但不解决能力积累；"死等好工作"保留可能性，但消耗应届生身份与心理状态。</strong> 评论区的隐含共识是：<strong>需要一个"有产出/有人教"的下限岗位，而不是纯粹的体力兜底。</strong></p>
+<hr>
+<h2 id="h2-5">三、长尾真信号</h2>
+<h3>★ 3.1 "校招社招化" —— 一条被低估的结构判断</h3>
+<blockquote>我这行面试要求已经社招化了，钱还比社招的人少，双9发ccf a拿国奖的大佬九月前基本无二面 <code><a class="cite" id="cite-c318879901888-2" href="#src-c318879901888" title="c318879901888">源2</a></code></blockquote>
+<p>配套的事实：</p>
+<blockquote>20年的时候985本科进ic甚至能转行拿三四十万。短短几年，就业就拉完了 <code><a class="cite" id="cite-c318900985808" href="#src-c318900985808" title="c318900985808">源</a></code></blockquote>
+<blockquote>有时候看着20年的面试题都想笑……现在问我底层代码怎么写、为什么、怎么用，cpu架构下指令和数据流向具体怎样、存储架构怎么搭、总线仲裁怎么做。<strong>20年就问些简单八股问题。校招是钱又少要求还高，再过几年真就付费工作了</strong> <code><a class="cite" id="cite-c318901553952" href="#src-c318901553952" title="c318901553952">源</a></code></blockquote>
+<h3>★ 3.2 真正稀缺的不是岗位，是"对口的岗位"</h3>
+<blockquote>正在秋招，感觉<strong>难的问题主要是HC就很少，而不是学历不被认可</strong> <code><a class="cite" id="cite-c315360164161" href="#src-c315360164161" title="c315360164161">源</a></code></blockquote>
+<p><strong>这条极其重要</strong>——它把"学历贬值"和"hc 收缩"两件事分开了。很多人把找不到工作归因于"我的学历不值钱了"，但这位正在秋招的人观察到的是：<strong>门槛没变，池子小了</strong>。两者的应对完全不同（前者无解，后者可以靠海投与赛道切换缓解）。</p>
+<h3>★ 3.3 一个不该被忽略的"AI 不必然导致失业"的样本</h3>
+<blockquote>广州同城有个老哥之前五六年没工作，后面找到一个电商设计的岗位，就是找其他网页的描述详情进行 ai 改图去水印这些，<strong>一天实际工作四小时其他时间摸鱼</strong>。其实对于一些特殊赛道来说，ai 确实可以节省员工的工作并且不会造成失业，但是这种工作可遇不可求 <code><a class="cite" id="cite-c315330776609" href="#src-c315330776609" title="c315330776609">源</a></code></blockquote>
+<p>⚠️ 作者自己也给了限定："可遇不可求"。<strong>这是反例，不是规律。</strong></p>
+<h3>★ 3.4 裁员与入职风险的实操自保（来自评论区，非法律意见）</h3>
+<blockquote>上下班最好自己拍个打卡照，买支录音笔上班带着，<strong>不要轻易签任何文件，特别是空白的那种</strong> <code><a class="cite" id="cite-c315337675089" href="#src-c315337675089" title="c315337675089">源</a></code></blockquote>
+<p>入职被放鸽子的具体案例（含企业名，记录为现象）：</p>
+<blockquote>看好了一个都确定入职时间了，我都拒了别的offer去附近看租房子了，结果跟我说不招了问干不干销售……恒都集团，避雷 <code><a class="cite" id="cite-c318922626992" href="#src-c318922626992" title="c318922626992">源</a></code> <code><a class="cite" id="cite-c318920648320" href="#src-c318920648320" title="c318920648320">源</a></code></blockquote>
+<blockquote>这种其实一开始就是找的销售，写其他的就是为了把人骗过去 <code><a class="cite" id="cite-c318922345744" href="#src-c318922345744" title="c318922345744">源</a></code></blockquote>
+<blockquote>中汽研，忽悠你进去干几个月实习骗你能转正，然后跟你说签的是外包 <code><a class="cite" id="cite-c315345630257" href="#src-c315345630257" title="c315345630257">源</a></code></blockquote>
+<h3>★ 3.5 行业与地域的两个硬约束</h3>
+<p><strong>地域</strong>：</p>
+<blockquote>不去那几个沿海经济强省，毕业两年内，基本不能过 w/月 <code><a class="cite" id="cite-c318925322096" href="#src-c318925322096" title="c318925322096">源</a></code></blockquote>
+<p><strong>行业周期（同一行业内五年内的剧烈反转）</strong>：</p>
+<blockquote>20年的时候985本科进ic甚至能转行拿三四十万；短短几年，就业就拉完了 <code><a class="cite" id="cite-c318900985808-2" href="#src-c318900985808" title="c318900985808">源2</a></code></blockquote>
+<blockquote>模拟电源 PMIC 已经转行了 <code><a class="cite" id="cite-c318919628288" href="#src-c318919628288" title="c318919628288">源</a></code> —— 而电源"算模电最好找工作的方向之一" <code><a class="cite" id="cite-c318919983840" href="#src-c318919983840" title="c318919983840">源</a></code></blockquote>
+<blockquote>某储能大厂，想节假日干活拿三倍都不给排班，中秋放前两天，国企放七天 <code><a class="cite" id="cite-c318920210624" href="#src-c318920210624" title="c318920210624">源</a></code>（反向：也有人"你们厂太狠了吧" <code><a class="cite" id="cite-c318915789856" href="#src-c318915789856" title="c318915789856">源</a></code>）</blockquote>
+<p><strong>裁决</strong>：<strong>行业景气度的半衰期已经短于一个硕士学制（2–3 年）。</strong> 这是"追热门专业暴雷"的机制解释：</p>
+<blockquote>刚进学校择专业时还根本不清楚未来毕业后会有一个怎样的发展。没有信息差没有内部信息渠道的人，追热门暴雷概率很大 <code><a class="cite" id="cite-c318907845152" href="#src-c318907845152" title="c318907845152">源</a></code></blockquote>
+<hr>
+<h2 id="h2-6">四、行动清单</h2>
+<h3>求职中的硬操作（来自评论区，可照做）</h3>
+<ol><li><strong>先搞个 offer 保底</strong>：秋招公司超级多，先落袋再挑 <code><a class="cite" id="cite-c318898632144" href="#src-c318898632144" title="c318898632144">源</a></code></li><li><strong>没签三方就继续海投</strong>：现在才 9 月，不着急 <code><a class="cite" id="cite-c318926434528-2" href="#src-c318926434528" title="c318926434528">源2</a></code>；传统行业/国央企通常 10–11 月才发力（此判断来自同期相邻语料，不纳引用）</li><li><strong>进国企前做三项尽调</strong>：内部人打听加班与待遇 <code><a class="cite" id="cite-c318944749648-2" href="#src-c318944749648" title="c318944749648">源2</a></code>、问清年终奖月数 <code><a class="cite" id="cite-c318944828784-2" href="#src-c318944828784" title="c318944828784">源2</a></code>、确认是直签还是外包 <code><a class="cite" id="cite-c318899224848-2" href="#src-c318899224848" title="c318899224848">源2</a></code></li><li><strong>警惕三类坑</strong>：offer 到手后被放鸽子改销售 <code><a class="cite" id="cite-c318922626992-2" href="#src-c318922626992" title="c318922626992">源2</a></code>、实习骗转正签外包 <code><a class="cite" id="cite-c315345630257-2" href="#src-c315345630257" title="c315345630257">源2</a></code>、"直通名额极少"（相邻语料所述，不在本视频语料内，不附引用）</li><li><strong>在职者留存证据</strong>：打卡照、录音笔、拒签空白文件 <code><a class="cite" id="cite-c315337675089-2" href="#src-c315337675089" title="c315337675089">源2</a></code></li><li><strong>把"专业"当成第一变量重排优先级</strong>：同分情况下，有行业壁垒的特色专业 &gt; 学校层次 <code><a class="cite" id="cite-c315356785233-2" href="#src-c315356785233" title="c315356785233">源2</a></code>；实习对口度可能压过学历 <code><a class="cite" id="cite-c318938654912-2" href="#src-c318938654912" title="c318938654912">源2</a></code></li></ol>
+<h3>关于"要不要 all in 考公"</h3>
+<table><thead><tr><th>适合</th><th>不适合</th></tr></thead><tbody><tr><td>专业冷门、对口岗位本来就少</td><td>专业有明确对口行业（如微电子） `<a class="cite" id="cite-c315357714065-2" href="#src-c315357714065" title="c315357714065">源2</a></td><td>权重7</td><td>回复]`</td></tr><tr><td>做题能力强、能承受多次赶考</td><td>只能接受本地岗位、或专业几乎没有对口编制 `<a class="cite" id="cite-c315356624801-2" href="#src-c315356624801" title="c315356624801">源2</a></td><td>权重0</td><td>回复]`</td></tr><tr><td>已评估最坏情况（一年最多四五次有效机会）</td><td>把考公当成"低难度退路" `<a class="cite" id="cite-c318914868432-3" href="#src-c318914868432" title="c318914868432">源3</a></td><td>权重1</td><td>回复]`</td></tr></tbody></table>
+<h3>关于"要不要接受低端工作"</h3>
+<p>评论区的隐含答案不是"要"或"不要"，而是<strong>"要，但选有产出/有人教的那一个"</strong>：</p>
+<ul><li>正面：<code><a class="cite" id="cite-c318916355024-2" href="#src-c318916355024" title="c318916355024">源2</a></code>（先别饿死 → 逐渐起势 → 找到愿意教的技术岗）</li><li>反面：<code><a class="cite" id="cite-c315379939233-2" href="#src-c315379939233" title="c315379939233">源2</a></code>（学不到东西、能力不提升 → 一年跑路）</li></ul>
+<hr>
+<h2 id="h2-7">五、精华句（原样摘录，未改写）</h2>
+<ol><li>&gt; 现在中国很明显是属于专业＞学历了 <code><a class="cite" id="cite-c315327135697-3" href="#src-c315327135697" title="c315327135697">源3</a></code></li><li>&gt; 现在不缺工作啊，缺的是优质工作 <code><a class="cite" id="cite-c318880795792-2" href="#src-c318880795792" title="c318880795792">源2</a></code></li><li>&gt; 不想要好工作我读什么书刷什么题考什么研啊，闲得蛋疼么 <code><a class="cite" id="cite-c318912080768-2" href="#src-c318912080768" title="c318912080768">源2</a></code></li><li>&gt; 经典即没失业也没就业 <code><a class="cite" id="cite-c318913811232-2" href="#src-c318913811232" title="c318913811232">源2</a></code></li><li>&gt; 校招是钱又少要求还高，再过几年真就付费工作了 <code><a class="cite" id="cite-c318901553952-2" href="#src-c318901553952" title="c318901553952">源2</a></code></li><li>&gt; 花有重开日，人无再少年，和我没关系了 <code><a class="cite" id="cite-c318920150064-2" href="#src-c318920150064" title="c318920150064">源2</a></code></li><li>&gt; 我是不懂你们究竟有啥考公的执念和自信 <code><a class="cite" id="cite-c315355953857-2" href="#src-c315355953857" title="c315355953857">源2</a></code></li><li>&gt; 很多人挣不到钱还不愿意去干最低端的工作，就一直在那等等等，那就废了，一等就没头了 <code><a class="cite" id="cite-c318916355024-3" href="#src-c318916355024" title="c318916355024">源3</a></code></li><li>&gt; 时代问题，个人努力在时代面前微不足道 <code><a class="cite" id="cite-c318912260032-2" href="#src-c318912260032" title="c318912260032">源2</a></code></li><li>&gt; 学历注水太严重啦 <code><a class="cite" id="cite-c315374347185" href="#src-c315374347185" title="c315374347185">源</a></code></li></ol>
+<hr>
+<h2 id="h2-8">六、盲区诚实说明（必读）</h2>
+<ol><li><strong>⚠️ 语料内自带的水军质疑（必须披露）</strong>：评论区有人直接质疑存在带节奏账号——</li></ol>
+<blockquote>水军现在待遇怎么样？ <code><a class="cite" id="cite-c318909530176" href="#src-c318909530176" title="c318909530176">源</a></code><br>2块一条，有人回复再加0.5/人，上不封顶 <code><a class="cite" id="cite-c318910344816" href="#src-c318910344816" title="c318910344816">源</a></code><br>4级号，收钱的 <code><a class="cite" id="cite-c318929868672" href="#src-c318929868672" title="c318929868672">源</a></code></blockquote>
+<p><strong>本文无法验证这些质疑的真伪</strong>，但既然语料自身提出了它，就必须记录：<strong>若本语料存在有组织的叙事引导，本文的结论会被系统性带偏。</strong></p>
+<ol><li><strong>样本极小</strong>：235 条评论、157 位作者。<strong>这是三份语料里最小的一份</strong>，任何比例性表述都不可靠。</li></ol>
+<ol><li><strong>幸存者偏差</strong>：极端案例（保安、锅炉工、进厂）<strong>天然更容易获得点赞</strong>——285 赞那条就是极端案例的集合。<strong>正常就业的人不会来评论区报平安。</strong></li></ol>
+<ol><li><strong>跑题噪声显著</strong>：本语料有相当比例的评论在讨论 UP 的外貌而非就业（如 <code><a class="cite" id="cite-c318879203472" href="#src-c318879203472" title="c318879203472">源</a></code>、<code><a class="cite" id="cite-c315339153041" href="#src-c315339153041" title="c315339153041">源</a></code>、<code><a class="cite" id="cite-c315356201137" href="#src-c315356201137" title="c315356201137">源</a></code>）。已剔除，但这说明<strong>该视频的受众构成与"就业讨论"并非完全重合</strong>，样本代表性存疑。</li></ol>
+<ol><li><strong>口径混乱</strong>：语料中"找到工作"一词涵盖了 3k 到 13k 的巨大区间（211 本到手 3k <code><a class="cite" id="cite-c315372374529" href="#src-c315372374529" title="c315372374529">源</a></code> vs 专升本 13k <code><a class="cite" id="cite-c318920857024-2" href="#src-c318920857024" title="c318920857024">源2</a></code>），<strong>"有工作"这个命题在没有薪资锚定时几乎无信息量</strong>。</li></ol>
+<ol><li><strong>时间切片</strong>：2026-09-28，秋招进行中。"0 offer"是过程状态。同语料已有人指出"现在才 9 月份，不着急" <code><a class="cite" id="cite-c318926434528-3" href="#src-c318926434528" title="c318926434528">源3</a></code>。</li></ol>
+<ol><li><strong>跨语料的对照未纳入引用</strong>：本视频评论区与同期"27 届计算机秋招"语料高度互补（后者提供了"hc 被实习转正锁定""岗位合并"等机制证据），但<strong>为避免引用越界，本文未引用其评论 ID</strong>——两条语料的交叉验证是定性层面的，需读者自行比对。</li></ol>
+<ol><li><strong>本文不构成就业或法律建议</strong>：裁员自保、合同签署等具体操作请咨询专业人士。</li></ol>
+<hr>
+<h2 id="h2-9">七、元方法论（可复用三条）</h2>
+<ol><li><strong>遇到"XX 好找/难找"的争论，先拆口径</strong>：本语料里"工科随便找"和"月薪 4k？"是同一场的对话——<strong>分歧不在事实，在"工作"这个词的定义</strong>。任何群体讨论里出现这种僵局，第一件事是追问定义。</li><li><strong>最高赞往往是极端案例，不是统计</strong>：285 赞那条是三个极端个例的并列。<strong>它的价值是标示分布尾部真实存在，不是标示概率。</strong></li><li><strong>"专业 &gt; 学历"这类判断要配反例一起读</strong>：它在本语料里是最高信号的判断（68 赞），但同一语料里也有"9 本央企很容易进" <code><a class="cite" id="cite-c318928195728" href="#src-c318928195728" title="c318928195728">源</a></code>、"985 硕考公基本都上岸" <code><a class="cite" id="cite-c318908978928-2" href="#src-c318908978928" title="c318908978928">源2</a></code>。<strong>规律是：专业决定下限，学历决定你能进入哪些筛子。</strong></li></ol>
+<hr>
+<h2 id="h2-10">附录：可复现命令</h2>
+<pre><code>python contrib/fetch_bilibili_comments.py BV1N1ai6cEE1 cases/10-就业幻象/raw.csv
+python scripts/prep.py cases/10-就业幻象/raw.csv cases/10-就业幻象/预处理产物
+python scripts/verify_citations.py "cases/10-就业幻象/《伪人横行·2k简历》评论深度指南.md" cases/10-就业幻象/raw.csv --field 评论ID</code></pre>
+<blockquote><strong>请人工核对关键结论</strong>：机验只能证明"引用的 ID 真实存在"，不能证明"我对原意的转述准确"。涉及你自身职业选择的判断，请回到原始评论与一手信息处核对。</blockquote>
+</article>
+<h2 id="sources">引用溯源</h2><p class="meta">点击正文中的「源」角标可跳到这里；点「返回正文」跳回原处。共 77 个被引用条目。</p><ol class="src-list"><li id="src-c318880795792"><div class="src-head"><span class="src-id">c318880795792</span><a class="src-back" href="#cite-c318880795792">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318928638544"><div class="src-head"><span class="src-id">c318928638544</span><a class="src-back" href="#cite-c318928638544">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318912080768"><div class="src-head"><span class="src-id">c318912080768</span><a class="src-back" href="#cite-c318912080768">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c315327135697"><div class="src-head"><span class="src-id">c315327135697</span><a class="src-back" href="#cite-c315327135697">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318877573104"><div class="src-head"><span class="src-id">c318877573104</span><a class="src-back" href="#cite-c318877573104">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318937883664"><div class="src-head"><span class="src-id">c318937883664</span><a class="src-back" href="#cite-c318937883664">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c315354037793"><div class="src-head"><span class="src-id">c315354037793</span><a class="src-back" href="#cite-c315354037793">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318906375136"><div class="src-head"><span class="src-id">c318906375136</span><a class="src-back" href="#cite-c318906375136">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318920847712"><div class="src-head"><span class="src-id">c318920847712</span><a class="src-back" href="#cite-c318920847712">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c315366278769"><div class="src-head"><span class="src-id">c315366278769</span><a class="src-back" href="#cite-c315366278769">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c315380681649"><div class="src-head"><span class="src-id">c315380681649</span><a class="src-back" href="#cite-c315380681649">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c315357714065"><div class="src-head"><span class="src-id">c315357714065</span><a class="src-back" href="#cite-c315357714065">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c315356785233"><div class="src-head"><span class="src-id">c315356785233</span><a class="src-back" href="#cite-c315356785233">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318925767504"><div class="src-head"><span class="src-id">c318925767504</span><a class="src-back" href="#cite-c318925767504">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318941811104"><div class="src-head"><span class="src-id">c318941811104</span><a class="src-back" href="#cite-c318941811104">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318938654912"><div class="src-head"><span class="src-id">c318938654912</span><a class="src-back" href="#cite-c318938654912">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318903914064"><div class="src-head"><span class="src-id">c318903914064</span><a class="src-back" href="#cite-c318903914064">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318877909008"><div class="src-head"><span class="src-id">c318877909008</span><a class="src-back" href="#cite-c318877909008">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318908244096"><div class="src-head"><span class="src-id">c318908244096</span><a class="src-back" href="#cite-c318908244096">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318905631808"><div class="src-head"><span class="src-id">c318905631808</span><a class="src-back" href="#cite-c318905631808">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c315372512129"><div class="src-head"><span class="src-id">c315372512129</span><a class="src-back" href="#cite-c315372512129">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318932240192"><div class="src-head"><span class="src-id">c318932240192</span><a class="src-back" href="#cite-c318932240192">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318904175600"><div class="src-head"><span class="src-id">c318904175600</span><a class="src-back" href="#cite-c318904175600">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c315348486945"><div class="src-head"><span class="src-id">c315348486945</span><a class="src-back" href="#cite-c315348486945">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318879901888"><div class="src-head"><span class="src-id">c318879901888</span><a class="src-back" href="#cite-c318879901888">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318913811232"><div class="src-head"><span class="src-id">c318913811232</span><a class="src-back" href="#cite-c318913811232">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318903042592"><div class="src-head"><span class="src-id">c318903042592</span><a class="src-back" href="#cite-c318903042592">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318908978928"><div class="src-head"><span class="src-id">c318908978928</span><a class="src-back" href="#cite-c318908978928">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c315379530033"><div class="src-head"><span class="src-id">c315379530033</span><a class="src-back" href="#cite-c315379530033">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c315355953857"><div class="src-head"><span class="src-id">c315355953857</span><a class="src-back" href="#cite-c315355953857">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c315356624801"><div class="src-head"><span class="src-id">c315356624801</span><a class="src-back" href="#cite-c315356624801">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318914868432"><div class="src-head"><span class="src-id">c318914868432</span><a class="src-back" href="#cite-c318914868432">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318907256528"><div class="src-head"><span class="src-id">c318907256528</span><a class="src-back" href="#cite-c318907256528">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318908716304"><div class="src-head"><span class="src-id">c318908716304</span><a class="src-back" href="#cite-c318908716304">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318910516160"><div class="src-head"><span class="src-id">c318910516160</span><a class="src-back" href="#cite-c318910516160">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318884437664"><div class="src-head"><span class="src-id">c318884437664</span><a class="src-back" href="#cite-c318884437664">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318899224848"><div class="src-head"><span class="src-id">c318899224848</span><a class="src-back" href="#cite-c318899224848">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318896516352"><div class="src-head"><span class="src-id">c318896516352</span><a class="src-back" href="#cite-c318896516352">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318944749648"><div class="src-head"><span class="src-id">c318944749648</span><a class="src-back" href="#cite-c318944749648">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318944828784"><div class="src-head"><span class="src-id">c318944828784</span><a class="src-back" href="#cite-c318944828784">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318944561728"><div class="src-head"><span class="src-id">c318944561728</span><a class="src-back" href="#cite-c318944561728">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c315379058641"><div class="src-head"><span class="src-id">c315379058641</span><a class="src-back" href="#cite-c315379058641">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c315382312865"><div class="src-head"><span class="src-id">c315382312865</span><a class="src-back" href="#cite-c315382312865">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318935175584"><div class="src-head"><span class="src-id">c318935175584</span><a class="src-back" href="#cite-c318935175584">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318926434528"><div class="src-head"><span class="src-id">c318926434528</span><a class="src-back" href="#cite-c318926434528">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318924657040"><div class="src-head"><span class="src-id">c318924657040</span><a class="src-back" href="#cite-c318924657040">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318920857024"><div class="src-head"><span class="src-id">c318920857024</span><a class="src-back" href="#cite-c318920857024">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318912260032"><div class="src-head"><span class="src-id">c318912260032</span><a class="src-back" href="#cite-c318912260032">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318920150064"><div class="src-head"><span class="src-id">c318920150064</span><a class="src-back" href="#cite-c318920150064">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318916355024"><div class="src-head"><span class="src-id">c318916355024</span><a class="src-back" href="#cite-c318916355024">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c315378527329"><div class="src-head"><span class="src-id">c315378527329</span><a class="src-back" href="#cite-c315378527329">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c315379939233"><div class="src-head"><span class="src-id">c315379939233</span><a class="src-back" href="#cite-c315379939233">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318900985808"><div class="src-head"><span class="src-id">c318900985808</span><a class="src-back" href="#cite-c318900985808">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318901553952"><div class="src-head"><span class="src-id">c318901553952</span><a class="src-back" href="#cite-c318901553952">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c315360164161"><div class="src-head"><span class="src-id">c315360164161</span><a class="src-back" href="#cite-c315360164161">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c315330776609"><div class="src-head"><span class="src-id">c315330776609</span><a class="src-back" href="#cite-c315330776609">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c315337675089"><div class="src-head"><span class="src-id">c315337675089</span><a class="src-back" href="#cite-c315337675089">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318922626992"><div class="src-head"><span class="src-id">c318922626992</span><a class="src-back" href="#cite-c318922626992">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318920648320"><div class="src-head"><span class="src-id">c318920648320</span><a class="src-back" href="#cite-c318920648320">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318922345744"><div class="src-head"><span class="src-id">c318922345744</span><a class="src-back" href="#cite-c318922345744">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c315345630257"><div class="src-head"><span class="src-id">c315345630257</span><a class="src-back" href="#cite-c315345630257">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318925322096"><div class="src-head"><span class="src-id">c318925322096</span><a class="src-back" href="#cite-c318925322096">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318919628288"><div class="src-head"><span class="src-id">c318919628288</span><a class="src-back" href="#cite-c318919628288">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318919983840"><div class="src-head"><span class="src-id">c318919983840</span><a class="src-back" href="#cite-c318919983840">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318920210624"><div class="src-head"><span class="src-id">c318920210624</span><a class="src-back" href="#cite-c318920210624">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318915789856"><div class="src-head"><span class="src-id">c318915789856</span><a class="src-back" href="#cite-c318915789856">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318907845152"><div class="src-head"><span class="src-id">c318907845152</span><a class="src-back" href="#cite-c318907845152">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318898632144"><div class="src-head"><span class="src-id">c318898632144</span><a class="src-back" href="#cite-c318898632144">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c315374347185"><div class="src-head"><span class="src-id">c315374347185</span><a class="src-back" href="#cite-c315374347185">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318909530176"><div class="src-head"><span class="src-id">c318909530176</span><a class="src-back" href="#cite-c318909530176">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318910344816"><div class="src-head"><span class="src-id">c318910344816</span><a class="src-back" href="#cite-c318910344816">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318929868672"><div class="src-head"><span class="src-id">c318929868672</span><a class="src-back" href="#cite-c318929868672">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318879203472"><div class="src-head"><span class="src-id">c318879203472</span><a class="src-back" href="#cite-c318879203472">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c315339153041"><div class="src-head"><span class="src-id">c315339153041</span><a class="src-back" href="#cite-c315339153041">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c315356201137"><div class="src-head"><span class="src-id">c315356201137</span><a class="src-back" href="#cite-c315356201137">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c315372374529"><div class="src-head"><span class="src-id">c315372374529</span><a class="src-back" href="#cite-c315372374529">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li><li id="src-c318928195728"><div class="src-head"><span class="src-id">c318928195728</span><a class="src-back" href="#cite-c318928195728">返回正文</a></div><p class="src-text src-miss">未提供语料 CSV，未挂载原句</p></li></ol>
+<footer>
+<span>comment-distillery · 带引用溯源的群体文本蒸馏</span>
+<a href="https://github.com/TrueFurina/comment-distillery">github.com/TrueFurina/comment-distillery</a>
+</footer>
+</main>
+</body>
+</html>
