@@ -46,6 +46,7 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 ├── scripts/emit_html.py                 （指南 Markdown → 自包含 HTML 报告；引用角标可点击跳附录原句）
 ├── scripts/make_skill_zip.py            （技能包**可复现** ZIP：两次打包 SHA-256 相同）
 ├── scripts/publish.py                   （多平台发布器 GitHub Pages/知乎/B站/CSDN；含 Cookie，**不进 exe**）
+├── scripts/apply_cookies.py             （发布前置：粘贴 Cookie 串→校验登录态→写本地 publish_config.local.json；密钥不入库）
 ├── scripts/check_rule_tags.py           （机验 SKILL.md 无「裸铁律」，含变异自验）
 ├── scripts/check_doc_consistency.py     （文档一致性机验：版本口径 / Release tag / 站点数字 / 锚点 / 中英对等 / 已证伪表述，含变异自验；同时取代了原先三处重复的「官网自检」内联实现）
 ├── scripts/verify_numbers.py            （数字机验：查"引用真但算错"——引用机验的盲区）
