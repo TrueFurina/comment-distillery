@@ -1,0 +1,15 @@
+# cookies_paste.txt 模板 —— 复制本文件为 cookies_paste.txt 后填写
+#
+# 取法（每个站点一次，得到的是标准 ; 分隔的完整 Cookie 头，含 HttpOnly 登录态）：
+#   DevTools → Network → 刷新该网站 → 点任意发往该域的请求 →
+#   Headers → 找 `Cookie:` 请求头 → 右键 Copy value → 整段粘到下面等号后面
+#
+# 注意：
+#   - 等号左边只能是 csdn / bilibili / zhihu 之一
+#   - 等号右边是一整串，中间用半角分号+空格分隔（; ），不要改成中文标点
+#   - 该文件已被 .gitignore 屏蔽，不会提交到仓库
+#   - CSDN 必须有 UserToken；B站 必须有 SESSDATA 和 bili_jct；知乎 必须有 z_c0
+
+csdn=
+bilibili=
+zhihu=

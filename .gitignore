@@ -79,6 +79,7 @@ golden/results/
 
 # ── 发布器本地配置（含平台 Cookie，绝不提交）──
 publish_config.local.json
+cookies_paste.txt
 
 # ── 自检/冒烟产物 ──
 # `--selftest-run` 早先把参数当输出目录，误传 BV 号就会在仓库根建出 `BV1xxxx/`。
