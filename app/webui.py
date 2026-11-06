@@ -1107,6 +1107,18 @@ class Handler(BaseHTTPRequestHandler):
             self._serve_file((q.get("path") or [""])[0], inline=False)
             return
 
+        if path == "/api/shutdown":
+            # GET 版：本机模式下用户可直接在地址栏访问关停 exe（公开/局域网禁停）。
+            if _PUBLIC or _LAN:
+                return self._err(403, "公开/局域网模式不允许远程关停")
+            try:
+                self._json({"ok": True, "msg": "服务即将退出"})
+                self.server._cd_stop.set()
+                self.server.shutdown()
+            except Exception as e:
+                return self._err(500, f"关闭失败：{e}")
+            return
+
         self._err(404, "未找到：" + path)
 
     def do_HEAD(self):

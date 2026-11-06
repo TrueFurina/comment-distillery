@@ -821,6 +821,29 @@ class TestShutdown(unittest.TestCase):
             except Exception:
                 pass
 
+    def test_shutdown_via_get(self):
+        """GET 版（地址栏可直接访问）同样能关停本机服务。"""
+        webui._PUBLIC = False
+        webui._LAN = False
+        webui._DEMO = False
+        webui._ACCESS_TOKEN = ""
+        srv, _url = webui.serve(port=0, open_browser=False, quiet=True)
+        base = f"http://127.0.0.1:{srv.server_address[1]}"
+        try:
+            with urllib.request.urlopen(base + "/api/shutdown", timeout=10) as r:
+                d = json.loads(r.read().decode("utf-8"))
+            self.assertTrue(d.get("ok"), d)
+            self.assertTrue(srv._cd_stop.is_set())
+            import time
+            time.sleep(0.3)
+            with self.assertRaises(OSError):
+                urllib.request.urlopen(base + "/api/hello", timeout=3)
+        finally:
+            try:
+                srv.shutdown()
+            except Exception:
+                pass
+
     def test_shutdown_forbidden_in_public_demo(self):
         """公开 demo 模式：gate 放行，但 /api/shutdown 必须被 403 拒掉（不能远程关停）。"""
         webui._PUBLIC = False
