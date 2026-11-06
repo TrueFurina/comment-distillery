@@ -55,7 +55,12 @@ ROUND2 = """# 测试指南
 """
 
 
-def fake_chat(messages, cfg, on_delta=None, should_stop=None, retries=2):
+def fake_chat(messages, cfg, on_delta=None, should_stop=None, retries=2,
+              usage_out=None):
+    if usage_out is not None:
+        # 回填 token 用量，走通"成本可观测"钩子路径（非计费）。
+        usage_out.update({"prompt_tokens": 1, "completion_tokens": 1,
+                          "total_tokens": 2})
     prompt = messages[-1]["content"]
     if "不存在" in prompt and "校对员" in (messages[0].get("content") or ""):
         return ROUND2
