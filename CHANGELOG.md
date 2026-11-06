@@ -32,6 +32,10 @@
   ts/model/phase/token/chars 追加到用户配置目录 `llm-usage.jsonl`
   （本地台账，可观测非计费，不估单价不代付）。Web「🤖 AI 设置」页新增
   **本机用量**显示（累计调用次数 + token），`/api/llm` 返回 `usage` 摘要。
+- **exe 优雅退出**：`app/webui.py` 新增 `POST / GET /api/shutdown`（本机模式），
+  置位 `_cd_stop` 信号并干净 `shutdown()`，进程可优雅结束——windowed exe
+  （无控制台）不再只能靠任务管理器强杀；公开 / 局域网模式禁停（403）。
+  地址栏直接访问 `http://127.0.0.1:8756/api/shutdown` 即可关停。
 
 ### Fixed
 - `tests/e2e_web.py`：`main()` 内局部 `import os` 遮蔽模块级，导致
