@@ -789,5 +789,63 @@ class TestCancelAndCallbacks(WebUIBase):
         self.assertIn("async function stop(a)", body)
 
 
+class TestShutdown(unittest.TestCase):
+    """/api/shutdown 优雅退出：本机能关停并退出进程；公开/局域网模式禁停。"""
+
+    def test_shutdown_stops_server(self):
+        webui._PUBLIC = False
+        webui._LAN = False
+        webui._DEMO = False
+        webui._ACCESS_TOKEN = ""
+        srv, _url = webui.serve(port=0, open_browser=False, quiet=True)
+        base = f"http://127.0.0.1:{srv.server_address[1]}"
+        try:
+            # 先确认服务活着
+            with urllib.request.urlopen(base + "/api/hello", timeout=10) as r:
+                self.assertEqual(r.status, 200)
+            req = urllib.request.Request(
+                base + "/api/shutdown", data=b"{}",
+                headers={"Content-Type": "application/json"}, method="POST")
+            with urllib.request.urlopen(req, timeout=10) as r:
+                d = json.loads(r.read().decode("utf-8"))
+            self.assertTrue(d.get("ok"), d)
+            self.assertTrue(srv._cd_stop.is_set(), "关停信号必须已置位")
+            import time
+            time.sleep(0.3)
+            # 服务已停止：再连应被拒
+            with self.assertRaises(OSError):
+                urllib.request.urlopen(base + "/api/hello", timeout=3)
+        finally:
+            try:
+                srv.shutdown()
+            except Exception:
+                pass
+
+    def test_shutdown_forbidden_in_public_demo(self):
+        """公开 demo 模式：gate 放行，但 /api/shutdown 必须被 403 拒掉（不能远程关停）。"""
+        webui._PUBLIC = False
+        webui._LAN = False
+        srv, _url = webui.serve(port=0, open_browser=False, quiet=True)
+        base = f"http://127.0.0.1:{srv.server_address[1]}"
+        webui._PUBLIC = True
+        webui._LAN = False
+        webui._DEMO = True
+        webui._ACCESS_TOKEN = ""
+        try:
+            req = urllib.request.Request(
+                base + "/api/shutdown", data=b"{}",
+                headers={"Content-Type": "application/json"}, method="POST")
+            with self.assertRaises(urllib.error.HTTPError) as cm:
+                urllib.request.urlopen(req, timeout=10)
+            self.assertEqual(cm.exception.code, 403)
+        finally:
+            webui._PUBLIC = False
+            webui._DEMO = False
+            try:
+                srv.shutdown()
+            except Exception:
+                pass
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -1117,7 +1117,7 @@ class Handler(BaseHTTPRequestHandler):
             return
         u = urllib.parse.urlsplit(self.path)
         if u.path not in ("/api/start", "/api/cancel", "/api/upload",
-                          "/api/llm", "/api/llm/test"):
+                          "/api/llm", "/api/llm/test", "/api/shutdown"):
             return self._err(404, "未找到：" + u.path)
         try:
             n = int(self.headers.get("Content-Length") or 0)
@@ -1156,6 +1156,18 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(_llm_probe())
             except Exception as e:
                 return self._json({"ok": False, "error": str(e)[:400]})
+
+        if u.path == "/api/shutdown":
+            # 本机模式的关停通道：公开/局域网（含托管 demo）禁止远程关停。
+            if _PUBLIC or _LAN:
+                return self._err(403, "公开/局域网模式不允许远程关停")
+            try:
+                self._json({"ok": True, "msg": "服务即将退出"})
+                self.server._cd_stop.set()
+                self.server.shutdown()
+            except Exception as e:
+                return self._err(500, f"关闭失败：{e}")
+            return
 
         action = body.get("action")
         if action not in _ACTIONS:
@@ -1298,6 +1310,8 @@ def serve(port=DEFAULT_PORT, open_browser=True, host="127.0.0.1", quiet=False):
         srv = build_server(host, 0)          # 端口被占就交给系统分配
     real = srv.server_address[1]
     url = f"http://127.0.0.1:{real}/"
+    # 优雅退出信号：/api/shutdown 置位后，main() 的主循环随之退出，进程可干净结束。
+    srv._cd_stop = threading.Event()
     t = threading.Thread(target=srv.serve_forever, daemon=True)
     t.start()
     if not quiet:
@@ -1394,8 +1408,9 @@ def main(argv=None):
 
     srv, url = serve(args.port, open_browser=not args.no_browser, host=args.host)
     try:
-        while True:
-            time.sleep(0.5)
+        # 主循环等待优雅退出信号（/api/shutdown 或 Ctrl+C），进程可干净结束。
+        while not srv._cd_stop.wait(0.5):
+            pass
     except KeyboardInterrupt:
         print("\n已停止。")
     finally:
