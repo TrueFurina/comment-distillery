@@ -225,6 +225,36 @@ def _corpus_stats(corpus_csv):
         return f"（统计生成失败：{e}）"
 
 
+def citation_concentration(counts, total_ids=None, top=3):
+    """从引用计数算出集中度信号（供机验提示，**不阻断交付**）。
+
+    背景：引用 ID 全真，AI 仍可能"反复用同几条"（实测见过单条被引 5 次），
+    读者以为覆盖很广，实际论证集中在一小撮评论上。这是引用机验的盲区。
+
+    返回 {"top": [(id, n)], "max_uses": int, "top_ratio": float, "note": str}
+    - max_uses：被引最多的那条的次数
+    - top_ratio：top-N 条占全部引用次数的比例（0~1）
+    - note：一句话说明，供日志/前端展示；空串 = 无异常
+    """
+    if not counts:
+        return {"top": [], "max_uses": 0, "top_ratio": 0.0, "note": ""}
+    total = sum(counts.values())
+    ranked = sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))
+    topk = ranked[:top]
+    top_uses = sum(n for _, n in topk)
+    top_ratio = (top_uses / total) if total else 0.0
+    max_uses = topk[0][1]
+    note = ""
+    # 阈值说明（宁可漏报不可误报）：
+    #  - 单条被引 >= 5 次（上一轮实测：DeepSeek 单条 c274897629073 被引 5 次），或
+    #  - top-3 占引用次数 > 70%（且总引用 >= 10，样本太小不算）
+    if max_uses >= 5 or (total >= 10 and top_ratio > 0.70):
+        note = (f"引用集中在 {len(topk)} 条上：{', '.join(i for i, _ in topk)} "
+                f"共 {top_uses}/{total} 次（top-3 占 {top_ratio:.0%}）——"
+                "不是错误，但请确认论证没绕着一小撮评论打转")
+    return {"top": topk, "max_uses": max_uses, "top_ratio": top_ratio, "note": note}
+
+
 def distill(pack_dir, cfg, on_log=None, on_delta=None, should_stop=None,
             verify_fn=None, max_rounds=None):
     """跑完"AI 写指南 → 机验 → 修复 → 再验"。
@@ -249,8 +279,17 @@ def distill(pack_dir, cfg, on_log=None, on_delta=None, should_stop=None,
         f"（方法论来自包内 SKILL.md，{len(_read(pack / 'SKILL.md')) if (pack / 'SKILL.md').exists() else 0} 字符）…")
     if on_delta:
         on_delta("\n--- AI 输出开始 ---\n")
+    usage = {}
+    prompt_text = _read(pack / "corpus_ccf.csv") if (pack / "corpus_ccf.csv").exists() else ""
     text = llm_mod.chat(build_prompt(pack, cfg), cfg,
-                        on_delta=on_delta, should_stop=should_stop)
+                        on_delta=on_delta, should_stop=should_stop,
+                        usage_out=usage)
+    llm_mod.log_usage({"model": cfg.get("model", ""), "phase": "draft",
+                       "prompt_chars": len(prompt_text),
+                       "completion_chars": len(text),
+                       "prompt_tokens": usage.get("prompt_tokens"),
+                       "completion_tokens": usage.get("completion_tokens"),
+                       "total_tokens": usage.get("total_tokens")})
     text = llm_mod.strip_fence(text)
     if on_delta:
         on_delta("\n--- AI 输出结束 ---\n")
@@ -276,6 +315,10 @@ def distill(pack_dir, cfg, on_log=None, on_delta=None, should_stop=None,
             num_err = str(v.get("num_error") or "").strip()
             nums_ok = ("num_issues" in v) and not num_err
             numfails = list(v.get("num_issues") or [])
+            # 引用集中度（质量信号，不阻断交付）：ID 全真仍可能反复用同几条。
+            conc = citation_concentration(v.get("counts") or {})
+            if conc.get("note"):
+                log("   ℹ️ " + conc["note"])
             if not bad and not numfails:
                 if nums_ok:
                     log(f"   ✅ 通过：{cited} 条引用，幻觉 0；数字复算无误")
@@ -293,8 +336,16 @@ def distill(pack_dir, cfg, on_log=None, on_delta=None, should_stop=None,
             if rnd == rounds_cap:
                 break
             log(f"   让 AI 修第 {rnd} 轮（只改引用/数字，不动观点）…")
+            usage2 = {}
             fixed = llm_mod.chat(repair_prompt(text, bad, corpus, numfails), cfg,
-                                 on_delta=None, should_stop=should_stop)
+                                 on_delta=None, should_stop=should_stop,
+                                 usage_out=usage2)
+            llm_mod.log_usage({"model": cfg.get("model", ""), "phase": f"repair{rnd}",
+                               "prompt_chars": len(text),
+                               "completion_chars": len(fixed),
+                               "prompt_tokens": usage2.get("prompt_tokens"),
+                               "completion_tokens": usage2.get("completion_tokens"),
+                               "total_tokens": usage2.get("total_tokens")})
             text = llm_mod.strip_fence(fixed)
             guide.write_text(text, encoding="utf-8")
             log(f"   修正稿 {len(text)} 字符，已覆盖 {guide.name}")

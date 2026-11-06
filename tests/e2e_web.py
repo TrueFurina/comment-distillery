@@ -12,6 +12,7 @@
 
 import json
 import sys
+import os
 import tempfile
 import threading
 import time
@@ -22,6 +23,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from app import webui  # noqa: E402
+from app import llm  # noqa: E402
 
 FAKE_PORT = 8911
 
@@ -78,15 +80,16 @@ def main():
     srv, port = start_app()
     tmp = Path(tempfile.mkdtemp(prefix="cd-e2e-"))
 
-    # ⚠️ 把 app_root 指向临时目录：**绝不能**让测试写用户真实的 llm.json。
+    # ⚠️ 把 AI 配置目录注入临时目录：**绝不能**让测试写用户真实的 llm.json。
     # 踩过一次：测试末尾调 save_llm_config("","","") 清空配置，把用户刚填好的
     # base_url/model 一起抹掉了（Key 还在，于是变成一份半残配置）。
-    # 隔离后，测试怎么写都只影响 tmp。
-    _real_root = webui.core.app_root
+    # 配置位置已改为"跟用户走"（用户配置目录），因此用 CD_LLM_CONFIG_DIR 注入
+    # 临时目录来隔离，而不是 patch app_root（app_root 已不参与配置定位）。
+    _saved_cfg_dir = os.environ.get(llm.CONFIG_DIR_ENV)
     _test_root = Path(tempfile.mkdtemp(prefix="cd-e2e-root-"))
-    webui.core.app_root = lambda: _test_root
+    os.environ[llm.CONFIG_DIR_ENV] = str(_test_root)
     try:
-        # 指向假网关（写在临时 root 里）
+        # 指向假网关（写在临时配置目录里）
         webui.core.save_llm_config(f"http://127.0.0.1:{FAKE_PORT}/v1",
                                    "sk-e2e-fake", "fake-model")
 
@@ -134,7 +137,6 @@ def main():
 
         print("⑥ 未配置 AI 时应退化，不许报错")
         webui.core.save_llm_config("", "", "")   # 清空
-        import os
         for k in ("CD_LLM_API_KEY", "CD_LLM_MODEL", "CD_LLM_BASE_URL"):
             os.environ.pop(k, None)
         job2 = post(port, "/api/start", {"action": "auto", "params": {
@@ -148,7 +150,10 @@ def main():
         ck(Path(r2.get("kv", {}).get("包目录", "")).is_dir(), "包仍然产出")
         print("      next =", (r2.get("next") or "")[:100])
     finally:
-        webui.core.app_root = _real_root
+        if _saved_cfg_dir is None:
+            os.environ.pop(llm.CONFIG_DIR_ENV, None)
+        else:
+            os.environ[llm.CONFIG_DIR_ENV] = _saved_cfg_dir
         try:
             srv.shutdown()
             fake.shutdown()

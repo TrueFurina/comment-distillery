@@ -15,7 +15,14 @@
 配置来源（优先级从高到低）：
 
 1. 环境变量  CD_LLM_BASE_URL / CD_LLM_API_KEY / CD_LLM_MODEL  ← 唯一的环境变量契约
-2. 配置文件  <程序目录>/llm.json（明文，仅本机；已被 .gitignore 忽略，不上库）
+2. 配置文件  llm.json（明文，仅本机；已被 .gitignore 忽略，不上库）
+   - **位置跟用户走，不跟程序走**：优先 `<用户配置目录>/comment-distillery/llm.json`
+     （Windows 为 `%APPDATA%`，其他平台为 `$XDG_CONFIG_HOME` 或 `~/.config`）。
+   - 旧版本把它写在 `<程序目录>/llm.json`（源码=仓库根、exe=exe 目录，两处会割裂，
+     换目录/换机器就丢）。现在读取时**回退**到程序目录以兼容存量；写入**总是**
+     落到用户配置目录（保存即完成迁移，无需手工搬）。
+   - 测试隔离注入点：`CD_LLM_CONFIG_DIR` 环境变量指向临时目录时优先使用，
+     避免测试读写用户真实配置。
 3. 都没有 → is_configured() 为 False，一键流程停在蒸馏包
 
 **为什么不自动读取 `DEEPSEEK_API_KEY` / `OPENAI_API_KEY` 这类"通用"环境变量？**
@@ -48,6 +55,27 @@ from pathlib import Path
 
 CONFIG_NAME = "llm.json"
 
+# 配置目录的环境变量注入点：测试用它隔离到临时目录，避免读写用户真实配置。
+CONFIG_DIR_ENV = "CD_LLM_CONFIG_DIR"
+
+
+def user_config_dir() -> Path:
+    """用户级配置目录（跟人走，不跟程序走）。
+
+    - Windows：%APPDATA%/comment-distillery（如 C:/Users/x/AppData/Roaming/...）
+    - 其他：$XDG_CONFIG_HOME/comment-distillery 或 ~/.config/comment-distillery
+    这是 XDG 惯例；项目纪律"产物不写用户主目录"只管**产物**（default_outdir），
+    配置与产物是两回事——配置是用户私产（含 Key），理应跟用户走。
+    """
+    env = os.environ.get(CONFIG_DIR_ENV)
+    if env:
+        return Path(env)
+    if os.name == "nt":
+        base = os.environ.get("APPDATA") or str(Path.home() / "AppData" / "Roaming")
+    else:
+        base = os.environ.get("XDG_CONFIG_HOME") or str(Path.home() / ".config")
+    return Path(base) / "comment-distillery"
+
 # 默认值只在与"用户已配置"同时成立时才生效
 DEFAULTS = {
     # base_url / model 这里故意留空：只有真正来自 env / 文件时才算"已填"，
@@ -65,7 +93,24 @@ _REQUIRED = ("base_url", "api_key", "model")
 
 
 def config_path(app_root) -> Path:
-    return Path(app_root) / CONFIG_NAME
+    """**读取**用的配置路径：优先用户配置目录，回退程序目录（兼容存量）。
+
+    旧版本把 llm.json 写在程序目录（源码=仓库根、exe=exe 目录），两处割裂。
+    这里保留回退，让换了目录/机器的存量配置仍能被读到；写入一律走
+    write_config_path()（用户配置目录），保存即完成迁移。
+    """
+    user = user_config_dir() / CONFIG_NAME
+    if user.exists():
+        return user
+    legacy = Path(app_root) / CONFIG_NAME
+    if legacy.exists():
+        return legacy
+    return user
+
+
+def write_config_path() -> Path:
+    """**写入**用的配置路径：始终用户配置目录（跟人走）。"""
+    return user_config_dir() / CONFIG_NAME
 
 
 def redact(text) -> str:
@@ -163,11 +208,14 @@ def _https_opener(no_proxy=False):
     return o
 
 
-def chat(messages, cfg, on_delta=None, should_stop=None, retries=2):
+def chat(messages, cfg, on_delta=None, should_stop=None, retries=2,
+         usage_out=None):
     """调用 /chat/completions，返回纯文本。
 
     on_delta(str) 提供时走流式（SSE），否则一次性返回。
     should_stop() 返回 True 时中止。
+    usage_out(dict) 提供时，非流式响应里的 usage 字段（token 用量）会填充进去，
+    供调用方做成本台账；流式多数网关不返回 usage，此时保持空 dict。
     """
     if not cfg.get("configured"):
         raise RuntimeError("未配置 AI：" + describe(cfg))
@@ -202,6 +250,10 @@ def chat(messages, cfg, on_delta=None, should_stop=None, retries=2):
                 if on_delta:
                     return _read_stream(r, on_delta, should_stop)
                 data = json.loads(r.read().decode("utf-8", "replace"))
+                if usage_out is not None:
+                    u = data.get("usage") if isinstance(data, dict) else None
+                    if isinstance(u, dict):
+                        usage_out.update(u)
                 return _text_of(data)
         except urllib.error.HTTPError as e:
             detail = ""
@@ -279,3 +331,58 @@ def strip_fence(text: str) -> str:
     if m:
         return m.group(1).strip() + "\n"
     return s
+
+
+# ────────────────────────── 成本台账（可观测） ──────────────────────────
+
+USAGE_NAME = "llm-usage.jsonl"
+
+
+def usage_path() -> Path:
+    """用法台账位置：与配置同目录（跟用户走），追加式 JSONL。"""
+    return user_config_dir() / USAGE_NAME
+
+
+def log_usage(entry, usage_path_override=None):
+    """追加一条用法记录（不覆盖）。entry 为 dict；失败静默（台账不阻断蒸馏）。
+
+    记录字段：ts / model / phase / prompt_chars / completion_chars /
+              prompt_tokens / completion_tokens / total_tokens
+    台账是**本地可观测**，不是计费依据——工具不代付、不估单价。
+    """
+    try:
+        import time as _time
+        p = Path(usage_path_override) if usage_path_override else usage_path()
+        p.parent.mkdir(parents=True, exist_ok=True)
+        e = dict(entry)
+        e.setdefault("ts", _time.strftime("%Y-%m-%dT%H:%M:%S"))
+        with open(p, "a", encoding="utf-8") as f:
+            f.write(json.dumps(e, ensure_ascii=False) + "\n")
+    except Exception:
+        pass
+
+
+def usage_summary(usage_path_override=None) -> dict:
+    """汇总台账：次数 / 累计 token / 累计字符（读不到或为空返回零值）。"""
+    p = Path(usage_path_override) if usage_path_override else usage_path()
+    n = p_tok = c_tok = p_chars = c_chars = 0
+    if p.exists():
+        try:
+            for line in p.read_text(encoding="utf-8").splitlines():
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    e = json.loads(line)
+                except Exception:
+                    continue
+                n += 1
+                p_tok += int(e.get("prompt_tokens") or 0)
+                c_tok += int(e.get("completion_tokens") or 0)
+                p_chars += int(e.get("prompt_chars") or 0)
+                c_chars += int(e.get("completion_chars") or 0)
+        except Exception:
+            pass
+    return {"calls": n, "prompt_tokens": p_tok, "completion_tokens": c_tok,
+            "total_tokens": p_tok + c_tok,
+            "prompt_chars": p_chars, "completion_chars": c_chars}

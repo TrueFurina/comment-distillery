@@ -29,6 +29,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from app import webui  # noqa: E402
+from app import llm  # noqa: E402
 
 
 def _raw(port, raw: bytes, timeout=6):
@@ -68,11 +69,13 @@ class WebUIBase(unittest.TestCase):
         # 隔离 AI 配置：这些测试跑的是"没配 AI"的路径。
         # 不隔离的话，本机一旦填了真 Key，一键就会真的去调模型，
         # 测试从 10 秒变成几分钟，还会因超时假报失败——实测踩过。
-        # 用 app_root 打补丁而不是删用户的 llm.json：
-        # 删文件属于破坏用户数据，改路径指向只是本进程内的临时视图。
-        cls._real_app_root = webui.core.app_root
-        cls._stub_root = Path(tempfile.mkdtemp(prefix="cd-stub-root-"))
-        webui.core.app_root = lambda: cls._stub_root
+        # 配置位置已改为"跟用户走"（用户配置目录），因此用 CD_LLM_CONFIG_DIR
+        # 注入临时目录来隔离，而不是 patch app_root（app_root 已不参与配置定位）。
+        # 注入环境变量而不是删用户的 llm.json：删文件属于破坏用户数据，
+        # 改环境变量只影响本进程内的临时视图。
+        cls._config_dir = Path(tempfile.mkdtemp(prefix="cd-config-test-"))
+        cls._saved_cfg_dir = os.environ.get(llm.CONFIG_DIR_ENV)
+        os.environ[llm.CONFIG_DIR_ENV] = str(cls._config_dir)
 
         # 隔离 AI 相关环境变量：这些测试跑的是"没配 AI"的路径。
         # 本机若漂着 DEEPSEEK_API_KEY / OPENAI_API_KEY / CD_LLM_*（用户真 Key 或 CI 注入），
@@ -88,12 +91,15 @@ class WebUIBase(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         cls.srv.shutdown()
-        webui.core.app_root = cls._real_app_root
         for k, v in cls._saved_ai_env.items():
             if v is None:
                 os.environ.pop(k, None)
             else:
                 os.environ[k] = v
+        if cls._saved_cfg_dir is None:
+            os.environ.pop(llm.CONFIG_DIR_ENV, None)
+        else:
+            os.environ[llm.CONFIG_DIR_ENV] = cls._saved_cfg_dir
         shutil.rmtree(cls.tmp, ignore_errors=True)
 
     # ── 小工具 ──

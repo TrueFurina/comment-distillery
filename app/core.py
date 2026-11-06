@@ -225,14 +225,19 @@ def llm_status():
 
 
 def save_llm_config(base_url, api_key, model, timeout=600, max_corpus_chars=120000):
-    """写 <程序目录>/llm.json。api_key 传空串表示"不改动已存的 Key"。"""
+    """写**用户配置目录**/llm.json（跟人走）。api_key 传空串表示"不改动已存的 Key"。
+
+    读取时若命中程序目录的旧文件，这里会先把它并入再写到新位置——保存即迁移。
+    """
     import json as _json
     from . import llm as _llm
-    p = _llm.config_path(app_root())
+    # 先读旧值：优先用户目录；没有则读程序目录（存量），保证迁移不丢 Key。
+    p_old = _llm.config_path(app_root())
+    p = _llm.write_config_path()
     old = {}
-    if p.exists():
+    if p_old.exists():
         try:
-            old = _json.loads(p.read_text(encoding="utf-8")) or {}
+            old = _json.loads(p_old.read_text(encoding="utf-8")) or {}
         except Exception:
             old = {}
     cfg = dict(old)
@@ -244,6 +249,7 @@ def save_llm_config(base_url, api_key, model, timeout=600, max_corpus_chars=1200
     cfg["timeout"] = int(timeout or 600)
     cfg["max_corpus_chars"] = int(max_corpus_chars or 120000)
     cfg.setdefault("max_repair_rounds", 2)
+    p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(_json.dumps(cfg, ensure_ascii=False, indent=2), encoding="utf-8")
     try:
         os.chmod(p, 0o600)     # 尽力而为：Windows 上是 no-op，POSIX 上收权限
@@ -269,7 +275,9 @@ def distill_package(pack_dir, on_log=None, on_delta=None, should_stop=None,
     def _verify(guide_path, corpus_csv):
         r = verify_guide(guide_path, [corpus_csv])
         out = {"cited": len(r.get("cited") or []),
-               "bad": list(r.get("bad") or []), "num_issues": []}
+               "bad": list(r.get("bad") or []),
+               "num_issues": [],
+               "counts": r.get("counts") or {}}
         # 数字机验：抓"引用全真但数字算错"——那是最像可信的错误。
         try:
             n = _verify_num_mod()

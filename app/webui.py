@@ -1083,6 +1083,12 @@ class Handler(BaseHTTPRequestHandler):
             if _PUBLIC:
                 st = dict(st, configured=False,
                           describe="公开模式不读取本机 AI 配置")
+            # 用量摘要（可观测，非计费）：随配置一起返回，AI 设置页展示。
+            try:
+                from app import llm as _llm_mod
+                st["usage"] = _llm_mod.usage_summary()
+            except Exception:
+                st["usage"] = {}
             self._json(st)
             return
 
