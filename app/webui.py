@@ -1112,8 +1112,9 @@ class Handler(BaseHTTPRequestHandler):
             if _PUBLIC or _LAN:
                 return self._err(403, "公开/局域网模式不允许远程关停")
             try:
-                self._json({"ok": True, "msg": "服务即将退出"})
+                # 先置位信号再发响应：客户端收到 ok 时关停信号必已置位，无竞态。
                 self.server._cd_stop.set()
+                self._json({"ok": True, "msg": "服务即将退出"})
                 self.server.shutdown()
             except Exception as e:
                 return self._err(500, f"关闭失败：{e}")
@@ -1174,8 +1175,9 @@ class Handler(BaseHTTPRequestHandler):
             if _PUBLIC or _LAN:
                 return self._err(403, "公开/局域网模式不允许远程关停")
             try:
-                self._json({"ok": True, "msg": "服务即将退出"})
+                # 先置位信号再发响应：客户端收到 ok 时关停信号必已置位，无竞态。
                 self.server._cd_stop.set()
+                self._json({"ok": True, "msg": "服务即将退出"})
                 self.server.shutdown()
             except Exception as e:
                 return self._err(500, f"关闭失败：{e}")
