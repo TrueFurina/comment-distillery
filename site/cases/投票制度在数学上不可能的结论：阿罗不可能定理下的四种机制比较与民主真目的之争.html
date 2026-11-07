@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>投票制度在数学上不可能的结论：阿罗不可能定理下的四种机制比较与民主真目的之争</title>
+<style>
+:root{color-scheme:light;--paper:#fff;--canvas:#f2f5f7;--ink:#3c4650;--heading:#20272e;
+--muted:#6b7683;--accent:#0f6e56;--accent-wash:#e7f4ef;--line:#e6eaee;--warn:#a32d2d;
+--warn-wash:#fbe9e9;--code:#f5f7f9}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:20px}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--canvas);color:var(--ink);
+font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",
+"Segoe UI",sans-serif;font-size:17px;line-height:1.85;-webkit-font-smoothing:antialiased}
+.paper{max-width:860px;margin:24px auto;padding:44px 46px 28px;background:var(--paper);
+border-radius:8px;box-shadow:0 8px 30px rgba(37,56,75,.05);overflow-wrap:anywhere}
+h1{font-size:32px;line-height:1.45;font-weight:700;color:var(--heading);margin:0 0 6px}
+h2{font-size:24px;line-height:1.55;font-weight:700;color:var(--heading);
+margin:44px 0 18px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+h3{font-size:19px;line-height:1.6;font-weight:700;color:var(--heading);margin:30px 0 10px}
+h4{font-size:17px;font-weight:700;color:var(--heading);margin:22px 0 8px}
+p{margin:0 0 16px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+strong{font-weight:700;color:var(--heading)}
+code{font-family:ui-monospace,Consolas,"Cascadia Code",monospace;font-size:.86em;
+background:var(--code);border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:8px;
+padding:14px 16px;overflow-x:auto;margin:0 0 18px}
+pre code{background:none;border:none;padding:0}
+blockquote{margin:0 0 16px;padding:2px 0 2px 18px;border-left:3px solid var(--accent);
+color:var(--ink)}
+ul,ol{margin:0 0 16px;padding-left:26px}
+li{margin:4px 0}
+table{width:100%;border-collapse:collapse;font-size:15px;line-height:1.7;margin:0 0 20px}
+th,td{border-bottom:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}
+th{background:var(--accent-wash);color:var(--heading);font-weight:700}
+hr{border:none;border-top:1px solid var(--line);margin:32px 0}
+.brand{font-size:12px;letter-spacing:2px;color:var(--muted);font-weight:700;margin-bottom:14px}
+.subtitle{font-size:20px;color:var(--muted);margin:0 0 14px}
+.lead{font-size:17px;line-height:1.9;margin:0 0 12px}
+.meta{font-size:12.5px;color:var(--muted);margin:0;line-height:1.7}
+.trustbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:22px 0 4px;
+padding:12px 16px;border-radius:8px;font-size:13.5px;font-weight:700;
+background:var(--accent-wash);border:1px solid var(--accent);color:var(--accent)}
+.trustbar.bad{background:var(--warn-wash);border-color:var(--warn);color:var(--warn)}
+.trustbar.warn{background:#fdf6e6;border-color:#c99a2e;color:#8a6412}
+.trustbar .n{font-size:17px;font-variant-numeric:tabular-nums}
+.cite{display:inline-block;font-size:11px;font-weight:700;line-height:1.5;vertical-align:2px;
+margin:0 1px;padding:0 5px;border-radius:4px;background:var(--accent-wash);
+border:1px solid var(--accent);color:var(--accent);white-space:nowrap}
+.cite:hover{background:var(--accent);color:#fff;text-decoration:none}
+.toc{background:#f7f9fa;border:1px solid var(--line);border-radius:8px;padding:16px 20px;
+margin:26px 0 4px}
+.toc h4{margin:0 0 8px;font-size:13px;letter-spacing:1px;color:var(--muted)}
+.toc ul{margin:0;padding-left:0;list-style:none;font-size:14.5px}
+.toc li{margin:3px 0}
+.src-list{list-style:none;margin:0 0 18px;padding:0}
+.src-list li{border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin:0 0 10px;
+background:#fcfdfd;scroll-margin-top:20px}
+.src-list li:target{border-color:var(--accent);background:var(--accent-wash)}
+.src-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;margin-bottom:4px}
+.src-id{font-family:ui-monospace,Consolas,monospace;font-size:13px;font-weight:700;
+color:var(--accent)}
+.src-meta{font-size:12px;color:var(--muted)}
+.src-back{font-size:12px;margin-left:auto}
+.src-text{margin:0;font-size:15.5px;line-height:1.75;color:var(--ink)}
+.src-miss{color:var(--warn);font-weight:700}
+footer{border-top:1px solid var(--line);margin-top:40px;padding-top:16px;font-size:12.5px;
+color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 12px;justify-content:space-between}
+@media(max-width:720px){.paper{margin:0;border-radius:0;padding:28px 20px 20px}
+body{font-size:16.5px}h1{font-size:26px}h2{font-size:21px}}
+@media print{body{background:#fff}.paper{margin:0 auto;box-shadow:none;max-width:none}
+.toc,.src-back{display:none}
+h2,h3{break-after:avoid}blockquote,.src-list li,table{break-inside:avoid}}
+</style>
+</head>
+<body>
+<main class="paper">
+<header class="intro">
+<div class="brand">COMMENT-DISTILLERY</div>
+<h1>投票制度在数学上不可能的结论：阿罗不可能定理下的四种机制比较与民主真目的之争</h1>
+<p class="subtitle">B站评论区深度蒸馏报告 · 6201 条语料</p>
+
+<p class="meta">来源：<code>投票制度在数学上不可能的结论：阿罗不可能定理下的四种机制比较与民主真目的之争.md</code> · 语料 6,201 条 · 生成于 2026-11-06</p>
+</header>
+<div class="trustbar "><span class="n">57</span> 条引用 · 机验通过 · 差集 <span class="n">0</span><span style="font-weight:400">（语料 ID 全集 6201）</span></div>
+<nav class="toc"><h4>目录</h4><ul class="toc-list"><li><a href="#h2-1">合规与边界（先读）</a></li><li><a href="#h2-2">一、开场结论（先给答案）</a></li><li><a href="#h2-3">二、认知框架：把这场争论拆成三个被混淆的层面</a></li><li><a href="#h2-4">三、共识区：被普遍点头的几件事</a></li><li><a href="#h2-5">四、争议与反例对冲（关键章）</a></li><li><a href="#h2-6">五、被高赞掩盖的真信号（低权重长文区）</a></li><li><a href="#h2-7">六、行动清单（按角色分组，可直接照做）</a></li><li><a href="#h2-8">七、盲区诚实说明（四类偏差）</a></li><li><a href="#h2-9">八、精华句（可直接引用）</a></li><li><a href="#h2-10">九、元方法论（金矿机制与可复用 SOP）</a></li><li><a href="#h2-11">十、方法与边界（本指南怎么来的）</a></li></ul></nav>
+<article>
+<blockquote>本指南由 comment-distillery 按 <code>SKILL.md</code> 方法论，对一部 B站转载的英文数学科普视频（原题 *Why Democracy Is Mathematically Impossible*，转载加"投票"二字）评论区蒸馏而成。去噪后 6201 条（一级 2260 / 楼中楼 3941）。<br>引用格式：每条带数据的结论后附 <code>源:ID|权重N|层级</code> 形式的角标（ID 取自语料 <code>corpus_ccf.csv</code>），可点击溯源。<br><strong>为合规，本指南不出现任何发言者昵称/@账号，引用一律以语料 ID 指代。</strong></blockquote>
+<h2 id="h2-1">合规与边界（先读）</h2>
+<ul><li><strong>用途限制</strong>：仅限个人学习研究；不用于商业舆情监控或批量用户画像。</li><li><strong>著作权</strong>：原始评论归原作者与平台所有，本指南仅为观点提炼，不二次分发原始语料。</li><li><strong>隐私</strong>：产出中不出现可识别个人身份的信息（账号、姓名、位置）；引用以 ID 指代，不暴露发言者。</li><li><strong>语料域</strong>：B站评论区（本流水线已验证域之一）；但单视频评论仍有幸存者/平台/算法/时间四类偏差（见文末盲区章）。</li></ul>
+<hr>
+<h2 id="h2-2">一、开场结论（先给答案）</h2>
+<p>这条视频的真正命题，是<strong>用社会选择理论的数学结论（阿罗不可能定理及其延伸）去证明"经投票加总偏好无法像个体一样自洽"</strong>，而不是证明"民主作为一个政治理想是谎言"。但转载标题把"民主"和"投票"焊死，评论区因此裂解成三派：</p>
+<ol><li><strong>数学派（最接近视频本意）</strong>：承认绝对/完美民主在数学上不可实现，但这是"圆画不圆"的问题，不是"民主该被丢弃"的理由<a class="cite" id="cite-c243933864001" href="#src-c243933864001" title="c243933864001 · 权重255 · 一级">源</a><a class="cite" id="cite-c269369946976" href="#src-c269369946976" title="c269369946976 · 权重97 · 一级">源</a>。</li><li><strong>辩题派（高赞反方）</strong>：认为标题偷换概念——把"赢家通吃的选票制度"说成"民主"，把"民主=选举"当成了不言自明的前提<a class="cite" id="cite-c243782621569" href="#src-c243782621569" title="c243782621569 · 权重53 · 一级">源</a><a class="cite" id="cite-c243476113088" href="#src-c243476113088" title="c243476113088 · 权重44 · 一级">源</a><a class="cite" id="cite-c243334419121" href="#src-c243334419121" title="c243334419121 · 权重601 · 一级">源</a>。</li><li><strong>现实派</strong>：指出投票制的数学缺陷只是最表层，真正让民主变质的，是信息垄断、金元政治与选民被裹挟<a class="cite" id="cite-c243575290401" href="#src-c243575290401" title="c243575290401 · 权重270 · 一级">源</a><a class="cite" id="cite-c244281426416" href="#src-c244281426416" title="c244281426416 · 权重222 · 一级">源</a>。</li></ol>
+<p>跨越三派的窄共识只有两条：<strong>第一，"绝对/完美民主不可实现"是评论区几乎无人反对的命题</strong><a class="cite" id="cite-c243338395681" href="#src-c243338395681" title="c243338395681 · 权重43 · 一级">源</a><a class="cite" id="cite-c245870914625" href="#src-c245870914625" title="c245870914625 · 权重60 · 一级">源</a>；<strong>第二，"投票是寻找一个最不坏的结果"而非"选出完美领导者"</strong><a class="cite" id="cite-c243951997408" href="#src-c243951997408" title="c243951997408 · 权重120 · 一级">源</a><a class="cite" id="cite-c243535919856" href="#src-c243535919856" title="c243535919856 · 权重46 · 一级">源</a>。</p>
+<hr>
+<h2 id="h2-3">二、认知框架：把这场争论拆成三个被混淆的层面</h2>
+<p>评论区的混乱，根源在于三个不同层面被揉成一团：</p>
+<ul><li><strong>层面 A · 数学层面</strong>：选举/计票机制能否无偏地加总个体偏好？阿罗不可能定理说，在满足一系列"显然合理"的公理下，不存在同时满足的装置，除独裁外<a class="cite" id="cite-c243509955888" href="#src-c243509955888" title="c243509955888 · 权重94 · 一级">源</a><a class="cite" id="cite-c243485731856" href="#src-c243485731856" title="c243485731856 · 权重39 · 回复">源</a>。这是视频真正证明的东西<a class="cite" id="cite-c243512098368" href="#src-c243512098368" title="c243512098368 · 权重52 · 一级">源</a><a class="cite" id="cite-c243807409057" href="#src-c243807409057" title="c243807409057 · 权重73 · 一级">源</a><a class="cite" id="cite-c269369946976-2" href="#src-c269369946976" title="c269369946976 · 权重97 · 一级">源2</a>。</li><li><strong>层面 B · 政治哲学层面</strong>：民主的核心究竟是"权力来自人民"，还是"票选"本身？大量评论强调：<strong>民主≠投票</strong>，投票只是其中一种形式，核心是权力制衡与授权<a class="cite" id="cite-c243450075809" href="#src-c243450075809" title="c243450075809 · 权重168 · 一级">源</a><a class="cite" id="cite-c243862265649" href="#src-c243862265649" title="c243862265649 · 权重77 · 一级">源</a><a class="cite" id="cite-c243379716305" href="#src-c243379716305" title="c243379716305 · 权重335 · 一级">源</a><a class="cite" id="cite-c243471487584" href="#src-c243471487584" title="c243471487584 · 权重55 · 一级">源</a><a class="cite" id="cite-c243330014369" href="#src-c243330014369" title="c243330014369 · 权重101 · 一级">源</a>。</li><li><strong>层面 C · 现实政治层面</strong>：即便机制完美，选民是否理性、信息是否对称、是否被资本与媒体操纵？这是视频几乎没碰、评论区补得最狠的一块<a class="cite" id="cite-c244281426416-2" href="#src-c244281426416" title="c244281426416 · 权重222 · 一级">源2</a><a class="cite" id="cite-c244140223232" href="#src-c244140223232" title="c244140223232 · 权重298 · 回复">源</a><a class="cite" id="cite-c243562099376" href="#src-c243562099376" title="c243562099376 · 权重53 · 回复">源</a>。</li></ul>
+<p>把 A 的结论直接用于否定 B/C，是标题党与反标题党之争的核心。一个被反复引用的反驳：<strong>视频暗含"民主=选举"的前提，却没先证明这个前提成立</strong><a class="cite" id="cite-c243476113088-2" href="#src-c243476113088" title="c243476113088 · 权重44 · 一级">源2</a><a class="cite" id="cite-c243507105344" href="#src-c243507105344" title="c243507105344 · 权重39 · 一级">源</a>。</p>
+<hr>
+<h2 id="h2-4">三、共识区：被普遍点头的几件事</h2>
+<h3>3.1 "椭圆不是完美的圆，但三角形不可能是圆的"</h3>
+<p>这是评论区最高赞级别的共同隐喻：承认投票制不完美，但拒绝因此把"不完美"等同于"不如无"。权重最高的几条都在这条线上——"椭圆不是完美的圆形，但三角形不可能是圆的"<a class="cite" id="cite-c243589660016" href="#src-c243589660016" title="c243589660016 · 权重2293 · 一级">源</a>；"你可以说椭圆不是圆，但万万不能说正方形是圆"<a class="cite" id="cite-c243453100257" href="#src-c243453100257" title="c243453100257 · 权重314 · 一级">源</a>；"椭圆不完美，但如果你不能证明三角形比椭圆更接近圆，你就没理由觉得三角形更优越"<a class="cite" id="cite-c244318696592" href="#src-c244318696592" title="c244318696592 · 权重365 · 一级">源</a>；"八边形起码比三角形更像圆"<a class="cite" id="cite-c257502855664" href="#src-c257502855664" title="c257502855664 · 权重47 · 一级">源</a>。这条隐喻几乎成了整场讨论的"最大公约数"。</p>
+<h3>3.2 投票是"最不坏"而非"最好"</h3>
+<p>"投票是寻找一个最不坏的结果"<a class="cite" id="cite-c243951997408-2" href="#src-c243951997408" title="c243951997408 · 权重120 · 一级">源2</a>；"不管怎么用数学设计，你都回避不了投票之前——观点如何输出、竞选资金、媒体、演讲，注定无法避免金元政治"<a class="cite" id="cite-c244281426416-3" href="#src-c244281426416" title="c244281426416 · 权重222 · 一级">源3</a>；"没有完美的圆形，所以汽车轮胎都用三角形得了"<a class="cite" id="cite-c244076612368" href="#src-c244076612368" title="c244076612368 · 权重223 · 一级">源</a>——这些高赞句共同表达了：机制有缺陷，但现实中没有更优的普适替代。</p>
+<h3>3.3 "重要的不是投票，而是制约权力"</h3>
+<p>"重要的不是投票而是制约权力"<a class="cite" id="cite-c244190311760" href="#src-c244190311760" title="c244190311760 · 权重783 · 一级">源</a>；"那么如何制约制约权力的权力？"<a class="cite" id="cite-c244274056193" href="#src-c244274056193" title="c244274056193 · 权重149 · 回复">源</a>；"现代民主解决的是权力来自于谁的问题……票选其实就是现代意义上的祭'天'仪式，完成民众对政治家的授权过程"<a class="cite" id="cite-c243530551152" href="#src-c243530551152" title="c243530551152 · 权重103 · 一级">源</a>。这条把讨论从"票怎么投"拉回"权从哪来、如何约束"。</p>
+<h3>3.4 阿罗式缺陷是真实的，且不止一种机制</h3>
+<p>"排序投票的制度必然存在阿罗不可能定理指出的问题，但有趣的是没有哪个国家的顶层选举尝试用赞成投票法修正"；另有低赞长文系统列出四种机制（多数制/排名选择/孔多塞/博尔达）各自的优缺点，并指出排名选择+可转移票（RCV/STV）是更优组合<a class="cite" id="cite-c270214752496" href="#src-c270214752496" title="c270214752496 · 权重2 · 一级">源</a>。</p>
+<hr>
+<h2 id="h2-5">四、争议与反例对冲（关键章）</h2>
+<blockquote>本章刻意站在"视频本意派"对面，把反对声音摆全——因为高赞几乎一边倒地批标题党，省略反方会失真。</blockquote>
+<h3>4.1 反方一：标题党，偷换概念</h3>
+<p>"这个标题起的有点大了，应该叫投票选拔的公平性和有效性研究，视频作者并没有质疑普选，只是质疑实现普选的手段"<a class="cite" id="cite-c243472454800" href="#src-c243472454800" title="c243472454800 · 权重8210 · 一级">源</a>；"民主不等于投票。这个视频确实是标题党"<a class="cite" id="cite-c243334419121-2" href="#src-c243334419121" title="c243334419121 · 权重601 · 一级">源2</a>；"偷换概念了不是？原文说'从数学角度民主或许无法实现'，标题变成'数学证明投票无法实现民主'"<a class="cite" id="cite-c243782621569-2" href="#src-c243782621569" title="c243782621569 · 权重53 · 一级">源2</a>；甚至有人认为视频"建立了一个（错误的）假设即选民代表是独裁者"<a class="cite" id="cite-c243507105344-2" href="#src-c243507105344" title="c243507105344 · 权重39 · 一级">源2</a>。</p>
+<h3>4.2 反方二：真正让民主变质的不是数学，是信息/资本/盲从</h3>
+<p>"我觉得最大的问题不是投票制本身，而是信息渠道的问题……真正让其变质的还是信息的垄断，使群众无法做出相对公平的决定"<a class="cite" id="cite-c243575290401-2" href="#src-c243575290401" title="c243575290401 · 权重270 · 一级">源2</a>；"选举的范围扩大就必须借助媒体工具。一旦借助媒体，就会变成财团广告，谁钱多谁赢面就大"<a class="cite" id="cite-c244140223232-2" href="#src-c244140223232" title="c244140223232 · 权重298 · 回复">源2</a>；"投票制度最失败的地方是选民容易被骗被带节奏，选出来的人不能真正管理国家"<a class="cite" id="cite-c243954457872" href="#src-c243954457872" title="c243954457872 · 权重150 · 一级">源</a>；"媒体的力量、大众舆论可以轻易裹挟一个人的投票选择……人人都有从众性"<a class="cite" id="cite-c243562099376-2" href="#src-c243562099376" title="c243562099376 · 权重53 · 回复">源2</a>；还有人把脱欧解读为"少数人推动造成的多数暴政，背后只需花点钱宣传欧盟的坏处"<a class="cite" id="cite-c244485954561" href="#src-c244485954561" title="c244485954561 · 权重55 · 回复">源</a>。</p>
+<h3>4.3 反方三：脱欧案例——"投票前先搜一下什么是欧盟"</h3>
+<p>全评论区最高赞（8498）就是一句："英国公投脱欧那年搜索量第一的是什么是欧盟"<a class="cite" id="cite-c243855721040" href="#src-c243855721040" title="c243855721040 · 权重8498 · 一级">源</a>。大量回复把它当作"选民盲目"的证据：有人认为"投票前了解一下什么是欧盟，这样恰恰说明投票不是乱投"<a class="cite" id="cite-c243826989857" href="#src-c243826989857" title="c243826989857 · 权重1632 · 回复">源</a>；也有人反过来说"用你的话来说，恰恰说明投票是乱投"<a class="cite" id="cite-c243887235345" href="#src-c243887235345" title="c243887235345 · 权重960 · 回复">源</a>；还有人指出"英国大多数人受的教育都没告诉他们什么是欧盟"<a class="cite" id="cite-c243895787233" href="#src-c243895787233" title="c243895787233 · 权重678 · 回复">源</a>。但反方也指出这本身是段子：2016 年英国 Google 热搜第一是 Brexit 而非欧盟，且"5% 的人搜索已是巨大流量"——"Google UK top trending 2016：Euro 2016、Pokemon Go……其实根本没有欧盟，这只是个段子"<a class="cite" id="cite-c244033171793" href="#src-c244033171793" title="c244033171793 · 权重47 · 回复">源</a>。</p>
+<h3>4.4 反方四："西式民主"失败 ≠ "民主"失败</h3>
+<p>"我们得先定义民主制度和西式德谟克拉西制度……现实的实践已经证明：西式德谟克拉西是失败的，但不证明民主制度是失败的"<a class="cite" id="cite-c243708900833" href="#src-c243708900833" title="c243708900833 · 权重45 · 一级">源</a>；"西式民主也只是在他们社会下比较优质的解决方案，毕竟经过充分磨合；看看南美、南亚、非洲，一步从酋邦到西式民主有多不适应"<a class="cite" id="cite-c243337723825" href="#src-c243337723825" title="c243337723825 · 权重50 · 一级">源</a>；高中课本视角则说"只有社会主义民主才是真正的民主"<a class="cite" id="cite-c243997345456" href="#src-c243997345456" title="c243997345456 · 权重77 · 一级">源</a>。</p>
+<h3>4.5 反方五：民众"选人"≠民众"做主"</h3>
+<p>"投票制度本身就是一种寡头制度，而非真正的民主本身，人民只有投票的权利没有真正管理国家的权利"<a class="cite" id="cite-c243355731329" href="#src-c243355731329" title="c243355731329 · 权重54 · 一级">源</a>；"民众选人来做主不等于民众自己做主"<a class="cite" id="cite-c243862265649-2" href="#src-c243862265649" title="c243862265649 · 权重77 · 一级">源2</a>；"除非全民教育达到极高程度，否则哪怕没有任何暗箱操作，结果也会变得荒谬"<a class="cite" id="cite-c244775040000" href="#src-c244775040000" title="c244775040000 · 权重43 · 一级">源</a>。</p>
+<h3>4.6 对冲结论</h3>
+<p>两边都成立的部分：<strong>投票制的数学缺陷是真实的</strong>，但"无法完美"≠"无意义"。最稳健的立场是——"投票无法实现完全民主，不代表民主是个谎言，是因为完美的东西本来就不存在……最正确的方法不是视投票为骗局，而是想办法找到更好的方法去替代投票，同时综合考虑可行性、成本、民众智力"<a class="cite" id="cite-c243422628545" href="#src-c243422628545" title="c243422628545 · 权重682 · 一级">源</a>；以及"追求民主投票机制是否完美意义不大……关注重点应是该制度是否较为完美"，并具体推荐澳大利亚排序优选制、新西兰 MMP<a class="cite" id="cite-c243349043617" href="#src-c243349043617" title="c243349043617 · 权重46 · 一级">源</a>。</p>
+<hr>
+<h2 id="h2-6">五、被高赞掩盖的真信号（低权重长文区）</h2>
+<p>头部被"椭圆/三角形"段子和脱欧梗占据，几条<strong>低赞但信息密度极高</strong>的长文才是真洞察：</p>
+<ul><li><strong>四种投票制的系统比较</strong>（权重 2）：逐条列出多数制、排名选择、孔多塞、博尔达的优缺点，并指出排名选择+可转移票（RCV/STV）是更优组合——"比天蝎座心宿二能提供更真实的民主反馈"——该长文对四种机制的系统比较与 RCV/STV 推荐<a class="cite" id="cite-c270214752496-2" href="#src-c270214752496" title="c270214752496 · 权重2 · 一级">源2</a>。</li><li><strong>民主的真实目的</strong>（权重 5）：民主政治只有一个目的——"避免政治动荡和内战"，它不是筛选机制，而是"创造一种能被一切社会成分承认的游戏规则"，如同棋局规则<a class="cite" id="cite-c244897111584" href="#src-c244897111584" title="c244897111584 · 权重5 · 回复">源</a>。</li><li><strong>马克思主义民主观</strong>（权重 3）：从《黑格尔法哲学批判》到《哥达纲领批判》梳理"人民是国家的主体""民主的彻底实现就是共产主义"——该长文对马克思主义民主观的历史梳理<a class="cite" id="cite-c266294402016" href="#src-c266294402016" title="c266294402016 · 权重3 · 回复">源</a>；同主题另一长文<a class="cite" id="cite-c266294416688" href="#src-c266294416688" title="c266294416688 · 权重1 · 回复">源</a>。</li><li><strong>阿罗定理的务实解读</strong>（权重 3）：与其否定民主合法性，不如说它"揭示彻底的集体主义与公意的不可能性"，启发应是"在 demo 社会中建立强大的共识而非否定 demo 本身"<a class="cite" id="cite-c244509205265" href="#src-c244509205265" title="c244509205265 · 权重3 · 一级">源</a>。</li><li><strong>投票制七项缺点清单</strong>（权重 1）：信息不对称、群体思维、短期导向、参与度、极端意见、操控风险、候选人质量——该长文列举的投票制七类缺陷<a class="cite" id="cite-c244059544592" href="#src-c244059544592" title="c244059544592 · 权重1 · 一级">源</a>。</li><li><strong>精英政治与民粹的张力</strong>（权重 0）：精英自肥是精英主义解决不了的问题，而对精英主义问题的解法"往往要在某种程度上诉诸民粹主义"，并引李光耀对精英制的反思<a class="cite" id="cite-c251430416160" href="#src-c251430416160" title="c251430416160 · 权重0 · 回复">源</a>。</li></ul>
+<hr>
+<h2 id="h2-7">六、行动清单（按角色分组，可直接照做）</h2>
+<p><strong>如果你是观众/选民：</strong></p>
+<ol><li>先分清三层议题：视频证明的是"计票机制的数学缺陷"，不是"民主该被否定"<a class="cite" id="cite-c269369946976-3" href="#src-c269369946976" title="c269369946976 · 权重97 · 一级">源3</a>。</li><li>评判前先定义"民主"：是"权力来自人民"还是"票选"？两者常被混用<a class="cite" id="cite-c243352023537" href="#src-c243352023537" title="c243352023537 · 权重46 · 一级">源</a>。</li><li>提升媒介素养，警惕被带节奏：媒体与舆论能轻易裹挟投票选择<a class="cite" id="cite-c243562099376-3" href="#src-c243562099376" title="c243562099376 · 权重53 · 回复">源3</a>。</li><li>关注"制约权力"与"信息透明"胜过纠结票怎么投<a class="cite" id="cite-c244190311760-2" href="#src-c244190311760" title="c244190311760 · 权重783 · 一级">源2</a>。</li></ol>
+<p><strong>如果你关心制度改进：</strong></p>
+<ol><li>研究已被提出的部分修正：赞成投票（approval voting）可打破阿罗部分论证，排序/可转移票（RCV/STV）更优<a class="cite" id="cite-c243509955888-2" href="#src-c243509955888" title="c243509955888 · 权重94 · 一级">源2</a>——同主题长文<a class="cite" id="cite-c245372475153" href="#src-c245372475153" title="c245372475153 · 权重3 · 回复">源</a>。</li><li>参考已验证的成熟机制：澳大利亚排序优选制、新西兰 MMP<a class="cite" id="cite-c243349043617-2" href="#src-c243349043617" title="c243349043617 · 权重46 · 一级">源2</a>。</li></ol>
+<hr>
+<h2 id="h2-8">七、盲区诚实说明（四类偏差）</h2>
+<ul><li><strong>幸存者偏差</strong>：主动评论者是"有强烈立场/被标题激起"的群体，沉默多数既不赞同也不反对，不能据此推断全体观众。且评论区高度"键政化"——"科普数学的视频，评论区 90% 的人都在讨论政治"<a class="cite" id="cite-c243363896593" href="#src-c243363896593" title="c243363896593 · 权重121 · 一级">源</a>。</li><li><strong>平台偏差</strong>：B站用户以年轻人、高学历、键政兴趣者为主，样本不具全人口代表性；有评论直言"还好这个视频是英语的，不然评论区一定不会这么温柔"<a class="cite" id="cite-c247136601425" href="#src-c247136601425" title="c247136601425 · 权重50 · 一级">源</a>。</li><li><strong>算法/权重偏差（高赞 ≠ 高信号）</strong>：本语料最高赞是脱欧梗（8498）与"椭圆/三角形"段子（2293），而真正的方法论长文权重仅 0–5。若只看头部会误判"评论区在玩梗"，读长尾才看见严肃探讨。</li><li><strong>时间偏差</strong>：单视频、单时点（2024 年 8 月原视频发布后）的评论，未覆盖该议题长期演变；脱欧案例的时效性强。</li><li><strong>域验证状态</strong>：B站评论为本流水线已验证域，但本指南仅基于单一视频 6201 条，结论为该视频评论区的局部共识，不宜外推为普适政治结论。</li></ul>
+<hr>
+<h2 id="h2-9">八、精华句（可直接引用）</h2>
+<ul><li>"椭圆不是完美的圆形，但三角形不可能是圆的。"<a class="cite" id="cite-c243589660016-2" href="#src-c243589660016" title="c243589660016 · 权重2293 · 一级">源2</a></li><li>"投票是寻找一个最不坏的结果。"<a class="cite" id="cite-c243951997408-3" href="#src-c243951997408" title="c243951997408 · 权重120 · 一级">源3</a></li><li>"重要的不是投票而是制约权力。"<a class="cite" id="cite-c244190311760-3" href="#src-c244190311760" title="c244190311760 · 权重783 · 一级">源3</a></li><li>"民主的核心是权力制衡，投票只是一种形式。"<a class="cite" id="cite-c243471487584-2" href="#src-c243471487584" title="c243471487584 · 权重55 · 一级">源2</a></li><li>"绝对民主无法实现，但相对民主摆在眼前。"<a class="cite" id="cite-c243933864001-2" href="#src-c243933864001" title="c243933864001 · 权重255 · 一级">源2</a></li></ul>
+<hr>
+<h2 id="h2-10">九、元方法论（金矿机制与可复用 SOP）</h2>
+<p><strong>本次验证到的规律：</strong></p>
+<ul><li><strong>头部通读 + 长尾精读有效</strong>：最高赞被脱欧梗与段子占据，真正的方法论（四种机制比较、马克思主义梳理、阿罗务实解读）权重仅 0–5，印证"高赞 ≠ 高信号"。</li><li><strong>楼中楼是辩论层</strong>：本语料大量反驳与补充全在回复层（如脱欧梗的正方反方、民主≠投票的论证），只看一级评论会漏掉全部反例。</li><li><strong>反例必须主动开采</strong>：高赞几乎一边倒批标题党，若不刻意去低赞长文找，会写成"评论区一致批评"，失真。</li><li><strong>可复用 SOP</strong>：① 按权重降序读头部锚定情绪基调；② 专门筛低权重长文捞真信号；③ 换到回复层找反例；④ 每条带数据结论标引用；⑤ 跑引用机验差集为空再交付。</li></ul>
+<hr>
+<h2 id="h2-11">十、方法与边界（本指南怎么来的）</h2>
+<ul><li>输入：B站视频评论区，去噪后 6201 条（一级 2260 / 楼中楼 3941），<code>dup_dropped=0</code>（无重复行，规模数字可信）。</li><li>方法：两段式采样——头部（权重≥8，1079 条）通读 + 低权重长文（权重≤8 且 ≥120 字，490 条候选取前 45）精读，按"共识/争议/反例"聚类。<strong>未逐条读完剩余约 500 条权重 8–37 的中段评论</strong>，但已覆盖全部主要议题与最高赞。</li><li>引用：所有 <code>源:ID|权重|层级</code> 的 ID 取自 <code>corpus_ccf.csv</code>，已通过 <code>verify_citations.py</code> 机验（差集为空）。</li><li><strong>请人工核对关键结论</strong>：尤其涉及政治制度的价值判断（如"西式民主失败""民主=寡头"）属观点交锋，本指南不作为政治立场定论；阿罗不可能定理等数学结论建议以原视频与原始文献为准。</li></ul>
+</article>
+<h2 id="sources">引用溯源</h2><p class="meta">点击正文中的「源」角标可跳到这里；点「返回正文」跳回原处。共 57 个被引用条目。</p><ol class="src-list"><li id="src-c243933864001"><div class="src-head"><span class="src-id">c243933864001</span><span class="src-meta">权重 255 · 一级</span><a class="src-back" href="#cite-c243933864001">返回正文</a></div><p class="src-text">绝对民主几乎是无法实现的，但是相对民主是摆在眼前的</p></li><li id="src-c269369946976"><div class="src-head"><span class="src-id">c269369946976</span><span class="src-meta">权重 97 · 一级</span><a class="src-back" href="#cite-c269369946976">返回正文</a></div><p class="src-text">可是这个视频讨论的不是民主好不好，而是投票制度存在的缺陷。你们到底在说什么🤔</p></li><li id="src-c243782621569"><div class="src-head"><span class="src-id">c243782621569</span><span class="src-meta">权重 53 · 一级</span><a class="src-back" href="#cite-c243782621569">返回正文</a></div><p class="src-text">偷换概念了不是？原文说的是“从数学的角度说，民主或许是无法实现的”，结果视频标题就变成了数学证明投票无法实现民主……</p></li><li id="src-c243476113088"><div class="src-head"><span class="src-id">c243476113088</span><span class="src-meta">权重 44 · 一级</span><a class="src-back" href="#cite-c243476113088">返回正文</a></div><p class="src-text">牛的。这个视频最牛的地方就是先暗含一个前提：民主=选举；再告诉你选举是怎么怎么的，得出民主是不可能实现的。问题是民主=选举是不是成立是不是得先打个问号。</p></li><li id="src-c243334419121"><div class="src-head"><span class="src-id">c243334419121</span><span class="src-meta">权重 601 · 一级</span><a class="src-back" href="#cite-c243334419121">返回正文</a></div><p class="src-text">民主不等于投票。这个视频确实是标题党。</p></li><li id="src-c243575290401"><div class="src-head"><span class="src-id">c243575290401</span><span class="src-meta">权重 270 · 一级</span><a class="src-back" href="#cite-c243575290401">返回正文</a></div><p class="src-text">我觉得最大的问题不是投票制本身，而是信息渠道的问题，投票制度本身确实是相对民主的提现，或者说形式，真正让其变质的还是信息的垄断，使群众的无法做出相对公平的决定。</p></li><li id="src-c244281426416"><div class="src-head"><span class="src-id">c244281426416</span><span class="src-meta">权重 222 · 一级</span><a class="src-back" href="#cite-c244281426416">返回正文</a></div><p class="src-text">无论你怎么用数学方法来设计这套投票制度，你都回避一个最关键的问题，那就是投票是最后一个阶段，在此之前的阶段呢？例如如何将你的观点向你的选民输出？为了输出你的观点你不得不筹集各种竞选资金、打广告、上媒体、开演讲等等，也就注定了无法避免金元政治带来的弊端，整个社会为了一场选举耗费大量的资源，选举出来的却是代表一部分人的利益。</p></li><li id="src-c243338395681"><div class="src-head"><span class="src-id">c243338395681</span><span class="src-meta">权重 43 · 一级</span><a class="src-back" href="#cite-c243338395681">返回正文</a></div><p class="src-text">但相对民主是可以实现的
+这个世界没有绝对，任何事情都是相对的</p></li><li id="src-c245870914625"><div class="src-head"><span class="src-id">c245870914625</span><span class="src-meta">权重 60 · 一级</span><a class="src-back" href="#cite-c245870914625">返回正文</a></div><p class="src-text">公投本来在政治学上就不是实现民主的最好途径，只是人类现在最流行的方式罢了。往更深了说，民主本身也是个相对概念，虽然这是对人性的肯定，但在很多现实情况下对社会的意义是消极的。用数学方法来证伪民主这件事本身没什么意义，因为即使是最理想主义的政治学家也从来不追求完美的民主，而是一种民主、法制和国家的平衡状态。</p></li><li id="src-c243951997408"><div class="src-head"><span class="src-id">c243951997408</span><span class="src-meta">权重 120 · 一级</span><a class="src-back" href="#cite-c243951997408">返回正文</a></div><p class="src-text">投票是寻找一个最不坏的结果</p></li><li id="src-c243535919856"><div class="src-head"><span class="src-id">c243535919856</span><span class="src-meta">权重 46 · 一级</span><a class="src-back" href="#cite-c243535919856">返回正文</a></div><p class="src-text">首先少数服从多数就是不公平，同时多数也不一定就是最合理的。管理本质上是反人类的，对于整体最合理的管理一定不是最舒适的。大选上的拉票是让大多数高兴，不是给予最合理的政策。乌合之众就是最现实的写照。</p></li><li id="src-c243509955888"><div class="src-head"><span class="src-id">c243509955888</span><span class="src-meta">权重 94 · 一级</span><a class="src-back" href="#cite-c243509955888">返回正文</a></div><p class="src-text">排序投票的制度必然存在阿罗不可能定理指出的问题，但真正有趣的是没有哪个国家的顶层选举尝试用赞成投票法修正这个问题，而且，显然不是因为他们傻。</p></li><li id="src-c243485731856"><div class="src-head"><span class="src-id">c243485731856</span><span class="src-meta">权重 39 · 回复</span><a class="src-back" href="#cite-c243485731856">返回正文</a></div><p class="src-text">你说的打分也就是波答投票，和排序一样，都被阿罗不可能定理囊括在内。只要符合阿罗不可能定理的假定都存在阿罗悖论</p></li><li id="src-c243512098368"><div class="src-head"><span class="src-id">c243512098368</span><span class="src-meta">权重 52 · 一级</span><a class="src-back" href="#cite-c243512098368">返回正文</a></div><p class="src-text">视频讨论的数学问题：选举制度能否正确反应参与者的喜好。
+评论区见证人讨论的问题：政府人员的产生机制是否需要/应该反映民众的偏好。
+前者只考虑选举这一过程的数学模型，后者除了考虑本国/地区的政治需求，还要考虑国与国之间的（敌对）关系，两个问题可以说没有任何共通点</p></li><li id="src-c243807409057"><div class="src-head"><span class="src-id">c243807409057</span><span class="src-meta">权重 73 · 一级</span><a class="src-back" href="#cite-c243807409057">返回正文</a></div><p class="src-text">我感觉倒不如说：通过数学的方法，我们证明了投票这一形式的民主有其原则上的，不可避免的弊端。是不够完善的制度。</p></li><li id="src-c243450075809"><div class="src-head"><span class="src-id">c243450075809</span><span class="src-meta">权重 168 · 一级</span><a class="src-back" href="#cite-c243450075809">返回正文</a></div><p class="src-text">民主的核心理念是权力来自于人民，而投票只是其中一种途径，不投票也能实现民主。重点在于公民在日常生活中对政治的参与、讨论和影响。</p></li><li id="src-c243862265649"><div class="src-head"><span class="src-id">c243862265649</span><span class="src-meta">权重 77 · 一级</span><a class="src-back" href="#cite-c243862265649">返回正文</a></div><p class="src-text">民众选人来做主不等于民众自己做主</p></li><li id="src-c243379716305"><div class="src-head"><span class="src-id">c243379716305</span><span class="src-meta">权重 335 · 一级</span><a class="src-back" href="#cite-c243379716305">返回正文</a></div><p class="src-text">民主可不只有投票，但票选是根基，因为票选才会有民主的其他种种制度和现象</p></li><li id="src-c243471487584"><div class="src-head"><span class="src-id">c243471487584</span><span class="src-meta">权重 55 · 一级</span><a class="src-back" href="#cite-c243471487584">返回正文</a></div><p class="src-text">绝对民主无法实现，但相对的民主却可以实现。且民主的核心是权力制衡，投票只是一种形式。</p></li><li id="src-c243330014369"><div class="src-head"><span class="src-id">c243330014369</span><span class="src-meta">权重 101 · 一级</span><a class="src-back" href="#cite-c243330014369">返回正文</a></div><p class="src-text">说实话选举跟民主有点混为一谈了，按理来说政治上的民主主的应该是行政政策，而政客只需要忠实的执行就行了，所以选政客应该以能力和实绩为中心，就像民主是老板，而政客是员工，只是下达命令而已，所以美式选举叫民主我个人认为挺别扭，政客带着自己的政策和党派，普通人只能在这之中选或自己成为政客（可能根本无法成功），这可能无法完全代表普通人的民意</p></li><li id="src-c244140223232"><div class="src-head"><span class="src-id">c244140223232</span><span class="src-meta">权重 298 · 回复</span><a class="src-back" href="#cite-c244140223232">返回正文</a></div><p class="src-text">选举的范围扩大 就必须借助媒体工具。一旦借助媒体，就会变成财团广告，谁钱多，谁赢面就大。</p></li><li id="src-c243562099376"><div class="src-head"><span class="src-id">c243562099376</span><span class="src-meta">权重 53 · 回复</span><a class="src-back" href="#cite-c243562099376">返回正文</a></div><p class="src-text">你有个前提就是所以人都是理性人，都选择自己利益的代言人，但实际上媒体的力量，大众舆论的力量可以轻易裹挟一个人的投票选择。你可以看看沉默的螺旋，人人都有从众性，不愿意跟别人不一样</p></li><li id="src-c243507105344"><div class="src-head"><span class="src-id">c243507105344</span><span class="src-meta">权重 39 · 一级</span><a class="src-back" href="#cite-c243507105344">返回正文</a></div><p class="src-text">标题党，视频说的根本不是“民主”，而是赢家通吃的选票制度
+整个视频建立了一个(错误的)假设，即“选民代表是dictator”。该结构还严重依赖于英语世界制度的观点，而忽略了世界其他地区经过验证的更好的民主范例。更何况选民代表不可能成为任何类型的dictator，因为他们没有掌握任何可以命令别人的权力，这个假设不仅是错误的，而且故意扩大了个人在整个庞大体系下的作用
+由于正治与所有人的生活高度相关，因此它的实践非常困难也理应慎重，但这不是用数学模型来简单模拟并标题上否定“民主”的理由
+这种类型的视频越来越成为Veritasium视频的标准，与事物的科学方法几乎没有共同之处，但更多的是对某些随机事实的过度关注，这样可以得到油管更好的算法推…</p></li><li id="src-c243589660016"><div class="src-head"><span class="src-id">c243589660016</span><span class="src-meta">权重 2293 · 一级</span><a class="src-back" href="#cite-c243589660016">返回正文</a></div><p class="src-text">椭圆不是完美的圆形，但三角形不可能是圆的</p></li><li id="src-c243453100257"><div class="src-head"><span class="src-id">c243453100257</span><span class="src-meta">权重 314 · 一级</span><a class="src-back" href="#cite-c243453100257">返回正文</a></div><p class="src-text">你可以说椭圆不是圆，但万万不能说正方形是圆</p></li><li id="src-c244318696592"><div class="src-head"><span class="src-id">c244318696592</span><span class="src-meta">权重 365 · 一级</span><a class="src-back" href="#cite-c244318696592">返回正文</a></div><p class="src-text">椭圆不完美，但如果你不能证明三角形比椭圆更接近圆，你就没理由会觉得三角形比椭圆优越</p></li><li id="src-c257502855664"><div class="src-head"><span class="src-id">c257502855664</span><span class="src-meta">权重 47 · 一级</span><a class="src-back" href="#cite-c257502855664">返回正文</a></div><p class="src-text">世界上确实没有完美的圆，但八边型起码比三角形更像圆</p></li><li id="src-c244076612368"><div class="src-head"><span class="src-id">c244076612368</span><span class="src-meta">权重 223 · 一级</span><a class="src-back" href="#cite-c244076612368">返回正文</a></div><p class="src-text">没有完美的圆形，所以汽车的轮胎都用三角形得了，又不是不能走</p></li><li id="src-c244190311760"><div class="src-head"><span class="src-id">c244190311760</span><span class="src-meta">权重 783 · 一级</span><a class="src-back" href="#cite-c244190311760">返回正文</a></div><p class="src-text">重要的不是投票而是制约权力</p></li><li id="src-c244274056193"><div class="src-head"><span class="src-id">c244274056193</span><span class="src-meta">权重 149 · 回复</span><a class="src-back" href="#cite-c244274056193">返回正文</a></div><p class="src-text">那么如何制约制约权力的权力？</p></li><li id="src-c243530551152"><div class="src-head"><span class="src-id">c243530551152</span><span class="src-meta">权重 103 · 一级</span><a class="src-back" href="#cite-c243530551152">返回正文</a></div><p class="src-text">现代民主解决的是权力来自于谁的问题，就像古代的逻辑是君权神授，是权力来自于天，所以要祭天仪式，这种缺陷是天是不具象的，所以没有实质上的约束力。如果天具象化，那么就有了约束力，现代民主就是用“民众”替代“天”的过程，以达成对政治家的现实约束，票选其实就是现代意义上的祭“天”仪式，完成民众这个“天”对政治家的授权过程。</p></li><li id="src-c270214752496"><div class="src-head"><span class="src-id">c270214752496</span><span class="src-meta">权重 2 · 一级</span><a class="src-back" href="#cite-c270214752496">返回正文</a></div><p class="src-text">1、多数投票制：选民选择一个候选人，得票最多的赢，即使没过半数。类似美国选举人团的州级“赢者通吃”或英国议会选举。
+优点：简单，计票快，容易操作。结果明确，利于快速形成zf。
+缺点：浪费选票，少数派的声音被忽视（如美国非摇摆州选民）。选民可能策略性投票，放弃真实偏好，选择“次优”阻止最差结果。可能选出多数人不支持的候选人（如40%得票胜过60%分裂票）。
+
+2、排名选择投票：选民按偏好排名候选人，若无人获50%以上第一选票，淘汰最低票者，重新分配其选票，直到产生多数赢家。类似澳大利亚众议院选举。
+优点：减少选票浪费，考虑次偏好，选民可表达真实选择。鼓励候选人争取广泛支持，减少两极化。
+缺点：可能忽略“孔多塞赢家”（两两比较胜所有人者…</p></li><li id="src-c243472454800"><div class="src-head"><span class="src-id">c243472454800</span><span class="src-meta">权重 8210 · 一级</span><a class="src-back" href="#cite-c243472454800">返回正文</a></div><p class="src-text">这个标题起的有点大了，应该叫投票选拔的公平性和有效性研究，视频作者并没有质疑普选，只是质疑实现普选的手段。</p></li><li id="src-c243954457872"><div class="src-head"><span class="src-id">c243954457872</span><span class="src-meta">权重 150 · 一级</span><a class="src-back" href="#cite-c243954457872">返回正文</a></div><p class="src-text">投票制度最失败的地方是选民容易被骗被带节奏，这导致竞选过程是与控制国家命脉的既得利益者进行利益交换的过程，选出来的人不能真正意义上的管理国家</p></li><li id="src-c244485954561"><div class="src-head"><span class="src-id">c244485954561</span><span class="src-meta">权重 55 · 回复</span><a class="src-back" href="#cite-c244485954561">返回正文</a></div><p class="src-text">回复 @我是一个_1 :这不叫多数的民意，这叫少数人推动下造成的多数的暴政，背后的汉弗莱只需要花上一些钱来宣传关于欧盟带给英国的坏处就可以了，退出之前大肆宣扬英国需要为欧洲一些穷盟友们出多少钱，但就是不宣传脱欧以后民众的各种用品价格都会上涨，变相将财政成本转移到民众头上，民众反应过来不对劲了，想反悔了，如何呢？木已成舟，除非是为了选票，或者产业上出现什么变动，否则不会再有政客选择加入欧盟增加自己的财政支出了。</p></li><li id="src-c243855721040"><div class="src-head"><span class="src-id">c243855721040</span><span class="src-meta">权重 8498 · 一级</span><a class="src-back" href="#cite-c243855721040">返回正文</a></div><p class="src-text">英国公投脱欧那年搜索量第一的是什么是欧盟</p></li><li id="src-c243826989857"><div class="src-head"><span class="src-id">c243826989857</span><span class="src-meta">权重 1632 · 回复</span><a class="src-back" href="#cite-c243826989857">返回正文</a></div><p class="src-text">没毛病。投票之前了解一下什么是欧盟，这样恰恰说明投票不是乱投。</p></li><li id="src-c243887235345"><div class="src-head"><span class="src-id">c243887235345</span><span class="src-meta">权重 960 · 回复</span><a class="src-back" href="#cite-c243887235345">返回正文</a></div><p class="src-text">回复 @我是一个_1 : 用你的话来说，恰恰说明投票是乱投</p></li><li id="src-c243895787233"><div class="src-head"><span class="src-id">c243895787233</span><span class="src-meta">权重 678 · 回复</span><a class="src-back" href="#cite-c243895787233">返回正文</a></div><p class="src-text">回复 @我是一个_1 : 很明显这句话要说明的是 英国大多数人受到的教育都没告诉他们什么事欧盟</p></li><li id="src-c244033171793"><div class="src-head"><span class="src-id">c244033171793</span><span class="src-meta">权重 47 · 回复</span><a class="src-back" href="#cite-c244033171793">返回正文</a></div><p class="src-text">回复 @孔鹏公 :根据某数据新闻网
+Google UK top trending searches of 2016:
+Euro 2016
+Pokemon Go
+David Bowie
+Donald Trump
+Prince
+EU referendum/Brexit
+Alan Rickman
+Olympics
+US election
+Deadpool
+其实根本没有欧盟，这只是个段子别太认真了</p></li><li id="src-c243708900833"><div class="src-head"><span class="src-id">c243708900833</span><span class="src-meta">权重 45 · 一级</span><a class="src-back" href="#cite-c243708900833">返回正文</a></div><p class="src-text">我觉得，我们得先定义民主制度和西式德谟克拉西制度……
+然后才能谈论民主制度好不好，现实的实践已经证明：西式德谟克拉西是失败的。
+但不证明民主制度是失败的。
+你要问我什么是“真正的”民主制度？那抱歉，我不知道。</p></li><li id="src-c243337723825"><div class="src-head"><span class="src-id">c243337723825</span><span class="src-meta">权重 50 · 一级</span><a class="src-back" href="#cite-c243337723825">返回正文</a></div><p class="src-text">西式民主也只是在他们社会下比较优质的解决方案，毕竟经过充分的磨合。
+看看南美，南亚，非洲，这些一步从酋邦到西式民主的国家有多不适应。
+菲律宾，马来，印度依旧是地方土皇帝说了算，每个区域独立性非常高，地方长官就是世袭制。
+国家元首选来选去就是那几家互相选，你方唱罢我登场。
+可以说只是套了一层民主壳的封建制。</p></li><li id="src-c243997345456"><div class="src-head"><span class="src-id">c243997345456</span><span class="src-meta">权重 77 · 一级</span><a class="src-back" href="#cite-c243997345456">返回正文</a></div><p class="src-text">高中课本说，只有社会主义民主才是真正的民主</p></li><li id="src-c243355731329"><div class="src-head"><span class="src-id">c243355731329</span><span class="src-meta">权重 54 · 一级</span><a class="src-back" href="#cite-c243355731329">返回正文</a></div><p class="src-text">投票制度本身就是一种寡头制度，而非真正的民主本身，人民只有投票的权利没有真正管理国家的权利，管理国家的只是选出来的少部分精英罢了，只有人民完全能自己管理自己身边的一切，才是民主</p></li><li id="src-c244775040000"><div class="src-head"><span class="src-id">c244775040000</span><span class="src-meta">权重 43 · 一级</span><a class="src-back" href="#cite-c244775040000">返回正文</a></div><p class="src-text">除非全民教育达到极高的程度，否则哪怕没有任何暗箱操作，结果也会变得荒缪。热点事件，一次次验证《乌合之众》的荒缪观点。</p></li><li id="src-c243422628545"><div class="src-head"><span class="src-id">c243422628545</span><span class="src-meta">权重 682 · 一级</span><a class="src-back" href="#cite-c243422628545">返回正文</a></div><p class="src-text">我是觉得，投票无法实现完全民主，不代表民主是个谎言，是因为完美的东西本来就不存在。就算给你世界上所有调料，你也无法调出最适合自己的味道，只能调出和自己期望中的完美最相近的味道，并且也只能越来越相近。
+我觉得最正确的方法不是视投票为骗局，而是想办法找到更好的方法去替代投票，但是同时也要综合考虑可行性，成本，民众的智力能否支持这种更好的方法，在没办法实现最好的方法之前，实行投票最终方法也是无可厚非的。</p></li><li id="src-c243349043617"><div class="src-head"><span class="src-id">c243349043617</span><span class="src-meta">权重 46 · 一级</span><a class="src-back" href="#cite-c243349043617">返回正文</a></div><p class="src-text">其实追求民主投票机制是否完美，这意义不大。因为目前所有的决策都是由人做出的（人工智能暂时起的是辅助手段），既然是人做出的，就必然包含着偏见，受制于意识和思维习惯。因此，关注的重点实际上是该制度是否较为完美。选举上的投票制度在这四百多年间经历了改进和发展，是趋向于成熟的。想要了解更多的人，推荐大家了解一下澳大利亚的排序优选制：这个制度的设计可以让大部分的人总体满意；新西兰的MMP制度：更加包容和有代表性的选举方式。当然还有其他具有特色的选举模式，受制于文字不再罗列。</p></li><li id="src-c244897111584"><div class="src-head"><span class="src-id">c244897111584</span><span class="src-meta">权重 5 · 回复</span><a class="src-back" href="#cite-c244897111584">返回正文</a></div><p class="src-text">回复 @冰糖@雪梨 :你对现代民主政治的真正目的都没搞清楚，民主政治只有一个目的：避免政治动荡和内战。民主没有你想象中的那种实质性的目的，例如什么促进经济发展、保障人民权益、推动社会文化进步，所有的一切这些都不是民主制度的目的。民主政治不是假定一个超越的，普世的目标，假定存在一个社会共识，而是恰恰相反，它承认差异和分裂，并试图在此基础上避免差异和分裂对社会结构的破坏。民主政治根本就不是为了筛选出多数意见然后让它赢者通吃，而是平衡各种不同意见。民主根本不是一个筛选机制，而是一种政治创造，民主政体创造一种能够被一切社会成分和利益群体承认的游戏规则，而不是筛选出（或者甚至杜撰一个）所有社会成分共同具有的利益。
+
+想象一场棋局。在棋局中对弈…</p></li><li id="src-c266294402016"><div class="src-head"><span class="src-id">c266294402016</span><span class="src-meta">权重 3 · 回复</span><a class="src-back" href="#cite-c266294402016">返回正文</a></div><p class="src-text">回复 @我是一个_1 :马克思主义民主观认为，民主首先表现为国家形态和基本制度，其本质是人民自主。马克思主义民主观是对资产阶级民主观的扬弃。马克思早在1843年撰写的《黑格尔法哲学批判》中就指出，民主作为一种国家形态和基本制度，其本质特征就在于人民是国家的主体，“在民主制中，国家制度本身只表现为一种规定，即人民的自我规定”，而国家制度“只是人民的一个定在环节”。对此，马克思还进行了较为具体的发挥和阐述：“国家是抽象的东西。只有人民才是具体的东西”“不是国家制度创造人民，而是人民创造国家制度”“民主制是一切形式的国家制度的已经解开的谜。在这里，国家制度不仅自在地，不仅就其本质来说，而且就其存在、就其现实性来说，也在不断地被引回到自己的…</p></li><li id="src-c266294416688"><div class="src-head"><span class="src-id">c266294416688</span><span class="src-meta">权重 1 · 回复</span><a class="src-back" href="#cite-c266294416688">返回正文</a></div><p class="src-text">回复 @我是一个_1 :在马克思主义看来，民主是一个历史的范畴。在中国，“民主”一词最早见于《尚书·多方》，文云：“天惟时求民主，乃大降显休命于成汤”，意为民之主宰。《尚书·五子之歌》中还提出：“民惟邦本，本固邦宁”，奠定了中国“民本”思想传统的基础。这种思想传统特别在孟子的“民为贵，社稷次之，君为轻”的表述中得到集中体现。在西方，“民主”一词最早见于古希腊希罗多德《历史》一书，由古希腊语“demos”（人民） 和“kratia”（权力、统治）二词构成，意指“人民的权力”“人民的统治”。修昔底德指出，民主意味着“政权是在全体公民手中，而不是在少数人手中”。近代资产阶级的启蒙思想家们光大了古希腊的民主含义，开始赋予民主概念以现代意义上…</p></li><li id="src-c244509205265"><div class="src-head"><span class="src-id">c244509205265</span><span class="src-meta">权重 3 · 一级</span><a class="src-back" href="#cite-c244509205265">返回正文</a></div><p class="src-text">没看视频，看标题推测应该是讲的阿罗不可能定理。阿罗不可能定理的内容是在满足Universal Domain, Unanimity, Independence of Irrelevant Alternatives (IIA)的前提下，社会选择无法满足偏好的完备性和传递性，除了dictatorship。我个人的理解是，通过集体选择加总而来的偏好不可能像个体一样“自我一致”。这与其说是否定democracy的合法性，不如说是揭示彻底的集体主义与“公意”的不可能性，因为democracy作为一种制度仍然可以通过放松定理的某些前提（如IIA）和改变制度的设置来接近于实现偏好的加总。除此以外，demo制度有着收集“分散在社会中的信息”的作用，但…</p></li><li id="src-c244059544592"><div class="src-head"><span class="src-id">c244059544592</span><span class="src-meta">权重 1 · 一级</span><a class="src-back" href="#cite-c244059544592">返回正文</a></div><p class="src-text">投票制作为一种民主决策方式，虽然有其优势，但也存在一些缺点，包括：
+
+1. **信息不对称**：选民可能缺乏充分的信息来做出明智的选择，导致投票结果不反映真实的公共利益。
+
+2. **群体思维**：在集体投票中，个体可能受到群体压力，跟随大多数人的意见，而不是基于个人的判断。
+
+3. **短期导向**：选举周期可能导致政策制定者更关注短期结果而非长期利益，以获取选票。
+
+4. **选民参与度**：有些选民可能对投票过程缺乏兴趣或信心，导致投票率低下，从而影响代表性。
+
+5. **极端意见的影响**：小众群体的极端观点可能在投票中占据较大份额，影响整体决策。
+
+6. **操控风险**：在某些情况下，投票过程可能被操控或受到不当影响，削…</p></li><li id="src-c251430416160"><div class="src-head"><span class="src-id">c251430416160</span><span class="src-meta">权重 0 · 回复</span><a class="src-back" href="#cite-c251430416160">返回正文</a></div><p class="src-text">回复 @クズの路人甲 :这就是人性。所以，精英自肥，可以说是精英主义不可能解决的问题。并不是靠宣扬“真正的精英”就能避免的。另一方面，现代精英主义假定具备更高专业能力的人就能做出更好的决策，这个假定本身也往往是靠不住的。然而在很多领域，精英主义显然是必需的（比如没人会找个“陪诊团”而不找医生）。而对于精英主义的问题，其解决方案往往要在某种程度上诉诸民粹主义。
+
+李光耀：新加坡赖以生存的硬道理这本书里他是这么看待新加坡的那些精英的：他认为精英制的另一个缺陷就是会给精英（特别是第二代、第三代）制造一种幻觉，认为他们是一种脱离社会和国家的独立存在（从某种意义上说全球化极大地促成了这一点），而他们不对社区、社会、民族承担任何的责任。这是李本…</p></li><li id="src-c243352023537"><div class="src-head"><span class="src-id">c243352023537</span><span class="src-meta">权重 46 · 一级</span><a class="src-back" href="#cite-c243352023537">返回正文</a></div><p class="src-text">首先得用数学语言去定义什么是民主</p></li><li id="src-c245372475153"><div class="src-head"><span class="src-id">c245372475153</span><span class="src-meta">权重 3 · 回复</span><a class="src-back" href="#cite-c245372475153">返回正文</a></div><p class="src-text">回复 @电波抽 : 这方面哥们儿权当抛砖引玉。先说正常投票，approval voting实际上等于自带权重threshold,以上候选人权重平等都是1，以下候选人权重平等都是0，这样视频里的“半数人最喜欢，半数人不喜欢”的B不一定要么排第一，要么排最后，从这方面打破了阿罗定理部分论证。但是注意，阿罗定理本身就是个精密数学构造，打破了他离完美还远着呢。
+
+但是假如大家都是前两名approve，最后一名不approve，那有可能全员把C排第二（半数人最喜欢A半数人最喜欢B），那意味着，最后选一个“没有任何人首选”的人上台，甚至有可能“9人首选B但是十人次选C”，导致C上台，那其实就是“一个人对B超过临界线的憎恶决定了选举结果”。这类不…</p></li><li id="src-c243363896593"><div class="src-head"><span class="src-id">c243363896593</span><span class="src-meta">权重 121 · 一级</span><a class="src-back" href="#cite-c243363896593">返回正文</a></div><p class="src-text">科普数学的视频，评论区90%的人都在讨论政治，思考讨论数学需要脑子，而键政只需要一张嘴就够了[惊喜]</p></li><li id="src-c247136601425"><div class="src-head"><span class="src-id">c247136601425</span><span class="src-meta">权重 50 · 一级</span><a class="src-back" href="#cite-c247136601425">返回正文</a></div><p class="src-text">还好这个视频是英语的，不然评论区的大家一定不会这么温柔</p></li></ol>
+<footer>
+<span>comment-distillery · 带引用溯源的群体文本蒸馏</span>
+<a href="https://github.com/TrueFurina/comment-distillery">github.com/TrueFurina/comment-distillery</a>
+</footer>
+</main>
+</body>
+</html>

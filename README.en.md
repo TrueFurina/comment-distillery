@@ -389,7 +389,7 @@ comment-distillery/
 │   ├── 01…04/               # runs 1–4: real corpus → deep-dive guide
 │   ├── 05-火柴人VS数学评论区的共识：可视化的震撼、教育的失责与数学本质之辩/   # runs 6+7: 15-chapter guide + 10-chapter addendum (3 claims corrected)
 │   └── 项目笔记/            # design notes: rationale / open-source sprint roadmap
-└── tests/                   # regression tests, 203 cases (run in CI)
+└── tests/                   # regression tests, 186 cases (run in CI)
 ```
 
 > `cases/` ships **artifacts only** (the guides + design docs, 9 md files / 277 KB).
@@ -417,7 +417,7 @@ See [`docs/compliance.md`](docs/compliance.md).
 
 - [x] **v1** — 6-step pipeline, deep-by-default, provenance, counter-examples, blind spots, citation gate
 - [x] **v1.1** — domain generalization: from "comments" to "any crowd text"; Canonical Corpus Format
-- [x] **field validation** (10 runs / 45,633 items) — the reply-layer (nested comments) study: 21,100 items on one video, and the supplement volume corrected 3 conclusions of the main guide
+- [x] **field validation** (12 runs / 52,720 items) — the reply-layer (nested comments) study: 21,100 items on one video, and the supplement volume corrected 3 conclusions of the main guide
 - [x] **v1.3** — golden test set: 10 cases / 5 categories, baseline scores 100, and 35 mutants prove the grader actually deducts (see [`golden/README.md`](golden/README.md))
 - [x] **v1.4** — delivery: Windows desktop exe (collect → prep → export pack → verify) + website (`site/`)
 - [ ] **v2** — adaptation examples for more domains (surveys / interviews / tickets)

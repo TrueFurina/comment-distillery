@@ -15,9 +15,9 @@
 - 做 **L3 建设性综合**
 
 **仓库**：https://github.com/TrueFurina/comment-distillery （public / MIT）
-**状态**：**十一战**实战验证完毕（第 8/9/10 战于 2026-09-29 完成并入库），P0/P1/P2 已闭环、P3 适配部分完成，CI 全绿（`bbda7d0` success，3 个 Python 版本）。
+**状态**：**十四战**实战验证完毕（第 8/9/10 战于 2026-09-29 完成并入库；第 12–14 战于 2026-11-06 补出报告并入档），P0/P1/P2 已闭环、P3 适配部分完成，CI 全绿（`bbda7d0` success，3 个 Python 版本）。
 
-**冷启动读这三份**：`HANDOFF.md`（本文，接手）→ [`ROADMAP.md`](ROADMAP.md)（下一步做什么）→ [`docs/retrospective.md`](docs/retrospective.md)（十一战方法论沉淀与量化判据）。
+**冷启动读这三份**：`HANDOFF.md`（本文，接手）→ [`ROADMAP.md`](ROADMAP.md)（下一步做什么）→ [`docs/retrospective.md`](docs/retrospective.md)（十四战方法论沉淀与量化判据）。
 
 ---
 
@@ -60,7 +60,7 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 ├── contrib/fetch_bilibili_comments.py   （纯标准库 WBI 签名抓取，含去重与退避）
 ├── golden/                              （评估集：11 场景 / 5 类，判分器 + 跑分器 + 变异验证）
 ├── ROADMAP.md                           （长期规划 P0–P5 + P3.5，含验收门槛与停止条件）
-├── tests/                               （**201 项**，`unittest discover -s tests`；CI 强制）
+├── tests/                               （**186 项**，`unittest discover -s tests`；CI 强制）
 │   ├── test_prep.py                     （16）· test_verify_citations.py（13）· test_rule_tags.py（6）
 │   ├── test_golden.py                   （12）· test_app_core.py（23，桌面工具逻辑层）
 │   ├── test_emit_html.py                （12）· test_make_skill_zip.py（15，含可复现构建）
@@ -73,7 +73,7 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 │   ├── e2e_web.py                       （真起 HTTP 服务走完一键：验路由与作业接线，非仅函数）
 │   └── fake_openai_server.py            （本地假网关，让端到端不花真钱；也可单独起）
 ├── docs/collecting.md                   （各社区采集工具 + 许可证 + 风险对照）
-├── docs/retrospective.md                （十一战沉淀：五次修正 / 7 条判据 / 质量门 G1–G7）
+├── docs/retrospective.md                （十四战沉淀：五次修正 / 7 条判据 / 质量门 G1–G7）
 ├── docs/rule-provenance.md              （规则溯源：9 铁律 / 5 待复现 / 8 环境事实 / 15 工程坑，附复现判据；计数由机验强制与 SKILL.md + docs/engineering-pitfalls.md 对齐）
 ├── docs/engineering-pitfalls.md         （维护/构建类踩坑 15 条；★ **不进打包产物**——改它不必重发 exe）
 ├── docs/overturned.md                   （被推翻结论台账 OT-1…OT-5，含"再次推翻的条件"）
@@ -95,6 +95,9 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
     ├── 09-27届计算机秋招的困境：三层挤压、能力之争与AI面试作弊的反噬链/          （489 条 · 8 章 · 楼中楼占比 85% 历史最高）✅ 指南已公开
     ├── 10-26届硕士投2k简历伪人横行的结论：找不到工作是四个不同的问题/              （235 条 · 7 章 · 语料内自带水军质疑）    ✅ 指南已公开
     ├── 11-学历仍是敲门砖但门在变形，以及一场关于你信命吗的哲学辩论/              （2697 条 · 8 章 · 双视频合并 · 首次记录 AI 总结机器人刷屏）✅ 指南已公开
+    ├── 12-选择性不回应是能量管理还是社交退行/                                  （140 条 · 11 章 · 小样本全读跑通）✅ 指南已公开
+    ├── 13-投票制度在数学上不可能吗/                                          （6201 条 · 11 章 · 两段式阅读）✅ 指南已公开
+    ├── 14-MBTI人格类型值得信吗/                                             （746 条 · MBTI 评论区共识与反例）✅ 指南已公开
     └── 项目笔记/
         ├── 评论转建设性干货指南Skill方案论述：需求缘起、差异定位与两个待决策点.md      ✅ 已公开（设计留档）
         ├── comment-distillery开源冲刺路线图：先校准预期再给可开源冲星路径.md ✅ 已公开（设计留档）
@@ -124,7 +127,7 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 
 **官网数字纪律**：`site/index.html` 里每个数字都必须能在仓库中指到出处（测试数 / 场景数 / 规则分级 / 代码规模），改代码后**同步复核官网**，不要让它变成漂移源。
 
-**`cases/` 的公开口径（2026-09-26 用户拍板）**：只公开**产物层**（9 个 md / 277 KB）。
+**`cases/` 的公开口径（2026-09-26 用户拍板）**：只公开**产物层**（12 个指南 + 2 设计留档 + README，共 17 个 md / 约 444 KB）。
 `.gitignore` 用**扩展名白名单反向**实现（`/cases/**/*.{csv,txt,json,py,svg}` 全部忽略）——
 **不要改回 `/cases/` 整目录忽略**，也不要改回「全量公开」：原始语料再分发会推翻 `docs/compliance.md`
 §0/§2/§5 的三处声明（其中 §5 的「未复制或再分发原始数据」已被写进各战指南开头，公开语料会让它变成假话）。
@@ -133,7 +136,7 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 
 ---
 
-## 三、十一战档案索引
+## 三、十四战档案索引
 
 | # | 规模 | 语料 | 产出 | 关键验证 |
 |---|---|---|---|---|
@@ -148,6 +151,9 @@ E:\Program\comment-distillery\           ← 项目根 = git 仓库根
 | 9 | 489（**一级仅 73 / 回复 416**） | 27 届计算机秋招 | 8 章 | **楼中楼占比 85%**（历史最高）：一级层几乎不承载讨论；机验抓到 **2 条跨语料混引**幻觉；引用机验 **88 条 / 0 幻觉** |
 | 10 | 235 | 26 届硕士投 2k 简历 · 就业市场 | 7 章 | **语料内自带"水军质疑"**（首次遇到）：语料可信度第一次成为议题内容本身；引用机验 **77 条 / 0 幻觉** |
 | 11 | 2,697（语料 A 1,170 / 语料 B 1,527） | 「学历/跃迁」+「你信命吗」（双视频合并） | 8 章 | **首次记录"AI 总结机器人"刷屏**（语料 A 33 条召回帖占 2.8%、其中 24 条零赞）；引用机验 **93 条 / 0 幻觉** |
+| 12 | 140 | 「教你不回应 / 别发在吗」 | 11 章 | 小样本全读跑通；低权重长文(9 条)含主要反例；最高信号在反例区；引用机验 **35 条 / 0 幻觉** |
+| 13 | 6,201（一级 2,260 / 楼中楼 3,941） | 转载 *Why Democracy Is Mathematically Impossible*（加"投票"） | 11 章 | 头部通读(1,079 条) + 低权重长文精筛(45 条)两段式；四种机制比较 + 民主真目的；引用机验 **57 条 / 0 幻觉** |
+| 14 | 746（一级 310 / 楼中楼 436） | MBTI 人格类型值得信吗 | 11 章 | 头部通读(70 条) + 低权重长文精筛(45 条)两段式；"横跳"真相是连续线段分箱而非人格缺陷；最高赞与最高信息量再次错位；引用机验 **33 条 / 0 幻觉** |
 
 ---
 
@@ -211,7 +217,7 @@ HEAD     见 `git log -1`（最后核验 2026-09-26 为 2cae432；**本文件每
          先前写法把 hash 写死，导致每次提交都要改一次，是自找的漂移源）
 origin   git@github.com:TrueFurina/comment-distillery.git   (SSH)
 CI       .github/workflows/ci.yml  **16 个质量门步骤**全绿
-         （compileall / 零依赖守卫 / 编码守卫 / 文档一致性机验 / 文档一致性变异验证 / unittest 203 项 /
+         （compileall / 零依赖守卫 / 编码守卫 / 文档一致性机验 / 文档一致性变异验证 / unittest 186 项 /
           无裸铁律 / 判据变异验证 / golden 变异 / golden 基线 / prep 冒烟 / 引用机验冒烟 /
           HTML 报告冒烟 / Web 界面冒烟 / **技能包 ZIP 冒烟** / 冒烟产出展示）
          另有 build-exe.yml（真打包 + --verify 资源核验 + 三道冒烟 + 文档一致性）与
@@ -290,11 +296,11 @@ CI       .github/workflows/ci.yml  **16 个质量门步骤**全绿
 3. ⏸ **`docs/collecting.md` 扩充**：可补"输出 → CCF 字段映射"的完整示例。优先级低于 P3。
 4. ⏸ **真·人工校验 loop**：列入 P5。现状澄清——现有 7 道门（见 `docs/retrospective.md` §4）**只卡形式与引用真实性，不检验推断质量**。
 5. ✅ **反例开采 vs 深度解析开采**：已拆开，且**已标为 `[战7·待复现]`**——单战证据，移入 SKILL.md「待复现观察」章节，不再是铁律。
-6. ✅ **十一战沉淀件**：`docs/retrospective.md` —— 五次方法论修正 + 7 条量化判据 + 交付质量门 G1–G7 + 与 AGI-Distiller 对照 + 已知局限。
+6. ✅ **十四战沉淀件**：`docs/retrospective.md` —— 五次方法论修正 + 7 条量化判据 + 交付质量门 G1–G7 + 与 AGI-Distiller 对照 + 已知局限。
 7. ✅ **P1 golden 评估集**（2026-09-26）：8 场景 / 4 类，baseline 100.0，变异 31/31 拦截。
 8. 🆕 **P2 方法论去过拟合**（2026-09-26）：`docs/rule-provenance.md` + `docs/overturned.md` + `scripts/check_rule_tags.py`（CI 强制）。**读规则时注意：带 `[战N·待复现]` 的是假设，不是规律。**
 9. 🟡 **P3 分发**（2026-09-26）：`npx skills add` 适配 ✅（实测 Found 1 skill）+ README 真实产出片段 ✅ + GitHub 元数据 ✅ + **topics 已补齐 ✅**（16 个，补入 `agent-skills` / `claude-skills` / `skills` / `ai-agents`——**由本地 token 直接调 API 执行，不需用户操作**）。**awesome PR 已提交 2 个**（[ComposioHQ#2002](https://github.com/ComposioHQ/awesome-claude-skills/pull/2002) / [m-fyi#2](https://github.com/m-fyi/awesome-claude-skills/pull/2)，同日用 token 提交；VoltAgent 按其"不接受全新 skill"规则缓发）。**仅剩社区发帖需要你的账号**（§1-C 有骨架）——公开发言不代发。
-10. ✅ **`cases/` 产物层公开**（2026-09-26 用户拍板）：9 个 md / **277 KB** 进仓库（各战指南 + 设计留档）；原始语料与中间产物按 `docs/compliance.md` §2 **保持不公开**。实现与红线见 §二 的「公开口径」。
+10. ✅ **`cases/` 产物层公开**（2026-09-26 用户拍板）：12 个指南 + 设计留档 + 索引，共 **17 个 md / 约 444 KB** 进仓库（各战指南 + 设计留档）；原始语料与中间产物按 `docs/compliance.md` §2 **保持不公开**。实现与红线见 §二 的「公开口径」。
 11. ✅ **LICENSE 保留 MIT**（2026-09-26 用户确认）：依据是 `docs/compliance.md` §0——"本项目可以 MIT 开源、可被企业采用"。**不适用**"原创项目一律不加 LICENSE"这条个人规则（它针对私有项目；公开仓库无 LICENSE = 保留所有权利，反而与分发目标矛盾）。
 12. ✅ **P3.5 交付形态**（2026-09-26）：Windows 桌面 exe（`app/` + `app_main.py`）+ 官网（`site/`）+ 可复现构建（`scripts/make_icon.py` / `scripts/build_exe.py` / `build-exe.yml` / `pages.yml`）。**exe 三项自检全 PASS**（资源齐全 / 真建窗口 / 端到端跑通预处理→打包→引用机验）。设计决策与回滚方式见 `ROADMAP.md` §P3.5。
 13. ✅ **顺带修掉两个真 bug**（2026-09-26）：① `verify_citations.py` 的 `--field` 参数一直被解析却从未传下去（形同虚设），已接通；② `crawl()` 的协作式停止钩子与 `_CallbackWriter` —— GUI 中途停止时已抓部分照常写出。
