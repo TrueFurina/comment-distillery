@@ -29,6 +29,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from app import webui  # noqa: E402
+from app import llm  # noqa: E402
 
 
 def _raw(port, raw: bytes, timeout=6):
@@ -68,11 +69,13 @@ class WebUIBase(unittest.TestCase):
         # 隔离 AI 配置：这些测试跑的是"没配 AI"的路径。
         # 不隔离的话，本机一旦填了真 Key，一键就会真的去调模型，
         # 测试从 10 秒变成几分钟，还会因超时假报失败——实测踩过。
-        # 用 app_root 打补丁而不是删用户的 llm.json：
-        # 删文件属于破坏用户数据，改路径指向只是本进程内的临时视图。
-        cls._real_app_root = webui.core.app_root
-        cls._stub_root = Path(tempfile.mkdtemp(prefix="cd-stub-root-"))
-        webui.core.app_root = lambda: cls._stub_root
+        # 配置位置已改为"跟用户走"（用户配置目录），因此用 CD_LLM_CONFIG_DIR
+        # 注入临时目录来隔离，而不是 patch app_root（app_root 已不参与配置定位）。
+        # 注入环境变量而不是删用户的 llm.json：删文件属于破坏用户数据，
+        # 改环境变量只影响本进程内的临时视图。
+        cls._config_dir = Path(tempfile.mkdtemp(prefix="cd-config-test-"))
+        cls._saved_cfg_dir = os.environ.get(llm.CONFIG_DIR_ENV)
+        os.environ[llm.CONFIG_DIR_ENV] = str(cls._config_dir)
 
         # 隔离 AI 相关环境变量：这些测试跑的是"没配 AI"的路径。
         # 本机若漂着 DEEPSEEK_API_KEY / OPENAI_API_KEY / CD_LLM_*（用户真 Key 或 CI 注入），
@@ -88,12 +91,15 @@ class WebUIBase(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         cls.srv.shutdown()
-        webui.core.app_root = cls._real_app_root
         for k, v in cls._saved_ai_env.items():
             if v is None:
                 os.environ.pop(k, None)
             else:
                 os.environ[k] = v
+        if cls._saved_cfg_dir is None:
+            os.environ.pop(llm.CONFIG_DIR_ENV, None)
+        else:
+            os.environ[llm.CONFIG_DIR_ENV] = cls._saved_cfg_dir
         shutil.rmtree(cls.tmp, ignore_errors=True)
 
     # ── 小工具 ──
@@ -781,6 +787,87 @@ class TestCancelAndCallbacks(WebUIBase):
         self.assertIn('data-stop="crawl"', body)
         self.assertIn("hidden", body.split('data-stop="crawl"')[1][:30])
         self.assertIn("async function stop(a)", body)
+
+
+class TestShutdown(unittest.TestCase):
+    """/api/shutdown 优雅退出：本机能关停并退出进程；公开/局域网模式禁停。"""
+
+    def test_shutdown_stops_server(self):
+        webui._PUBLIC = False
+        webui._LAN = False
+        webui._DEMO = False
+        webui._ACCESS_TOKEN = ""
+        srv, _url = webui.serve(port=0, open_browser=False, quiet=True)
+        base = f"http://127.0.0.1:{srv.server_address[1]}"
+        try:
+            # 先确认服务活着
+            with urllib.request.urlopen(base + "/api/hello", timeout=10) as r:
+                self.assertEqual(r.status, 200)
+            req = urllib.request.Request(
+                base + "/api/shutdown", data=b"{}",
+                headers={"Content-Type": "application/json"}, method="POST")
+            with urllib.request.urlopen(req, timeout=10) as r:
+                d = json.loads(r.read().decode("utf-8"))
+            self.assertTrue(d.get("ok"), d)
+            self.assertTrue(srv._cd_stop.is_set(), "关停信号必须已置位")
+            import time
+            time.sleep(0.3)
+            # 服务已停止：再连应被拒
+            with self.assertRaises(OSError):
+                urllib.request.urlopen(base + "/api/hello", timeout=3)
+        finally:
+            try:
+                srv.shutdown()
+            except Exception:
+                pass
+
+    def test_shutdown_via_get(self):
+        """GET 版（地址栏可直接访问）同样能关停本机服务。"""
+        webui._PUBLIC = False
+        webui._LAN = False
+        webui._DEMO = False
+        webui._ACCESS_TOKEN = ""
+        srv, _url = webui.serve(port=0, open_browser=False, quiet=True)
+        base = f"http://127.0.0.1:{srv.server_address[1]}"
+        try:
+            with urllib.request.urlopen(base + "/api/shutdown", timeout=10) as r:
+                d = json.loads(r.read().decode("utf-8"))
+            self.assertTrue(d.get("ok"), d)
+            self.assertTrue(srv._cd_stop.is_set())
+            import time
+            time.sleep(0.3)
+            with self.assertRaises(OSError):
+                urllib.request.urlopen(base + "/api/hello", timeout=3)
+        finally:
+            try:
+                srv.shutdown()
+            except Exception:
+                pass
+
+    def test_shutdown_forbidden_in_public_demo(self):
+        """公开 demo 模式：gate 放行，但 /api/shutdown 必须被 403 拒掉（不能远程关停）。"""
+        webui._PUBLIC = False
+        webui._LAN = False
+        srv, _url = webui.serve(port=0, open_browser=False, quiet=True)
+        base = f"http://127.0.0.1:{srv.server_address[1]}"
+        webui._PUBLIC = True
+        webui._LAN = False
+        webui._DEMO = True
+        webui._ACCESS_TOKEN = ""
+        try:
+            req = urllib.request.Request(
+                base + "/api/shutdown", data=b"{}",
+                headers={"Content-Type": "application/json"}, method="POST")
+            with self.assertRaises(urllib.error.HTTPError) as cm:
+                urllib.request.urlopen(req, timeout=10)
+            self.assertEqual(cm.exception.code, 403)
+        finally:
+            webui._PUBLIC = False
+            webui._DEMO = False
+            try:
+                srv.shutdown()
+            except Exception:
+                pass
 
 
 if __name__ == "__main__":

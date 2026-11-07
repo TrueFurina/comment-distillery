@@ -181,8 +181,21 @@ def main(argv=None):
         rest = [a for a in args if a not in ("--web", "-w")]
         return webui_main(rest)
 
-    # ── 以下路径才需要 tkinter（桌面窗口 / GUI 自检）；
-    #    --version / --selfcheck / --web / --selftest-run 都不碰 GUI，无需它也能跑 ──
+    # 默认入口：本地 Web 界面（单前端收敛）。
+    #
+    # 2026-11-04 决策：Web 是唯一界面，exe 双击 = 起本地服务 + 自动开浏览器。
+    # 原来默认开 tkinter 窗口，与 Web 并行演化导致双前端分叉（GUI 无 AI 设置页、
+    # Web 有——功能不对等）；且 tkinter 无法在 CI/无头环境真测。收敛后只维护
+    # Web 一套 UI，tkinter 保留为 `--gui` 显式兼容路径（不删，供老用户/离线环境）。
+    #
+    # 顺序很重要：`--gui` / `--selftest-gui` 才需要 tkinter，以下开关都不碰 GUI：
+    # 默认（无任何界面开关）= Web 启动器：起服务 + 开浏览器。
+    if "--gui" not in args and "--selftest-gui" not in args:
+        from app.webui import main as webui_main
+        rest = [a for a in args if a != "--gui"]
+        return webui_main(rest)
+
+    # ── 以下才需要 tkinter（显式 --gui / GUI 自检）──
     try:
         import tkinter  # noqa: F401  仅探测可用性
     except ImportError as e:

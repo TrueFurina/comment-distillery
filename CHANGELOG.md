@@ -2,6 +2,45 @@
 
 本项目遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## [Unreleased] — 2026-11-04
+
+> **架构收敛一批**：把"双前端各自演化 + 配置跟程序走 + 引用集中度盲区"收敛成
+> "单前端（Web）+ 配置跟用户走 + 引用分布可机验 + 成本可观测"，全量回归不破。
+> 背景：用户遇到过"改了源码、双击 exe 还是旧界面"的产物滞后，以及
+> 按次数估 LLM 成本低估一个数量级（一次短验证实际是 8 次长上下文调用）。
+
+### Changed
+- **单前端收敛**：`python -m app`（无参）与 `--web` 现在**都起本地 Web 界面**
+  （服务 + 自动开浏览器），Web 是唯一 UI。tkinter 桌面窗口保留为显式 `--gui`
+  兼容路径（老用户 / 无浏览器环境），不再是无参默认。`app/__main__.py` 与
+  `app_main.py` 入口统一，避免"改源码→exe 还是旧界面"的双面漂移。
+  `dist/comment-distillery.exe` 是构建产物（gitignored），需用
+  `scripts/build_exe.py` 重建后方反映单前端默认。
+- **配置跟人走**：`llm.json` 从"程序目录"迁到**用户配置目录**
+  （Windows `%APPDATA%\comment-distillery\llm.json`，其他平台
+  `~/.config/comment-distillery/llm.json`）。源码与 exe 共用同一份，换目录、
+  换机器不用重填。`CD_LLM_CONFIG_DIR` 可注入隔离（测试用）；旧版本在程序目录
+  放过 `llm.json` 的，首次保存自动并入迁移。`app/core.py::save_llm_config` 与
+  `app/llm.py` 一并改口径。
+
+### Added
+- **引用集中度可机验**：`scripts/verify_citations.py::run` 增加 `counts`
+  （每条 ID 被引用次数）；`app/distill.py` 在机验轮里算 top 引用占比并打
+  "ℹ️ 引用集中度"提示——ID 全真仍可能反复用同几条，属质量信号不阻断交付。
+- **成本可观测**：`app/llm.py::chat` 增加 `usage_out` 钩子，非流式响应回填
+  token 用量；`app/distill.py` 每次蒸馏 / 修引用后把
+  ts/model/phase/token/chars 追加到用户配置目录 `llm-usage.jsonl`
+  （本地台账，可观测非计费，不估单价不代付）。Web「🤖 AI 设置」页新增
+  **本机用量**显示（累计调用次数 + token），`/api/llm` 返回 `usage` 摘要。
+- **exe 优雅退出**：`app/webui.py` 新增 `POST / GET /api/shutdown`（本机模式），
+  置位 `_cd_stop` 信号并干净 `shutdown()`，进程可优雅结束——windowed exe
+  （无控制台）不再只能靠任务管理器强杀；公开 / 局域网模式禁停（403）。
+  地址栏直接访问 `http://127.0.0.1:8756/api/shutdown` 即可关停。
+
+### Fixed
+- `tests/e2e_web.py`：`main()` 内局部 `import os` 遮蔽模块级，导致
+  `os.environ` 提前使用抛 `UnboundLocalError`——已把 `import os` 提到模块级。
+
 ## [Unreleased] — 2026-11-02
 
 > **这一批是「资料差点永久丢失」级的事故整改**，触发点是：一次「清理 scratch」
